@@ -1,6 +1,6 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { from, switchMap } from 'rxjs';
+import { from, of, switchMap } from 'rxjs';
 import { AuthService } from '@services/auth.service';
 import { environment } from 'src/environments/environment';
 
@@ -14,9 +14,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const authService = inject(AuthService);
 
-  // Se espera a que Supabase tenga lista la sesión (al recargar la página la
-  // recupera de forma asíncrona y la renueva si el token ya venció).
-  return from(authService.getAccessToken()).pipe(
+  // Si ya tenemos el token en memoria, lo entregamos de forma síncrona inmediata (0ms).
+  // Solo si no está en memoria (ej: recarga inicial de página), esperamos a getAccessToken().
+  const cachedToken = authService.getToken();
+  const token$ = cachedToken ? of(cachedToken) : from(authService.getAccessToken());
+
+  return token$.pipe(
     switchMap((token) => {
       // apikey identifica al proyecto de Supabase (es la clave pública).
       const headers: Record<string, string> = {
