@@ -70,8 +70,31 @@ export async function requireAdmin(req: Request): Promise<AuthUser> {
  * Indica si la petición viene de un administrador, SIN exigir sesión: una petición anónima
  * (o con un token inválido) simplemente devuelve false. Sirve para las rutas públicas cuyo
  * contenido cambia según quién consulta (el público ve solo lo activo; el admin ve todo).
+ *
+ * Optimización: Primero inspecciona rápidamente el payload del JWT en memoria (0ms, sin red ni DB).
+ * Si no tiene rol Admin en app_metadata, descarta de inmediato ahorrando una llamada a Auth API y otra a PostgreSQL.
+ * Solo si parece un Admin, valida criptográficamente con getUser() y la DB.
  */
 export async function isAdminRequest(req: Request): Promise<boolean> {
+  const header = req.headers.get('Authorization') ?? '';
+  const token = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
+  if (!token) return false;
+
+  try {
+    const parts = token.split('.');
+    if (parts.length === 3) {
+      const payloadBase64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(atob(payloadBase64));
+      // Si el token es de un usuario común (rol Client o sin rol Admin en app_metadata),
+      // retornamos false de inmediato sin pagar costo de red ni DB.
+      if (payload?.app_metadata?.role !== 'Admin') {
+        return false;
+      }
+    }
+  } catch {
+    return false;
+  }
+
   return (await getAuthUser(req))?.role === 'Admin';
 }
 
