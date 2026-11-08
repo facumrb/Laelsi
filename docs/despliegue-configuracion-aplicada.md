@@ -44,7 +44,7 @@ Los previews de Vercel (`laelsi-git-xxx.vercel.app`) no van a poder subir imáge
 
 ```bash
 npx supabase login
-npx supabase link --project-ref tdcvpakvwstdwpbjwjpn
+npx supabase link --project-ref vwtqkglkenogylkranzz
 npm run db:push
 npm run functions:secrets
 npm run functions:deploy
@@ -85,7 +85,7 @@ RESEND_FROM="Laelsi <no-reply@noresponder.laelsi.com.ar>"
 
 - **DNS del dominio principal:** al momento de escribir esto, `laelsi.com.ar` y `www` no resuelven (sin registros A, AAAA ni CNAME). Hay que agregar el dominio en Vercel (Project → Settings → Domains) y crear en Cloudflare los registros que indique Vercel.
 - **Supabase → Authentication → URL Configuration:** _Site URL_ `https://laelsi.com.ar` y _Redirect URLs_ `https://laelsi.com.ar/**` (más `http://localhost:4200/**`).
-- **Google Cloud → cliente OAuth:** agregar `https://laelsi.com.ar` en _Authorized JavaScript origins_. La _redirect URI_ no cambia: sigue siendo la de Supabase (`https://tdcvpakvwstdwpbjwjpn.supabase.co/auth/v1/callback`).
+- **Google Cloud → cliente OAuth:** agregar `https://laelsi.com.ar` en _Authorized JavaScript origins_. La _redirect URI_ no cambia: sigue siendo la de Supabase (`https://vwtqkglkenogylkranzz.supabase.co/auth/v1/callback`).
 - **Turnstile:** el hostname del widget tiene que ser `laelsi.com.ar` (y `localhost` si se prueba en local).
 - **CORS de R2, en los dos buckets:** `AllowedOrigins` pasa a `["http://localhost:4200", "https://laelsi.com.ar"]`. El resto de la política no cambia.
 - **Resend:** confirmar que `noresponder.laelsi.com.ar` figure como _Verified_.
