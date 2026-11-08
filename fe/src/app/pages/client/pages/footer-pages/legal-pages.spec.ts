@@ -53,12 +53,27 @@ describe('Páginas legales', () => {
       expect(texto).toContain('Agencia de Acceso a la Información Pública');
     });
 
-    it('declara los datos del botón de arrepentimiento y de la aceptación de los Términos', () => {
+    it('declara los datos de la aceptación de los Términos', () => {
       const { texto } = renderizar(PrivacyPageComponent);
 
-      expect(texto).toContain('Botón de arrepentimiento');
       expect(texto).toContain('casilla de aceptación');
     });
+
+    // PROVISIONAL-2026-11-08 (arrepentimiento): sus datos y su tratamiento están comentados en la política
+    it('no menciona el botón de arrepentimiento mientras esté comentado (PROVISIONAL-2026-11-08)', () => {
+      const { texto } = renderizar(PrivacyPageComponent);
+
+      expect(texto).toContain('Política de Privacidad');
+      expect(texto).not.toMatch(/arrepentimiento/i);
+    });
+
+    // PROVISIONAL-2026-11-08 (arrepentimiento): prueba ORIGINAL, comentada junto con el texto
+    // it('declara los datos del botón de arrepentimiento y de la aceptación de los Términos', () => {
+    //   const { texto } = renderizar(PrivacyPageComponent);
+    //
+    //   expect(texto).toContain('Botón de arrepentimiento');
+    //   expect(texto).toContain('casilla de aceptación');
+    // });
 
     it('lleva a los Términos y Condiciones', () => {
       expect(renderizar(PrivacyPageComponent).enlaces).toContain('/terminos');
@@ -95,13 +110,27 @@ describe('Páginas legales', () => {
       expect(texto).toContain('no procesa pagos');
     });
 
-    it('informa el derecho de revocación y lleva al botón de arrepentimiento', () => {
+    // PROVISIONAL-2026-11-08 (arrepentimiento): el derecho de revocación existe por ley con o sin botón, así que
+    // el texto sigue; solo se comentó la instrucción de usar el botón y el link. Queda el canal de
+    // WhatsApp y el local que el propio texto ya ofrecía.
+    it('informa el derecho de revocación y cómo pedirlo, sin llevar al botón (PROVISIONAL-2026-11-08)', () => {
       const { texto, enlaces } = renderizar(TermsPageComponent);
 
       expect(texto).toContain('10 días corridos');
       expect(texto).toContain('art. 34 de la Ley N° 24.240');
-      expect(enlaces).toContain('/arrepentimiento');
+      expect(texto).toContain('pedirlo por WhatsApp o en el local');
+      expect(texto).not.toContain('Botón de arrepentimiento');
+      expect(enlaces).not.toContain('/arrepentimiento');
     });
+
+    // PROVISIONAL-2026-11-08 (arrepentimiento): prueba ORIGINAL, comentada junto con el link
+    // it('informa el derecho de revocación y lleva al botón de arrepentimiento', () => {
+    //   const { texto, enlaces } = renderizar(TermsPageComponent);
+    //
+    //   expect(texto).toContain('10 días corridos');
+    //   expect(texto).toContain('art. 34 de la Ley N° 24.240');
+    //   expect(enlaces).toContain('/arrepentimiento');
+    // });
 
     it('lleva a la Política de Privacidad', () => {
       expect(renderizar(TermsPageComponent).enlaces).toContain('/privacidad');
@@ -141,14 +170,26 @@ describe('Páginas legales', () => {
       for (const promesa of promesasFalsas) expect(respuestas).not.toMatch(promesa);
     });
 
-    it('el FAQ informa que no hay envíos y menciona el botón de arrepentimiento', () => {
+    // PROVISIONAL-2026-11-08 (arrepentimiento): el FAQ sigue informando el plazo, pero ya no manda al botón
+    it('el FAQ informa que no hay envíos y el plazo de arrepentimiento, sin mandar al botón (PROVISIONAL-2026-11-08)', () => {
       const respuestas = TestBed.createComponent(FaqPageComponent)
         .componentInstance.faqs.map((faq) => faq.answer)
         .join(' ');
 
       expect(respuestas).toContain('no hacemos envíos');
-      expect(respuestas).toContain('Botón de arrepentimiento');
+      expect(respuestas).toContain('10 días corridos');
+      expect(respuestas).not.toContain('Botón de arrepentimiento');
     });
+
+    // PROVISIONAL-2026-11-08 (arrepentimiento): prueba ORIGINAL, comentada junto con la respuesta
+    // it('el FAQ informa que no hay envíos y menciona el botón de arrepentimiento', () => {
+    //   const respuestas = TestBed.createComponent(FaqPageComponent)
+    //     .componentInstance.faqs.map((faq) => faq.answer)
+    //     .join(' ');
+    //
+    //   expect(respuestas).toContain('no hacemos envíos');
+    //   expect(respuestas).toContain('Botón de arrepentimiento');
+    // });
 
     it('"¿Quiénes somos?" no promete envíos a todo el país', () => {
       const { texto } = renderizar(AboutUsPageComponent);

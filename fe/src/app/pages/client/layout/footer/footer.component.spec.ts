@@ -17,13 +17,26 @@ describe('FooterComponent: enlaces legales', () => {
     return Array.from(pie().querySelectorAll('a')).map((a) => a.getAttribute('href') ?? '');
   }
 
-  it('enlaza la Política de Privacidad, los Términos y el botón de arrepentimiento', () => {
+  it('enlaza la Política de Privacidad y los Términos', () => {
     const hrefs = enlaces();
 
     expect(hrefs).toContain('/privacidad');
     expect(hrefs).toContain('/terminos');
-    expect(hrefs).toContain('/arrepentimiento');
   });
+
+  // PROVISIONAL-2026-11-08 (arrepentimiento): el link del pie está comentado
+  it('no enlaza el botón de arrepentimiento mientras esté comentado (PROVISIONAL-2026-11-08)', () => {
+    expect(enlaces()).not.toContain('/arrepentimiento');
+  });
+
+  // PROVISIONAL-2026-11-08 (arrepentimiento): prueba ORIGINAL, comentada junto con el link
+  // it('enlaza la Política de Privacidad, los Términos y el botón de arrepentimiento', () => {
+  //   const hrefs = enlaces();
+  //
+  //   expect(hrefs).toContain('/privacidad');
+  //   expect(hrefs).toContain('/terminos');
+  //   expect(hrefs).toContain('/arrepentimiento');
+  // });
 });
 
 // Disp. 954/2025, art. 6: el sitio informa el horario de atención, un canal para consultas y el

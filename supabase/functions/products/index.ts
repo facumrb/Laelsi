@@ -39,7 +39,13 @@ import {
   serveRoutes,
   type RequestContext,
 } from '../_shared/http.ts';
-import { checkAndDeactivateCategory, likePattern, loadProducts, paginateProducts } from '../_shared/catalogo.ts';
+import {
+  checkAndDeactivateCategory,
+  idsDeCategoria,
+  likePattern,
+  loadProducts,
+  paginateProducts,
+} from '../_shared/catalogo.ts';
 import { deleteObject } from '../_shared/r2.ts';
 
 const VALID_CURRENCIES = ['ARS', 'USD', 'EUR'];
@@ -124,9 +130,11 @@ async function findProductsByCategory(ctx: RequestContext) {
   await requireAdmin(ctx.req);
   const categoryId = intParam(ctx, 'categoryId', 'ID de categoría inválido');
   const { page, limit } = getPagination(ctx);
+  // PROVISIONAL-2026-11-08 (subárbol de categorías): el administrador ve todo el subárbol, activo o no
+  const categoryIds = await idsDeCategoria(categoryId);
 
   const products = await paginateProducts({
-    where: () => sql`p.category_id = ${categoryId}`,
+    where: () => sql`p.category_id in ${sql(categoryIds)}`,
     orderBy: () => sql`p.id asc`,
     page,
     limit,
@@ -138,8 +146,10 @@ async function findActiveProductsByCategory(ctx: RequestContext) {
   const categoryId = intParam(ctx, 'categoryId', 'ID de categoría inválido');
   const { page, limit } = getPagination(ctx);
   const filters = readClientFilters(ctx);
+  // PROVISIONAL-2026-11-08 (subárbol de categorías): el cliente ve el subárbol, bajando solo por activas
+  const categoryIds = await idsDeCategoria(categoryId, { soloActivas: true });
 
-  const inCategory = () => sql`${activeOnly()} and p.category_id = ${categoryId}`;
+  const inCategory = () => sql`${activeOnly()} and p.category_id in ${sql(categoryIds)}`;
   const [products, brands] = await Promise.all([
     paginateProducts({
       where: () => sql`${inCategory()} ${filters.brand ? sql`and p.brand = ${filters.brand}` : sql``}`,
@@ -160,6 +170,8 @@ async function findAll(ctx: RequestContext) {
   const query = queryParam(ctx, 'query');
   const state = queryParam(ctx, 'state');
   const categoryId = Number(queryParam(ctx, 'categoryId')) || undefined;
+  // PROVISIONAL-2026-11-08 (subárbol de categorías): filtrar por una madre incluye a sus descendientes
+  const categoryIds = categoryId ? await idsDeCategoria(categoryId) : undefined;
   const stockFilter = queryParam(ctx, 'stockFilter');
 
   if (state !== undefined && !VALID_PRODUCT_STATES.includes(state)) {
@@ -187,7 +199,7 @@ async function findAll(ctx: RequestContext) {
       true
       ${query ? sql`and ${matchesText(query)}` : sql``}
       ${state ? sql`and p.state = ${state}` : sql``}
-      ${categoryId ? sql`and p.category_id = ${categoryId}` : sql``}
+      ${categoryIds ? sql`and p.category_id in ${sql(categoryIds)}` : sql``}
       ${stockWhere()}
     `,
     orderBy,
@@ -235,12 +247,14 @@ async function findAllActive(ctx: RequestContext) {
 // ─── Productos destacados (best sellers) ─────────────────────────────────────
 
 async function bestSellers(limit: number, categoryId?: number) {
+  // PROVISIONAL-2026-11-08 (subárbol de categorías): los más vendidos de una madre salen de todo su subárbol
+  const categoryIds = categoryId ? await idsDeCategoria(categoryId, { soloActivas: true }) : undefined;
   const rows = await sql`
     select p.id
     from product p
     join category c on c.id = p.category_id
     where ${activeOnly()}
-    ${categoryId ? sql`and p.category_id = ${categoryId}` : sql``}
+    ${categoryIds ? sql`and p.category_id in ${sql(categoryIds)}` : sql``}
     order by p.total_sold desc, p.id asc
     limit ${limit}
   `;
@@ -464,7 +478,7 @@ async function removeProduct(ctx: RequestContext) {
     // deno-lint-ignore no-explicit-any
     if ((err as any)?.code === '23503') {
       throw new AppError(
-        'No se puede eliminar el producto porque tiene pedidos asociados.\n\n 💡 Consejo: Cámbia el estado a "Inactivo" en lugar de borrarlo.',
+        'No se puede eliminar el producto porque tiene pedidos asociados.\n\nConsejo: cambiá el estado a "Inactivo" en lugar de borrarlo.',
         409,
       );
     }

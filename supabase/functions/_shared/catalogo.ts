@@ -6,6 +6,7 @@
 // ============================================================================
 import { sql, type Db } from './db.ts';
 import { paginated } from './http.ts';
+import { idsDelSubarbol, type OpcionesSubarbol } from './subarbol-categorias.ts';
 
 export interface CategoryRow {
   id: number;
@@ -29,6 +30,22 @@ export interface CategoryRow {
  */
 export async function loadCategories(db: Db = sql): Promise<CategoryRow[]> {
   return await db`select * from category order by "order" asc, name asc`;
+}
+
+/**
+ * Ids de la categoría y de todas sus descendientes, para filtrar productos por categoría.
+ *
+ * PROVISIONAL-2026-11-08 (subárbol de categorías): una categoría madre lista los productos de todo
+ * su subárbol. Se calcula al leer y no escribe nada en la base. Todas las consultas de productos por
+ * categoría pasan por acá, así que la solución definitiva (etapa E5d) se cambia en un solo lugar.
+ * La lógica pura y su explicación están en `subarbol-categorias.ts`.
+ */
+export async function idsDeCategoria(
+  categoryId: number,
+  opciones: OpcionesSubarbol = {},
+  db: Db = sql,
+): Promise<number[]> {
+  return idsDelSubarbol(categoryId, await loadCategories(db), opciones);
 }
 
 export function indexById(categories: CategoryRow[]): Map<number, CategoryRow> {

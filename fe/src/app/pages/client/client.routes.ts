@@ -97,19 +97,22 @@ export const clientRoutes: Routes = [
       },
       // Las páginas legales (/privacidad y /terminos) NO están acá: viven en app.routes.ts, fuera de
       // este layout, porque se pre-renderizan en el build.
-      {
-        // Botón de arrepentimiento (Disp. 954/2025): público, sin registro y accesible desde el inicio
-        path: 'arrepentimiento',
-        title: 'Botón de arrepentimiento | Laelsi',
-        data: {
-          description:
-            'Botón de arrepentimiento de Laelsi: pedí la revocación de tu compra dentro de los 10 días, sin necesidad de registrarte.',
-        },
-        loadComponent: () =>
-          import('./pages/revocation-page/revocation-page.component').then(
-            (m) => m.RevocationPageComponent,
-          ),
-      },
+      // PROVISIONAL-2026-11-08 (arrepentimiento): ruta del botón, comentada. El componente, el servicio y el
+      // modelo siguen en el repo, sin cambios, pero al no estar la ruta ya no entran en el bundle de
+      // producción. Para reactivarla, descomentar este bloque (y los enlaces marcados con la misma etiqueta).
+      // {
+      //   // Botón de arrepentimiento (Disp. 954/2025): público, sin registro y accesible desde el inicio
+      //   path: 'arrepentimiento',
+      //   title: 'Botón de arrepentimiento | Laelsi',
+      //   data: {
+      //     description:
+      //       'Botón de arrepentimiento de Laelsi: pedí la revocación de tu compra dentro de los 10 días, sin necesidad de registrarte.',
+      //   },
+      //   loadComponent: () =>
+      //     import('./pages/revocation-page/revocation-page.component').then(
+      //       (m) => m.RevocationPageComponent,
+      //     ),
+      // },
       {
         path: 'search',
         data: {

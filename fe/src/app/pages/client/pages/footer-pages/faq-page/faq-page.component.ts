@@ -46,8 +46,12 @@ export class FaqPageComponent {
     },
     {
       question: '¿Puedo arrepentirme de una compra?',
+      // PROVISIONAL-2026-11-08 (arrepentimiento): respuesta ORIGINAL, comentada. Mandaba al botón. El plazo
+      // y la excepción siguen, porque el derecho de revocación existe por ley con o sin botón.
+      // answer:
+      //   'Sí. Tenés 10 días corridos desde que retirás el producto o confirmás el pedido, lo que ocurra último. Usá el Botón de arrepentimiento que está en el inicio del sitio: no necesitás cuenta y te damos un código de identificación al instante. Los productos hechos a medida, como los sellos, quedan exceptuados por la ley.',
       answer:
-        'Sí. Tenés 10 días corridos desde que retirás el producto o confirmás el pedido, lo que ocurra último. Usá el Botón de arrepentimiento que está en el inicio del sitio: no necesitás cuenta y te damos un código de identificación al instante. Los productos hechos a medida, como los sellos, quedan exceptuados por la ley.',
+        'Sí. Tenés 10 días corridos desde que retirás el producto o confirmás el pedido, lo que ocurra último. Escribinos por WhatsApp o acercate al local, indicando tu nombre y el número de tu pedido. Los productos hechos a medida, como los sellos, quedan exceptuados por la ley.',
     },
     {
       question: '¿Qué hago si tengo un problema con mi pedido?',

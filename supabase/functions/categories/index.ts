@@ -535,7 +535,7 @@ async function removeCategory(ctx: RequestContext) {
     const [{ total }] = await tx`select count(*)::int as total from product where category_id = ${id}`;
     if (total > 0) {
       throw new AppError(
-        'Esta categoría tiene productos asociados.\n\n 💡 Consejo: Cámbia el estado a "Inactivo" en lugar de borrarla.',
+        'Esta categoría tiene productos asociados.\n\nConsejo: cambiá el estado a "Inactivo" en lugar de borrarla.',
         400,
       );
     }

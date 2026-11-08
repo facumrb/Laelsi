@@ -1,5 +1,7 @@
 import { Component, computed } from '@angular/core';
-import { RouterLink } from '@angular/router';
+// PROVISIONAL-2026-11-08 (arrepentimiento): el único `routerLink` de esta plantilla era la franja del botón,
+// que está comentada; sin este comentario Angular avisa NG8113 (import sin usar). Reactivar junto con la franja.
+// import { RouterLink } from '@angular/router';
 import { IApiProduct } from '@models/product.model';
 import { IApiCategory } from '@models/category.model';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
@@ -15,7 +17,7 @@ import { injectActiveCategoriesQuery } from '@services/queries/category-queries'
 @Component({
   selector: 'app-main-page',
   imports: [
-    RouterLink,
+    // RouterLink, // PROVISIONAL-2026-11-08 (arrepentimiento): ver el import comentado arriba
     ProductCardComponent,
     LogoComponent,
     ScrollTrackerDirective,
