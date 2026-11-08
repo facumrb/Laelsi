@@ -262,24 +262,28 @@
            border-b border-gray-50 last:border-0;
   }
 
-  /* Redondeo para el primer y último item para encajar con el borde del menú contenedor */
+  /* Redondeo para el primer y último item para encajar con el borde del menú contenedor.
+     Cada ítem de un menú va dentro de su propio div (que también aloja a su menú lateral). */
   .navbar-dropdown-container > div:first-of-type > .navbar-dropdown-item,
-  .navbar-subdropdown > .navbar-dropdown-item:first-of-type {
+  .navbar-subdropdown > div:first-of-type > .navbar-dropdown-item {
     @apply rounded-t-xl;
   }
 
   .navbar-dropdown-container > div:last-of-type > .navbar-dropdown-item,
-  .navbar-subdropdown > .navbar-dropdown-item:last-of-type {
+  .navbar-subdropdown > div:last-of-type > .navbar-dropdown-item {
     @apply border-b-0 rounded-b-xl;
   }
 
-  /* Submenu de segundo nivel (aparece a la derecha del ítem hover) */
+  /* Menú lateral de cada nivel a partir del tercero (aparece a la derecha del ítem hover).
+     Hay uno dentro de otro, hasta el último nivel que pueden crear los negocios. */
   .navbar-subdropdown {
     @apply absolute left-full top-0 ml-2 hidden
            w-44 bg-white rounded-xl shadow-xl border border-black/5 ring-1 ring-black/5 z-50
            before:absolute before:-left-3 before:top-0 before:h-full before:w-3;
   }
-  .group\/sub:hover .navbar-subdropdown {
+  /* Con ">" solo se abre el menú lateral del ítem sobre el que está el mouse; sin él, al pasar por un ítem
+     se abrirían también todos los menús laterales anidados más abajo */
+  .group\/sub:hover > .navbar-subdropdown {
     @apply block;
   }
 
@@ -291,7 +295,7 @@
     box-shadow: -1px 1px 1px -1px rgba(0, 0, 0, 0.1); /* Micro sombra para emparejar con el menú */
   }
 
-  .navbar-subdropdown:has(> .navbar-dropdown-item:first-of-type:hover)::after {
+  .navbar-subdropdown:has(> div:first-of-type > .navbar-dropdown-item:hover)::after {
     @apply bg-gray-100;
   }
 

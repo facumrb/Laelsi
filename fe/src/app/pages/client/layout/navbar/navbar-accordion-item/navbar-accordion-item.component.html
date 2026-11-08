@@ -11,11 +11,11 @@
       [class.font-bold]="depth() === 0"
       [class.font-semibold]="depth() === 1"
       [class.text-sm]="depth() > 0"
-      [class.font-medium]="depth() === 2"
+      [class.font-medium]="depth() >= 2"
       [style.color]="isActive() ? '#5a2a8a' : null"
       [class.text-gray-700]="!isActive() && depth() === 0"
       [class.text-gray-600]="!isActive() && depth() === 1"
-      [class.text-gray-500]="!isActive() && depth() === 2"
+      [class.text-gray-500]="!isActive() && depth() >= 2"
     >
       @if (depth() > 0) {
         <span class="text-gray-300 mr-1.5">↳</span>

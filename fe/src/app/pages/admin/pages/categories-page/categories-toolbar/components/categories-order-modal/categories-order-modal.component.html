@@ -38,184 +38,11 @@
             ></div>
           </div>
         } @else {
-          <!-- LEVEL 1 -->
-          <div
-            class="space-y-2"
-            cdkDropList
-            (cdkDropListDropped)="drop($event, categories())"
-          >
-            @for (cat of categories(); track cat.id; let idx = $index) {
-              <div
-                cdkDrag
-                class="bg-white border hover:border-indigo-300 border-gray-200 rounded-md overflow-hidden transition-all shadow-sm group cursor-grab"
-              >
-                <!-- Helper box dragged -->
-                <div
-                  *cdkDragPreview
-                  class="bg-white border-2 border-indigo-500 rounded-md shadow-xl p-3 flex items-center gap-3 w-100"
-                >
-                  <span class="font-medium text-gray-700"
-                    >{{ idx + 1 }} - {{ cat.name }}</span
-                  >
-                </div>
-                <div
-                  *cdkDragPlaceholder
-                  class="min-h-12.5 bg-indigo-50 border border-indigo-200 border-dashed rounded-md"
-                ></div>
-
-                <div class="flex items-center gap-3 p-3 bg-white">
-                  <span class="font-medium text-gray-700 flex-1"
-                    >{{ idx + 1 }} - {{ cat.name }}</span
-                  >
-
-                  @if (cat.children && cat.children.length > 0) {
-                    <button
-                      (click)="toggleExpand(cat.id)"
-                      class="px-2 py-1 text-xs text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded transition-colors flex items-center gap-1 cursor-pointer"
-                    >
-                      {{
-                        expandedMap()[cat.id]
-                          ? "Ocultar subcategorías"
-                          : "Ver subcategorías (" + cat.children.length + ")"
-                      }}
-                      <ng-icon
-                        name="bootstrapChevronDown"
-                        class="text-base transition-transform {{
-                          expandedMap()[cat.id] ? 'rotate-180' : ''
-                        }}"
-                      ></ng-icon>
-                    </button>
-                  }
-                </div>
-
-                <!-- LEVEL 2 -->
-                @if (
-                  expandedMap()[cat.id] &&
-                  cat.children &&
-                  cat.children.length > 0
-                ) {
-                  <div
-                    class="pl-8 pr-3 pb-3 border-t border-gray-100 bg-gray-50/50 pt-3 animate-fadeIn"
-                  >
-                    <div
-                      class="space-y-2"
-                      cdkDropList
-                      (cdkDropListDropped)="drop($event, cat.children!)"
-                    >
-                      @for (
-                        child of cat.children!;
-                        track child.id;
-                        let jdx = $index
-                      ) {
-                        <div
-                          cdkDrag
-                          class="bg-white border hover:border-indigo-300 border-gray-200 rounded-md overflow-hidden transition-all shadow-sm cursor-grab"
-                        >
-                          <!-- Preview -->
-                          <div
-                            *cdkDragPreview
-                            class="bg-white border-2 border-indigo-400 rounded-md shadow-xl p-3 flex items-center gap-3 w-87.5"
-                          >
-                            <span class="text-sm font-medium text-gray-700"
-                              >{{ jdx + 1 }} - {{ child.name }}</span
-                            >
-                          </div>
-                          <div
-                            *cdkDragPlaceholder
-                            class="min-h-11.5 bg-indigo-50 border border-indigo-200 border-dashed rounded-md"
-                          ></div>
-
-                          <div class="flex items-center gap-3 p-2 bg-white">
-                            <span
-                              class="text-sm font-medium text-gray-700 flex-1"
-                              >{{ jdx + 1 }} - {{ child.name }}</span
-                            >
-
-                            @if (child.children && child.children.length > 0) {
-                              <button
-                                (click)="toggleExpand(child.id)"
-                                class="px-2 py-1 text-xs text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded transition-colors flex items-center gap-1 cursor-pointer"
-                              >
-                                {{
-                                  expandedMap()[child.id]
-                                    ? "Ocultar subcategorías"
-                                    : "Ver subcategorías (" +
-                                      child.children.length +
-                                      ")"
-                                }}
-                                <ng-icon
-                                  name="bootstrapChevronDown"
-                                  class="text-base transition-transform {{
-                                    expandedMap()[child.id] ? 'rotate-180' : ''
-                                  }}"
-                                ></ng-icon>
-                              </button>
-                            }
-                          </div>
-
-                          <!-- LEVEL 3 -->
-                          @if (
-                            expandedMap()[child.id] &&
-                            child.children &&
-                            child.children.length > 0
-                          ) {
-                            <div
-                              class="pl-8 pr-2 pb-2 border-t border-gray-100 bg-white pt-2 animate-fadeIn"
-                            >
-                              <div
-                                class="space-y-1.5"
-                                cdkDropList
-                                (cdkDropListDropped)="
-                                  drop($event, child.children!)
-                                "
-                              >
-                                @for (
-                                  subchild of child.children!;
-                                  track subchild.id;
-                                  let kdx = $index
-                                ) {
-                                  <div
-                                    cdkDrag
-                                    class="bg-gray-50 border hover:border-indigo-300 border-gray-200 rounded-md overflow-hidden transition-all cursor-grab"
-                                  >
-                                    <!-- Preview -->
-                                    <div
-                                      *cdkDragPreview
-                                      class="bg-gray-50 border-2 border-indigo-300 rounded-md shadow-xl p-2 flex items-center gap-3 w-75"
-                                    >
-                                      <span
-                                        class="text-xs font-medium text-gray-700"
-                                        >{{ kdx + 1 }} -
-                                        {{ subchild.name }}</span
-                                      >
-                                    </div>
-                                    <div
-                                      *cdkDragPlaceholder
-                                      class="min-h-10 bg-indigo-50 border border-indigo-200 border-dashed rounded-md"
-                                    ></div>
-
-                                    <div
-                                      class="flex items-center gap-2 p-2 bg-gray-50"
-                                    >
-                                      <span
-                                        class="text-xs font-medium text-gray-700 flex-1"
-                                        >{{ kdx + 1 }} -
-                                        {{ subchild.name }}</span
-                                      >
-                                    </div>
-                                  </div>
-                                }
-                              </div>
-                            </div>
-                          }
-                        </div>
-                      }
-                    </div>
-                  </div>
-                }
-              </div>
-            }
-          </div>
+          <!-- Primer nivel; los demás se arman con la misma plantilla (ver "nivel" al final del archivo) -->
+          <ng-container
+            [ngTemplateOutlet]="nivel"
+            [ngTemplateOutletContext]="{ $implicit: categories(), profundidad: 0 }"
+          />
         }
       </div>
 
@@ -250,3 +77,120 @@
     </div>
   </div>
 }
+
+<!--
+  Un nivel de la lista: las categorías de una misma madre, que se pueden arrastrar entre sí. Cada una que
+  tiene hijas se puede expandir, y sus hijas se arman con esta misma plantilla un nivel más abajo. Así el
+  modal llega hasta el último nivel que pueden crear los negocios (MAX_CATEGORY_DEPTH), en lugar de tener
+  escrito a mano cada nivel. `profundidad` es 0 para el primer nivel.
+-->
+<ng-template #nivel let-lista let-profundidad="profundidad">
+  <div
+    [class]="profundidad < 2 ? 'space-y-2' : 'space-y-1.5'"
+    cdkDropList
+    (cdkDropListDropped)="drop($event, lista)"
+  >
+    @for (cat of lista; track cat.id; let idx = $index) {
+      <div
+        cdkDrag
+        [class]="
+          profundidad < 2
+            ? 'bg-white border hover:border-indigo-300 border-gray-200 rounded-md overflow-hidden transition-all shadow-sm cursor-grab'
+            : 'bg-gray-50 border hover:border-indigo-300 border-gray-200 rounded-md overflow-hidden transition-all cursor-grab'
+        "
+      >
+        <!-- Lo que se ve mientras se arrastra -->
+        <div
+          *cdkDragPreview
+          [class]="
+            profundidad === 0
+              ? 'bg-white border-2 border-indigo-500 rounded-md shadow-xl p-3 flex items-center gap-3 w-100'
+              : profundidad === 1
+                ? 'bg-white border-2 border-indigo-400 rounded-md shadow-xl p-3 flex items-center gap-3 w-87.5'
+                : 'bg-gray-50 border-2 border-indigo-300 rounded-md shadow-xl p-2 flex items-center gap-3 w-75'
+          "
+        >
+          <span
+            [class]="
+              profundidad === 0
+                ? 'font-medium text-gray-700'
+                : profundidad === 1
+                  ? 'text-sm font-medium text-gray-700'
+                  : 'text-xs font-medium text-gray-700'
+            "
+            >{{ idx + 1 }} - {{ cat.name }}</span
+          >
+        </div>
+        <div
+          *cdkDragPlaceholder
+          [class]="
+            profundidad === 0
+              ? 'min-h-12.5 bg-indigo-50 border border-indigo-200 border-dashed rounded-md'
+              : profundidad === 1
+                ? 'min-h-11.5 bg-indigo-50 border border-indigo-200 border-dashed rounded-md'
+                : 'min-h-10 bg-indigo-50 border border-indigo-200 border-dashed rounded-md'
+          "
+        ></div>
+
+        <div
+          [class]="
+            profundidad === 0
+              ? 'flex items-center gap-3 p-3 bg-white'
+              : profundidad === 1
+                ? 'flex items-center gap-3 p-2 bg-white'
+                : 'flex items-center gap-2 p-2 bg-gray-50'
+          "
+        >
+          <span
+            [class]="
+              profundidad === 0
+                ? 'font-medium text-gray-700 flex-1'
+                : profundidad === 1
+                  ? 'text-sm font-medium text-gray-700 flex-1'
+                  : 'text-xs font-medium text-gray-700 flex-1'
+            "
+            >{{ idx + 1 }} - {{ cat.name }}</span
+          >
+
+          @if (cat.children && cat.children.length > 0) {
+            <button
+              (click)="toggleExpand(cat.id)"
+              class="px-2 py-1 text-xs text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              {{
+                expandedMap()[cat.id]
+                  ? "Ocultar subcategorías"
+                  : "Ver subcategorías (" + cat.children.length + ")"
+              }}
+              <ng-icon
+                name="bootstrapChevronDown"
+                class="text-base transition-transform {{
+                  expandedMap()[cat.id] ? 'rotate-180' : ''
+                }}"
+              ></ng-icon>
+            </button>
+          }
+        </div>
+
+        <!-- Las hijas, un nivel más abajo -->
+        @if (expandedMap()[cat.id] && cat.children && cat.children.length > 0) {
+          <div
+            [class]="
+              profundidad === 0
+                ? 'pl-8 pr-3 pb-3 border-t border-gray-100 bg-gray-50/50 pt-3 animate-fadeIn'
+                : 'pl-8 pr-2 pb-2 border-t border-gray-100 bg-white pt-2 animate-fadeIn'
+            "
+          >
+            <ng-container
+              [ngTemplateOutlet]="nivel"
+              [ngTemplateOutletContext]="{
+                $implicit: cat.children,
+                profundidad: profundidad + 1,
+              }"
+            />
+          </div>
+        }
+      </div>
+    }
+  </div>
+</ng-template>

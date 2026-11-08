@@ -1,6 +1,7 @@
 import { Component, input, computed, signal, output } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { IApiCategory } from '@models/category.model';
+import { IApiCategory, MAX_CATEGORY_DEPTH } from '@models/category.model';
+import { aplanarCategorias } from '@shared/utils/category-tree';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   bootstrapChevronDown,
@@ -35,33 +36,9 @@ export class ProductCategorySelectComponent {
 
   showCategoryMenu = signal(false);
 
-  // Computada para categorías en formato árbol plano hasta 3 niveles
-  hierarchicalCategories = computed(() => {
-    const allCats = this.categories();
-    const flatTree: (IApiCategory & { depth: number })[] = [];
-
-    const recurse = (parentId: number | null, depth: number) => {
-      // Bloqueamos el renderizado de categorías que alcancen el "Subnivel 4"
-      // Niveles: 0 = Nivel 1, 1 = Nivel 2, 2 = Nivel 3.
-      if (depth > 2) return;
-
-      // Encontrar a los hijos directos de este parent
-      const children = allCats.filter(
-        (c) => (c.parentId ?? c.parent?.id ?? null) === parentId,
-      );
-
-      // Ordenar por 'order'
-      children.sort((a, b) => a.order - b.order);
-
-      children.forEach((child) => {
-        flatTree.push({ ...child, depth });
-        recurse(child.id, depth + 1);
-      });
-    };
-
-    recurse(null, 0); // Comenzamos con las categorías raíz
-    return flatTree;
-  });
+  // Categorías en formato árbol plano, de la raíz hasta el último nivel que pueden crear los negocios: un
+  // producto se puede cargar en cualquiera de ellas
+  hierarchicalCategories = computed(() => aplanarCategorias(this.categories(), MAX_CATEGORY_DEPTH));
 
   // Nombre de la categoria seleccionada
   get selectedCategoryName() {

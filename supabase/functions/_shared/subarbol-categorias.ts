@@ -63,3 +63,28 @@ export function idsDelSubarbol(
   }
   return [...visitadas];
 }
+
+/** Una categoría con sus hijas anidadas, tal como la devuelven los árboles de la tienda y del panel. */
+export type NodoDeArbol<T extends NodoCategoria> = T & { children: NodoDeArbol<T>[] };
+
+/**
+ * Arma el nodo de una categoría con sus hijas anidadas hasta `limite` niveles por debajo de ella.
+ * Con `soloActivas` se saltea toda rama que cuelgue de una categoría inactiva.
+ *
+ * El límite que se le pasa a la tienda tiene que ser PROFUNDIDAD_MAXIMA (profundidad-categorias.ts): un
+ * número menor corta el árbol y las categorías más profundas dejan de aparecer en el menú.
+ */
+export function armarNodoDeArbol<T extends NodoCategoria>(
+  categoria: T,
+  hijasPorMadre: Map<number | null, T[]>,
+  limite: number,
+  soloActivas: boolean,
+): NodoDeArbol<T> {
+  if (limite <= 0) return { ...categoria, children: [] };
+
+  const children = (hijasPorMadre.get(categoria.id) ?? [])
+    .filter((hija) => !soloActivas || hija.state === 'Activo')
+    .map((hija) => armarNodoDeArbol(hija, hijasPorMadre, limite - 1, soloActivas));
+
+  return { ...categoria, children };
+}

@@ -7,7 +7,8 @@ import {
   bootstrapCheckLg,
 } from '@ng-icons/bootstrap-icons';
 import { StockFilter, StatusFilter } from '../../products-toolbar.component';
-import { IApiCategory } from '@models/category.model';
+import { IApiCategory, MAX_CATEGORY_DEPTH } from '@models/category.model';
+import { aplanarCategorias } from '@shared/utils/category-tree';
 import {
   FilterAccordionComponent,
   FilterOption,
@@ -48,29 +49,8 @@ export class ProductsFilterButtonComponent {
     { value: 'MenosProductos', label: 'Menor a mayor' },
   ];
 
-  // Computada para categorías en formato árbol plano hasta 3 niveles
-  hierarchicalCategories = computed(() => {
-    const allCats = this.categories();
-    const flatTree: (IApiCategory & { depth: number })[] = [];
-
-    const recurse = (parentId: number | null, depth: number) => {
-      if (depth > 2) return;
-
-      const children = allCats.filter(
-        (c) => (c.parentId ?? c.parent?.id ?? null) === parentId,
-      );
-
-      children.sort((a, b) => a.order - b.order);
-
-      children.forEach((child) => {
-        flatTree.push({ ...child, depth });
-        recurse(child.id, depth + 1);
-      });
-    };
-
-    recurse(null, 0);
-    return flatTree;
-  });
+  // Categorías en formato árbol plano, de la raíz hasta el último nivel que pueden crear los negocios
+  hierarchicalCategories = computed(() => aplanarCategorias(this.categories(), MAX_CATEGORY_DEPTH));
 
   selectedCategoryName = computed(() => {
     const selected = this.categoryFilter();

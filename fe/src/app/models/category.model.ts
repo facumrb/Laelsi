@@ -5,6 +5,16 @@ export enum CategoryState {
   Inactivo = 'Inactivo',
 }
 
+/**
+ * Profundidad del último nivel de subcategorías que se puede crear (la raíz es 0): 5 niveles en total.
+ * Es un techo, no la profundidad aconsejada: las guías de usabilidad recomiendan que quien compra recorra
+ * 3 o 4 niveles como máximo.
+ *
+ * Tiene que coincidir con PROFUNDIDAD_MAXIMA de supabase/functions/_shared/profundidad-categorias.ts: los
+ * dos proyectos no comparten código y una prueba comprueba que el número sea el mismo.
+ */
+export const MAX_CATEGORY_DEPTH = 4;
+
 export interface IApiCategory {
   id: number;
   name: string;

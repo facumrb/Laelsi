@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { IApiCategory } from '@models/category.model';
@@ -6,7 +7,7 @@ import { bootstrapChevronDown } from '@ng-icons/bootstrap-icons';
 
 @Component({
   selector: 'app-navbar-category-bar',
-  imports: [RouterLink, RouterLinkActive, NgIconComponent],
+  imports: [RouterLink, RouterLinkActive, NgIconComponent, NgTemplateOutlet],
   viewProviders: [provideIcons({ bootstrapChevronDown })],
   templateUrl: './navbar-category-bar.component.html',
 })

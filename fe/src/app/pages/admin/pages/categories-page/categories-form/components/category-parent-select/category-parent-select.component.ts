@@ -1,6 +1,7 @@
 import { Component, input, computed, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { IApiCategory } from '@models/category.model';
+import { IApiCategory, MAX_CATEGORY_DEPTH } from '@models/category.model';
+import { aplanarCategorias } from '@shared/utils/category-tree';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   bootstrapChevronDown,
@@ -58,32 +59,9 @@ export class CategoryParentSelectComponent {
       );
     }
 
-    // Ahora construimos el listado "jerarquizado" ordenado por Categorías y Subcategorías
-    const flatTree: IApiCategory[] = [];
-
-    const recurse = (parentId: number | null, depth: number) => {
-      // Bloqueamos el renderizado de categorías que alcancen el "Subnivel 2" (depth 2)
-      // Porque no queremos que el usuario pueda crearles subcategorías hijas (nivel 3)
-      if (depth >= 2) return;
-
-      // Encontrar a los hijos directos de este parent
-      const children = validCats.filter(
-        (c) => (c.parentId ?? c.parent?.id ?? null) === parentId,
-      );
-
-      // Opcional: ordenarlos por 'order' si existe
-      children.sort((a, b) => a.order - b.order);
-
-      children.forEach((child) => {
-        // Asignamos una copia con el depth explícito para la UI
-        flatTree.push({ ...child, depth });
-        // Llamada recursiva para los hijos de este hijo
-        recurse(child.id, depth + 1);
-      });
-    };
-
-    recurse(null, 0); // Comenzamos con las categorías raíz
-    return flatTree;
+    // Listado "jerarquizado" ordenado por Categorías y Subcategorías. Una categoría que ya está en el último
+    // nivel no puede tener hijas, así que no se ofrece como madre: por eso se llega hasta un nivel antes.
+    return aplanarCategorias(validCats, MAX_CATEGORY_DEPTH - 1);
   });
 
   // Nombre del padre seleccionado

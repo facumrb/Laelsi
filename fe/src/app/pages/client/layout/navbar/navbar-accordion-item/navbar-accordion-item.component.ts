@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { IApiCategory } from '@models/category.model';
+import { IApiCategory, MAX_CATEGORY_DEPTH } from '@models/category.model';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { bootstrapChevronDown } from '@ng-icons/bootstrap-icons';
 
@@ -35,10 +35,14 @@ export class NavbarAccordionItemComponent {
     });
   }
 
-  // Máximo 3 niveles
+  // Se ofrecen hijas hasta el último nivel que pueden crear los negocios (MAX_CATEGORY_DEPTH)
   get hasChildren(): boolean {
     const cat = this.category();
-    return !!(cat.children && cat.children.length > 0 && this.depth() < 2);
+    return !!(
+      cat.children &&
+      cat.children.length > 0 &&
+      this.depth() < MAX_CATEGORY_DEPTH
+    );
   }
 
   toggleExpand(): void {

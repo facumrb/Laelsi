@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   Component,
   effect,
@@ -26,6 +27,7 @@ import { ClickOutsideDirective } from '@shared/directives/click-outside.directiv
   selector: 'app-categories-order-modal',
   imports: [
     DragDropModule,
+    NgTemplateOutlet,
     NgIconComponent,
     CloseModalButtonComponent,
     ClickOutsideDirective,

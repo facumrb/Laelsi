@@ -47,9 +47,15 @@ import {
   withParents,
   type CategoryRow,
 } from '../_shared/catalogo.ts';
+import {
+  excedeElLimite,
+  MENSAJE_LIMITE_NIVELES,
+  MENSAJE_LIMITE_NIVELES_SUBARBOL,
+  PROFUNDIDAD_MAXIMA,
+} from '../_shared/profundidad-categorias.ts';
+import { armarNodoDeArbol } from '../_shared/subarbol-categorias.ts';
 
 const VALID_STATES = ['Activo', 'Inactivo'];
-const MAX_DEPTH = 2; // 3 niveles: 0, 1 y 2
 
 // ─── Lectura ─────────────────────────────────────────────────────────────────
 
@@ -78,23 +84,6 @@ async function loadProductSummariesByCategory(onlyActive: boolean): Promise<Map<
     groups.set(categoryId, list);
   }
   return groups;
-}
-
-/** Arma el nodo de una categoría con sus hijas anidadas hasta `depthLimit` niveles. */
-function buildTreeNode(
-  category: CategoryRow,
-  byParent: Map<number | null, CategoryRow[]>,
-  depthLimit: number,
-  onlyActive: boolean,
-  // deno-lint-ignore no-explicit-any
-): any {
-  if (depthLimit <= 0) return { ...category, children: [] };
-
-  const children = (byParent.get(category.id) ?? [])
-    .filter((child) => !onlyActive || child.state === 'Activo')
-    .map((child) => buildTreeNode(child, byParent, depthLimit - 1, onlyActive));
-
-  return { ...category, children };
 }
 
 async function searchCategories(ctx: RequestContext) {
@@ -149,7 +138,7 @@ async function findOne(ctx: RequestContext) {
 }
 
 async function getTree(ctx: RequestContext) {
-  const depthLimit = Number.parseInt(ctx.query.get('depth') ?? '', 10) || 5;
+  const depthLimit = Number.parseInt(ctx.query.get('depth') ?? '', 10) || PROFUNDIDAD_MAXIMA;
   let state = queryParam(ctx, 'state');
   // Sin sesión de administrador solo se ven las activas, se pida el filtro o no. Cuando ya se pide
   // "Activo" (la llamada de la tienda) no hace falta averiguar quién consulta.
@@ -168,7 +157,7 @@ async function getTree(ctx: RequestContext) {
 
   return ok(
     'Árbol de categorías obtenido',
-    roots.map((c) => buildTreeNode(c, byParent, depthLimit, onlyActive)),
+    roots.map((c) => armarNodoDeArbol(c, byParent, depthLimit, onlyActive)),
   );
 }
 
@@ -194,7 +183,8 @@ async function findAllActive() {
     // Filtrar categorías que no tienen productos activos en su subárbol
     .filter((c) => hasActiveProductsInSubtree(c.id, byParent, activeCounts))
     // Las subcategorías inactivas se excluyen en todos los niveles
-    .map((c) => buildTreeNode(c, byParent, 2, true));
+    // El límite es PROFUNDIDAD_MAXIMA: con un número menor, las categorías más profundas no llegan al menú
+    .map((c) => armarNodoDeArbol(c, byParent, PROFUNDIDAD_MAXIMA, true));
 
   return ok('Categorías activas encontradas', result);
 }
@@ -281,8 +271,8 @@ async function addCategory(ctx: RequestContext) {
         if (!parent) throw new AppError('La categoría padre especificada no existe', 404);
         depth = parent.depth + 1;
         parentId = parent.id;
-        if (depth > MAX_DEPTH) {
-          throw new AppError('Se ha excedido el límite máximo de profundidad (3 niveles)', 400);
+        if (excedeElLimite(depth)) {
+          throw new AppError(MENSAJE_LIMITE_NIVELES, 400);
         }
       }
 
@@ -361,8 +351,8 @@ async function updateCategory(ctx: RequestContext) {
           if (!newParent) throw new AppError('La categoría padre especificada no existe', 404);
 
           newDepth = newParent.depth + 1;
-          if (newDepth > MAX_DEPTH) {
-            throw new AppError('Se ha excedido el límite máximo de profundidad (3 niveles)', 400);
+          if (excedeElLimite(newDepth)) {
+            throw new AppError(MENSAJE_LIMITE_NIVELES, 400);
           }
         }
 
@@ -381,9 +371,9 @@ async function updateCategory(ctx: RequestContext) {
         const depthDiff = newDepth - category.depth;
         if (depthDiff !== 0) {
           for (const descendant of collectDescendants(category.id, categories)) {
-            if (descendant.depth + depthDiff > MAX_DEPTH) {
+            if (excedeElLimite(descendant.depth + depthDiff)) {
               throw new AppError(
-                'La operación resultaría en una profundidad mayor a 3 niveles para algunas subcategorías',
+                MENSAJE_LIMITE_NIVELES_SUBARBOL,
                 400,
               );
             }
@@ -478,8 +468,8 @@ async function bulkUpdateOrder(ctx: RequestContext) {
         }
 
         newDepth = newParent.depth + 1;
-        if (newDepth > MAX_DEPTH) {
-          throw new AppError('Se ha excedido el límite máximo de profundidad (3 niveles)', 400);
+        if (excedeElLimite(newDepth)) {
+          throw new AppError(MENSAJE_LIMITE_NIVELES, 400);
         }
       }
 
@@ -492,9 +482,9 @@ async function bulkUpdateOrder(ctx: RequestContext) {
       if (depthDiff !== 0) {
         for (const descendant of collectDescendants(category.id, categories)) {
           descendant.depth += depthDiff;
-          if (descendant.depth > MAX_DEPTH) {
+          if (excedeElLimite(descendant.depth)) {
             throw new AppError(
-              'La operación resultaría en una profundidad mayor a 3 niveles para algunas subcategorías',
+              MENSAJE_LIMITE_NIVELES_SUBARBOL,
               400,
             );
           }
