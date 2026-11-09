@@ -22,6 +22,22 @@ const ETIQUETA = /<[a-z][\w-]*(?:"[^"]*"|'[^']*'|[^>"'])*>/g;
 // Lo que le pone un tope al alto de un diálogo: un alto máximo o fijo en vh, o ser un panel lateral de punta a punta
 const TOPE_DE_ALTO = /(?:^|\s)(?:max-h-\S+|h-\[\d+(?:\.\d+)?d?vh\]|h-screen|h-dvh|inset-y-0)(?=\s|$)/;
 
+/**
+ * Fuentes de menos de 12 px (`text-[10px]`, `text-[11px]`, `text-[0.7rem]`...). Con la fuente estándar del sistema,
+ * 12 px es el piso de lo que se lee sin esfuerzo en un celular: etiquetas, insignias y ayudas usan `text-xs` o más.
+ */
+export function encontrarFuentesChicas(plantilla: string): HallazgoDiseno[] {
+  const html = sinComentarios(plantilla);
+  const hallazgos: HallazgoDiseno[] = [];
+  for (const m of html.matchAll(/\btext-\[(\d+(?:\.\d+)?)(px|rem)\]/g)) {
+    const pixeles = Number(m[1]) * (m[2] === 'rem' ? 16 : 1);
+    if (pixeles < 12) {
+      hallazgos.push({ regla: 'fuente-menor-a-12px', linea: lineaDe(html, m.index!), detalle: `${m[0]} (${pixeles} px)` });
+    }
+  }
+  return hallazgos;
+}
+
 export function encontrarProblemasDeDiseno(plantilla: string): HallazgoDiseno[] {
   const html = sinComentarios(plantilla);
   const hallazgos: HallazgoDiseno[] = [];

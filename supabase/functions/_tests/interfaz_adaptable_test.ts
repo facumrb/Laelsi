@@ -9,7 +9,7 @@
 // Se ejecuta con: deno test --allow-read supabase/functions/_tests/interfaz_adaptable_test.ts
 // ============================================================================
 import assert from 'node:assert/strict';
-import { encontrarProblemasDeDiseno } from './diseno_adaptable.ts';
+import { encontrarFuentesChicas, encontrarProblemasDeDiseno } from './diseno_adaptable.ts';
 
 const reglas = (html: string) => encontrarProblemasDeDiseno(html).map((h) => h.regla);
 
@@ -62,6 +62,17 @@ Deno.test('los comentarios HTML no cuentan, y cada hallazgo dice en qué línea 
   assert.equal(hallazgos[0].linea, 3);
 });
 
+Deno.test('fuente: menos de 12 px es un problema; 12 px o más, y las clases estándar, no', () => {
+  assert.deepEqual(encontrarFuentesChicas('<p class="text-[10px] font-bold">x</p>').map((h) => h.regla), ['fuente-menor-a-12px']);
+  assert.deepEqual(encontrarFuentesChicas('<p class="text-[11px]">x</p>').length, 1);
+  assert.deepEqual(encontrarFuentesChicas('<p class="text-[0.7rem]">x</p>').length, 1); // 11,2 px
+  assert.deepEqual(encontrarFuentesChicas('<p class="text-[9px] text-[10.5px]">x</p>').length, 2);
+
+  assert.deepEqual(encontrarFuentesChicas('<p class="text-[12px]">x</p>'), []);
+  assert.deepEqual(encontrarFuentesChicas('<p class="text-[0.75rem] text-[13px] text-xs text-sm">x</p>'), []);
+  assert.deepEqual(encontrarFuentesChicas('<!-- <p class="text-[10px]">x</p> -->'), []);
+});
+
 // ─── Las plantillas y la hoja de estilos de la aplicación ────────────────────
 
 const RAIZ = new URL('../../../fe/src/app/', import.meta.url);
@@ -92,6 +103,21 @@ Deno.test('ninguna plantilla de la interfaz tiene un problema de diseño adaptab
     [],
     `Problemas de diseño adaptable en las plantillas (criterios en docs/requerimientos/revision-diseno-adaptable-id64-2026-11-09.md):\n${problemas.join('\n')}`,
   );
+});
+
+// El panel, el acceso y lo compartido no usan fuentes de menos de 12 px (ID 64, hallazgo 10). El catálogo público
+// (`pages/client`) queda fuera del alcance de ese ID y no se revisa acá.
+Deno.test('ninguna plantilla del panel, del acceso o compartida usa fuentes de menos de 12 px', async () => {
+  const problemas: string[] = [];
+  for (const archivo of await plantillas(RAIZ)) {
+    const ruta = archivo.href.split('/fe/src/app/')[1];
+    if (ruta.startsWith('pages/client/')) continue;
+    for (const h of encontrarFuentesChicas(await Deno.readTextFile(archivo))) {
+      problemas.push(`${ruta}:${h.linea}  [${h.regla}]  ${h.detalle}`);
+    }
+  }
+
+  assert.deepEqual(problemas, [], `Fuentes de menos de 12 px (usá text-xs o más):\n${problemas.join('\n')}`);
 });
 
 // ID 64 (hallazgos 4 y 5): por debajo de lg las listas del panel se ven como tarjetas. Eran una sola columna de
