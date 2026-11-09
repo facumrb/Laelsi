@@ -13,7 +13,7 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="categories-order-modal-title"
-      class="relative bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col font-sans"
+      class="relative bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col [@media(max-height:480px)]:overflow-y-auto font-sans"
       (clickOutside)="close()"
     >
       <!-- Header -->
@@ -30,7 +30,7 @@
       </div>
 
       <!-- Body -->
-      <div class="p-6 overflow-y-auto overscroll-contain flex-1">
+      <div class="p-6 overflow-y-auto [@media(max-height:480px)]:overflow-visible overscroll-contain flex-1">
         <p class="text-sm text-gray-500 mb-4">
           Arrastra y suelta las categorías para cambiar su orden de
           visualización. Solo puedes reordenar categorías que se encuentren en

@@ -9,7 +9,7 @@
     role="dialog"
     aria-modal="true"
     aria-labelledby="order-detail-modal-title"
-    class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300"
+    class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden [@media(max-height:480px)]:overflow-y-auto animate-in zoom-in-95 duration-300"
     (click)="$event.stopPropagation()"
   >
     <!-- Modal Header -->
@@ -29,7 +29,7 @@
     </header>
 
     <!-- Modal Body -->
-    <div class="p-6 overflow-y-auto overscroll-contain grow custom-scrollbar">
+    <div class="p-6 overflow-y-auto [@media(max-height:480px)]:overflow-visible overscroll-contain grow custom-scrollbar">
       <!-- Info de Transferencia (Solo si esta Pendiente y es Transferencia) -->
       @if (
         order().status === OrderState.Pending &&
