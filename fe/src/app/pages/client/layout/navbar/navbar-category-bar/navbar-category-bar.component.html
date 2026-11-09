@@ -3,7 +3,11 @@
   aria-label="Categorías de productos"
 >
   @for (cat of categories(); track cat.id) {
-    <div class="group relative flex items-center">
+    <div
+      #grupo
+      class="group relative flex items-center"
+      (mouseenter)="medirDireccion(cat, grupo)"
+    >
       <a
         [routerLink]="['/category', cat.id]"
         class="navbar-link"
@@ -24,7 +28,11 @@
           <div class="navbar-dropdown-container">
             <ng-container
               [ngTemplateOutlet]="nivel"
-              [ngTemplateOutletContext]="{ $implicit: cat.children }"
+              [ngTemplateOutletContext]="{
+                $implicit: cat.children,
+                izquierda: direcciones()[cat.id] === 'izquierda',
+                madre: cat.id,
+              }"
             />
           </div>
         </div>
@@ -59,13 +67,25 @@
   Un nivel de menú: cada categoría con su enlace y, si tiene hijas, su menú lateral, que se arma con esta
   misma plantilla. Así el menú llega hasta el último nivel que pueden crear los negocios (MAX_CATEGORY_DEPTH),
   en lugar de tener escrito a mano cada nivel.
+
+  `izquierda` es verdadero cuando los menús laterales de esta rama se abren hacia la izquierda, porque a la
+  derecha no hay lugar para todos los niveles (ver medirDireccion en el componente). Se hereda hacia abajo:
+  si un menú abrió a la izquierda, los que cuelgan de él también, para no taparlo.
+
+  `madre` es el id de la categoría cuyas hijas se listan acá. Con él se lleva la cuenta de qué menú lateral está
+  abierto en este menú (ver entrar y salir en el componente), con una demora al cerrar o al pasar al ítem vecino.
 -->
-<ng-template #nivel let-items>
+<ng-template #nivel let-items let-izquierda="izquierda" let-madre="madre">
   @for (item of items; track item.id) {
-    <div class="relative group/sub">
+    <div
+      class="relative"
+      (mouseenter)="entrar(madre, item.id, !!item.children?.length)"
+      (mouseleave)="salir(madre)"
+    >
       <a
         [routerLink]="['/category', item.id]"
         class="navbar-dropdown-item flex items-center justify-between gap-2"
+        [class.flex-row-reverse]="izquierda"
         [class.navbar-dropdown-item-active]="isCategoryActive(item.id)"
       >
         {{ item.name }}
@@ -73,16 +93,25 @@
           <ng-icon
             name="bootstrapChevronDown"
             class="navbar-chevron-right"
+            [class.navbar-chevron-izquierda]="izquierda"
             aria-hidden="true"
           ></ng-icon>
         }
       </a>
 
       @if (item.children && item.children.length > 0) {
-        <div class="navbar-subdropdown">
+        <div
+          class="navbar-subdropdown"
+          [class.navbar-subdropdown-izquierda]="izquierda"
+          [class.navbar-subdropdown-abierto]="abiertos()[madre] === item.id"
+        >
           <ng-container
             [ngTemplateOutlet]="nivel"
-            [ngTemplateOutletContext]="{ $implicit: item.children }"
+            [ngTemplateOutletContext]="{
+              $implicit: item.children,
+              izquierda: izquierda,
+              madre: item.id,
+            }"
           />
         </div>
       }

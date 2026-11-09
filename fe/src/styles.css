@@ -281,9 +281,10 @@
            w-44 bg-white rounded-xl shadow-xl border border-black/5 ring-1 ring-black/5 z-50
            before:absolute before:-left-3 before:top-0 before:h-full before:w-3;
   }
-  /* Con ">" solo se abre el menú lateral del ítem sobre el que está el mouse; sin él, al pasar por un ítem
-     se abrirían también todos los menús laterales anidados más abajo */
-  .group\/sub:hover > .navbar-subdropdown {
+  /* Ya no se abre con :hover. La clase la pone el componente (navbar-category-bar.component.ts) para poder esperar
+     un momento antes de cerrar o de pasar de un ítem al vecino: con :hover el menú se cerraba apenas el puntero
+     salía de la fila, y al ir en diagonal hacia el menú lateral se cruzaba la fila de al lado y se perdía. */
+  .navbar-subdropdown-abierto {
     @apply block;
   }
 
@@ -299,6 +300,17 @@
     @apply bg-gray-100;
   }
 
+  /* Menú lateral que se abre hacia la IZQUIERDA, cuando a la derecha no hay lugar para todos los niveles (ver
+     medirDireccion en navbar-category-bar.component.ts). Es el mismo menú espejado: el puente que lo une con el
+     ítem y el triángulo pasan al otro lado. Va después de las reglas de arriba para que las pise. */
+  .navbar-subdropdown-izquierda {
+    @apply left-auto right-full ml-0 mr-2 before:left-auto before:-right-3;
+  }
+  .navbar-subdropdown-izquierda::after {
+    @apply left-auto -right-1.5 border-l-0 border-b-0 border-r border-t;
+    box-shadow: 1px -1px 1px -1px rgba(0, 0, 0, 0.1);
+  }
+
   /* Chevron giratorio al hacer hover sobre una categoría raíz */
   .navbar-chevron {
     @apply text-[10px] text-white/70 transition-transform;
@@ -310,6 +322,10 @@
   /* Chevron lateral (indica submenú a la derecha) */
   .navbar-chevron-right {
     @apply text-[10px] -rotate-90 text-gray-400;
+  }
+  /* ... y hacia la izquierda, cuando el menú lateral se abre a ese lado (va después para pisar la de arriba) */
+  .navbar-chevron-izquierda {
+    @apply rotate-90;
   }
 
   /* Links estáticos de la barra (Impresiones, Diseño, Sellos) */
