@@ -24,6 +24,13 @@
     <meta property="og:locale" content="es_AR" />
 
     <link rel="icon" type="image/x-icon" href="assets/Webp/L.webp" />
+
+    <!-- ID 70 (rendimiento): abre la conexión (DNS + TLS) con la API y con las imágenes mientras se descarga el
+         JavaScript, en vez de esperar a la primera petición. La API se llama con fetch y CORS (lleva crossorigin);
+         las imágenes, con <img> sin CORS (no lleva). Los valores son los de environment.ts y los de vercel.json
+         (connect-src e img-src); si cambian, cambiarlos acá también. -->
+    <link rel="preconnect" href="https://vwtqkglkenogylkranzz.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://productos.laelsi.com.ar" />
   </head>
   <body>
     <app-root></app-root>
