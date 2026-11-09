@@ -93,6 +93,6 @@ Vercel despliega solo. Después se mira el sitio y el carrito.
 }
 ```
 
-**Regla de caché de Cloudflare para las imágenes** (hoy `cf-cache-status: DYNAMIC`, o sea que no se cachean en el borde). En el panel de Cloudflare, del dominio `laelsi.com.ar`: *Caching, Cache Rules, Create rule*. Nombre: "Imágenes de productos y usuarios". Condición: *Hostname* es igual a `productos.laelsi.com.ar` **o** `usuarios.laelsi.com.ar`. Acción: *Eligible for cache* y *Edge TTL: Use cache-control header if present, bypass cache if not* (los archivos ya llevan `public, max-age=31536000, immutable`). Se comprueba con `curl -I` sobre una imagen: el segundo pedido debe mostrar `cf-cache-status: HIT`.
+**Regla de caché de Cloudflare para las imágenes: NO hace falta.** Esta guía decía que las imágenes no se cacheaban en el borde (`cf-cache-status: DYNAMIC`); era un **error de medición**: se midió con `curl -I` (un pedido `HEAD`), que Cloudflare no trata como un `GET`. Con `GET` reales, una imagen de producto responde `cf-cache-status: HIT` con más de 10 días de antigüedad en el borde y `Cache-Control: public, max-age=31536000, immutable`: ya se cachea. Si en el futuro se quiere verificar, hay que usar `curl -s -D - -o /dev/null <url>` (GET), nunca `-I`.
 
 **Clave de PageSpeed Insights** para medir antes y después: ver [rendimiento-investigacion-2026-11-09.md](./requerimientos/rendimiento-investigacion-2026-11-09.md). Se guarda como `PAGESPEED_API_KEY` en `supabase/.env` (ignorado por git).

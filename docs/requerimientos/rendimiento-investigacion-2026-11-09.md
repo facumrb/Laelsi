@@ -20,7 +20,7 @@ Responde al ID 70 de [discusiones.md](./discusiones.md): Lighthouse da alrededor
 | Respuesta de la API: tiempos | Primera llamada **1,2 s** (arranque en frío, una muestra); siguientes **0,16 a 0,19 s** | Medido desde esta máquina, pocas muestras: es orientativo |
 | Compresión de la API | gzip activo | Medido |
 | Imágenes de producto en R2 | WebP de **4 a 9 kB** hoy; `Cache-Control: public, max-age=31536000, immutable` | Medido en 6 imágenes de la portada. **Son chicas porque el catálogo cargado es de prueba**: con fotos reales (hasta 1.200 px de ancho, ver `image-compressor.service.ts`) pesarán 10 veces más |
-| Caché de las imágenes en Cloudflare | `cf-cache-status: DYNAMIC` (no se cachea en el borde) | Medido |
+| Caché de las imágenes en Cloudflare | `cf-cache-status: HIT` (ya se cachean en el borde; más de 10 días de antigüedad) | Medido con `GET`. **Corrección del 2026-11-09:** la primera versión de este documento decía `DYNAMIC` por haber medido con un pedido `HEAD` (`curl -I`), que no representa lo que hace un navegador |
 | Fuentes web | Ninguna (tipografías del sistema) | Leído en `styles.css` e `index.html`: no hay nada que bloquee el dibujado |
 | Rutas | Todas con carga diferida; sin zone.js (`provideZonelessChangeDetection`) | Leído |
 | Pre-renderizado | Solo `/privacidad` y `/terminos`. **Toda la tienda es una aplicación del lado del navegador**: hay que descargar y ejecutar el JavaScript antes de ver algo | Leído: `app.routes.server.ts` |
@@ -49,7 +49,7 @@ Cada una dice qué cambia, el esfuerzo y su efecto en el cupo gratuito de Supaba
 | 2 | **Una sola llamada para la portada** (`GET /products/home`, que devuelve más vendidos y las 5 categorías con sus más vendidos). Sin segunda tanda y sin esperar a las categorías | Medio: una ruta nueva en `products`, con pruebas, y cambio de `main-page` | **Baja de 8 a 1 invocación por visita** | Para decidir |
 | 3 | **`Cache-Control` en las respuestas públicas del catálogo** (por ejemplo `public, max-age=60, stale-while-revalidate=300` en los listados, más vendidos y categorías). El navegador deja de repetir llamadas | Chico: cabecera en `ok()` de las rutas públicas | **Reduce las invocaciones** de quien recarga o vuelve a una pantalla. Costo: un cambio del panel tarda hasta un minuto (más lo que ya tarda el caché en memoria, 3 minutos) en verse en la tienda | Para decidir |
 | 4 | **Caché duradera para los archivos con nombre único** en `vercel.json` (`immutable`, un año) | Chico, pero **no se puede validar en local**: un `vercel.json` inválido rompe el despliegue, así que se prueba en una vista previa de Vercel antes. Solo debe alcanzar a los archivos con hash, **no** a `index.csr.html`, `ngsw*.js` ni `assets/` | Ninguno | Para decidir. Fragmento propuesto, abajo |
-| 5 | **Cachear las imágenes en Cloudflare** (una regla de caché para `productos.laelsi.com.ar` y `usuarios.laelsi.com.ar`) | Chico, en el panel de Cloudflare (lo hace Facundo o con su acceso) | Ninguno en Supabase. Menos operaciones en R2 (el plan gratuito tiene tope) y respuestas más rápidas | Para decidir |
+| 5 | ~~Cachear las imágenes en Cloudflare~~ | — | — | **Descartada: ya se cachean** (`cf-cache-status: HIT`). Se había propuesto por una medición errónea con `HEAD` |
 | 6 | **Prioridad en la imagen más grande** (`fetchpriority="high"` y sin `loading="lazy"` en la que sea el elemento más grande) y **tamaños de imagen**: `width` y `height` más versiones chicas | Medio | Ninguno | **Después de medir**, porque hoy no se sabe cuál es ese elemento |
 | 7 | **Esqueletos** en lugar del `spinner` (idea de Facundo) | Medio | Ninguno | Con la 2: mejora la **sensación** de carga y evita saltos de diseño. **No mejora el LCP por sí mismo** (un esqueleto no cuenta como contenido) |
 | 8 | **`@defer (on viewport)` en los carruseles de categoría** (idea de Facundo) | Medio | **Reduce las llamadas iniciales**: los carruseles fuera de pantalla no piden nada hasta que se ven | Con la 2 queda redundante en la portada; sirve para las pantallas largas |
@@ -91,4 +91,4 @@ Fragmento propuesto para la mejora 4 (sin aplicar):
 1. **¿Cómo medimos?** Recomiendo el camino 2 (clave gratuita), y el 1 mientras tanto.
 2. **¿Hago la mejora 2** (portada en una sola llamada)? Es la de más valor, y baja el consumo del cupo gratuito.
 3. **¿Hago la mejora 3** (`Cache-Control` en las respuestas públicas)? Acepta que un cambio del panel tarde hasta un minuto más en verse.
-4. **¿Aplicamos 4 y 5?** La 4 con prueba previa en una vista previa de Vercel; la 5 es una regla de Cloudflare que tendría que cargar Facundo.
+4. **¿Aplicamos la 4?** Con prueba previa en una vista previa de Vercel. (La 5 se descartó: las imágenes ya se cachean.)

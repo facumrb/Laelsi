@@ -10,7 +10,7 @@ Pedido de Facundo: todas las implementaciones de [discusiones.md](./requerimient
 | 54 | Estado **Pausado** distinto de Inactivo, y carrito que avisa | Migración `20261106000300` **verificada** | **Hecho y probado** (tienda, categoría y ruta `availability`) | **Hecha y probada** (selector, filtro, etiqueta, carrito, WhatsApp, "Pausar") | Falta probarlo funcionando |
 | 68 | Carrito del administrador | — | — | **Hecha y probada** (ícono oculto para administradores y modal "MODO ADMIN: carrito no habilitado") | Falta probarlo funcionando |
 | 77 | Contraste de las etiquetas de las tarjetas | — | — | **Hecho** (`text-gray-600`) | Hecho |
-| 70 | Rendimiento (prioridad máxima) | — | — | **Investigación hecha** ([rendimiento-investigacion-2026-11-09.md](./requerimientos/rendimiento-investigacion-2026-11-09.md)); **Hechas** las mejoras 1 (`preconnect`), 2 (portada en una llamada, 8 a 1) y 3 (`Cache-Control` de 60 s en el catálogo público). Sin medición propia de Lighthouse todavía | Falta la clave de PageSpeed para medir, y las mejoras 4 y 5 (`vercel.json` y regla de Cloudflare), que son de configuración |
+| 70 | Rendimiento (prioridad máxima) | — | — | **Investigación hecha** ([rendimiento-investigacion-2026-11-09.md](./requerimientos/rendimiento-investigacion-2026-11-09.md)); **Hechas** las mejoras 1 (`preconnect`), 2 (portada en una llamada, 8 a 1) y 3 (`Cache-Control` de 60 s en el catálogo público). Sin medición propia de Lighthouse todavía | La mejora 4 (`vercel.json`) está en la rama de vista previa y la 5 (Cloudflare) se **descartó**: las imágenes ya se cachean. La clave de PageSpeed ya está; falta medir |
 | 71 | Menos campos obligatorios al crear clientes | — | **Hecho y probado**: el alta desde el panel pide usuario, correo y contraseña | **Hecha y probada**: nombre, apellido, DNI y teléfono opcionales; nombres tolerantes a datos faltantes | Comparativa en [campos-de-clientes-comparativa-2026-11-09.md](./requerimientos/campos-de-clientes-comparativa-2026-11-09.md); 2 preguntas abiertas |
 
 ## Qué está verificado y cómo
@@ -53,6 +53,6 @@ Se sirvieron **las funciones en local** (`supabase functions serve`, con un arch
 ## Lo que sigue
 
 1. **Desplegar** en el orden del documento de despliegue, y mirar el sitio. Si querés mirar la pantalla antes, se puede servir la app en local (necesita tu aceptación).
-2. **Rendimiento (ID 70):** conseguir la clave de PageSpeed para medir antes y después, y decidir las mejoras 4 y 5 (configuración). **Campos de clientes (ID 71):** las 2 preguntas de la comparativa quedaron aprobadas y hechas.
+2. **Rendimiento (ID 70):** medir antes y después con la clave de PageSpeed (ya cargada), y validar la mejora 4 (`vercel.json`) en la vista previa. **Campos de clientes (ID 71):** las 2 preguntas de la comparativa quedaron aprobadas y hechas.
 3. Funciones SQL de E0b (`create_order`, `cancel_order`, `is_admin`, `current_user_id`, `handle_new_auth_user`), que también deberían informar mejor el estado pausado.
 4. Papelera, alertas y archivo previo a la purga (E2a y E5a): se hacen en el sistema nuevo.
