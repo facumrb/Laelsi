@@ -2,9 +2,14 @@ import { IApiCategory } from './category.model';
 import { IApiProductPhoto } from './photo.model';
 import { IPaginatedResult } from './pagination.model';
 
+// Estados de publicación (ID 54 de docs/requerimientos/discusiones.md):
+//   Activo   se ve en la tienda y se puede comprar.
+//   Pausado  SE VE en la tienda como "no disponible por ahora"; no se puede comprar. El stock no cambia.
+//   Inactivo NO aparece en la tienda.
 export enum ProductState {
   Activo = 'Activo',
   Inactivo = 'Inactivo',
+  Pausado = 'Pausado',
 }
 
 export interface IApiPrice {

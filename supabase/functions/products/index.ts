@@ -11,7 +11,8 @@
 //     GET    /products/best-sellers                 Más vendidos
 //     GET    /products/best-sellers/category/:categoryId
 //     GET    /products/active/category/:categoryId  Activos de una categoría
-//     GET    /products/active/:id                   Detalle (solo si está activo)
+//     GET    /products/active/:id                   Detalle (solo si está activo o pausado)
+//     GET    /products/availability?ids=1,2,3       Estado actual de varios productos (lo usa el carrito)
 //     GET    /products/:id                          Detalle (también de un producto inactivo: la página
 //                                                   de producto muestra el aviso de "no disponible")
 //   Solo Admin
@@ -47,15 +48,28 @@ import {
   paginateProducts,
 } from '../_shared/catalogo.ts';
 import { deleteObject } from '../_shared/r2.ts';
+import {
+  ESTADOS_PRODUCTO,
+  ESTADOS_VISIBLES_EN_TIENDA,
+  dejoDeSerVisible,
+  estadosPorId,
+  leerIdsDeProductos,
+  siguioVisible,
+  type EstadoProducto,
+} from '../_shared/publicacion.ts';
 
 const VALID_CURRENCIES = ['ARS', 'USD', 'EUR'];
-const VALID_PRODUCT_STATES = ['Activo', 'Inactivo'];
+const VALID_PRODUCT_STATES: readonly string[] = ESTADOS_PRODUCTO;
 const PRODUCT_FIELDS = ['name', 'description', 'brand', 'totalSold', 'state', 'stock', 'price', 'currency', 'category'];
 
 // ─── Filtros reutilizables ───────────────────────────────────────────────────
 
-/** Solo productos activos cuya categoría también está activa (lo que ve el cliente final). */
-const activeOnly = () => sql`p.state = 'Activo' and c.state = 'Activo'`;
+/**
+ * Lo que ve el cliente final: productos VISIBLES (Activo o Pausado) cuya categoría está activa.
+ * Un producto Pausado se ve en la tienda como "no disponible por ahora"; uno Inactivo no aparece.
+ * El nombre se conserva porque lo usan todas las consultas de la tienda.
+ */
+const activeOnly = () => sql`p.state in ${sql([...ESTADOS_VISIBLES_EN_TIENDA])} and c.state = 'Activo'`;
 
 /** Coincidencia parcial en nombre, descripción o marca (sin distinguir mayúsculas). */
 const matchesText = (text: string) => sql`(
@@ -230,6 +244,28 @@ async function findOneActive(ctx: RequestContext) {
   return ok('Producto encontrado', product);
 }
 
+/**
+ * GET /products/availability?ids=1,2,3
+ *
+ * El carrito guarda una copia del producto y su estado puede estar vencido (pasó a Pausado o a
+ * Inactivo después de agregarlo). Esta ruta responde el estado actual de varios productos juntos:
+ * { "1": "Activo", "2": "Pausado", "3": "Inactivo" }. Un producto que ya no existe figura como
+ * Inactivo. Devuelve solo el estado, nada más de la ficha.
+ */
+async function findAvailability(ctx: RequestContext) {
+  let ids: number[];
+  try {
+    ids = leerIdsDeProductos(ctx.query.get('ids'));
+  } catch (err) {
+    if (err instanceof RangeError) throw new AppError(err.message, 400);
+    throw err;
+  }
+  if (ids.length === 0) return ok('Disponibilidad de productos', {});
+
+  const rows = await sql`select id, state from product where id in ${sql(ids)}`;
+  return ok('Disponibilidad de productos', estadosPorId(ids, rows as unknown as { id: number; state: EstadoProducto }[]));
+}
+
 // ─── Datos paginados y estados activos (cliente final) ───────────────────────
 
 async function findAllActive(ctx: RequestContext) {
@@ -358,7 +394,8 @@ async function addProduct(ctx: RequestContext) {
           state,
           stock: productData.stock,
           categoryId,
-          deletedAt: state === 'Inactivo' ? new Date() : null,
+          // deleted_at guarda la fecha del último cambio de estado: un producto que nace pausado o inactivo la lleva
+          deletedAt: state === 'Activo' ? null : new Date(),
         })}
         returning id
       `;
@@ -444,13 +481,18 @@ async function updateProduct(ctx: RequestContext) {
     rethrowDuplicateName(err);
   }
 
-  // 1. Si el producto pasó a Inactivo, verificar si su categoría actual debe desactivarse
-  if (newState === 'Inactivo' && oldState === 'Activo') {
+  // Una categoría solo se desactiva sola cuando deja de tener productos VISIBLES (Activo o Pausado):
+  // un producto pausado la mantiene visible.
+  const before = oldState as EstadoProducto;
+  const after = newState as EstadoProducto;
+
+  // 1. Si el producto dejó de ser visible (pasó a Inactivo), verificar si su categoría actual debe desactivarse
+  if (dejoDeSerVisible(before, after)) {
     await checkAndDeactivateCategory(newCategoryId ?? oldCategoryId);
   }
 
-  // 2. Si el producto CAMBIÓ de categoría y está activo, la categoría anterior podría quedar vacía
-  if (newCategoryId !== undefined && oldState === 'Activo' && newState === 'Activo') {
+  // 2. Si el producto CAMBIÓ de categoría y sigue visible, la categoría anterior podría quedar vacía
+  if (newCategoryId !== undefined && siguioVisible(before, after)) {
     if (oldCategoryId !== newCategoryId) {
       await checkAndDeactivateCategory(oldCategoryId);
     }
@@ -505,6 +547,7 @@ serveRoutes('products', [
   ['GET', '/category/:categoryId', findProductsByCategory],
   ['GET', '/active/category/:categoryId', findActiveProductsByCategory],
   ['GET', '/active/:id', findOneActive],
+  ['GET', '/availability', findAvailability],
   ['GET', '/:id', findOne],
 
   // Rutas protegidas (solo Admin puede crear/editar/eliminar)

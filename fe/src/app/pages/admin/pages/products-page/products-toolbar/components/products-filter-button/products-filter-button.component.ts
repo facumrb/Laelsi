@@ -37,6 +37,7 @@ export class ProductsFilterButtonComponent {
   readonly statusOptions: FilterOption[] = [
     { value: 'Todos', label: 'Todos' },
     { value: 'Activo', label: 'Activos' },
+    { value: 'Pausado', label: 'Pausados' },
     { value: 'Inactivo', label: 'Inactivos' },
   ];
 

@@ -1,5 +1,33 @@
-<!-- 1. PUBLICACIÓN PAUSADA -->
-@if (isPaused()) {
+<!-- 0. PRODUCTO PAUSADO: se ve en la tienda pero no se puede comprar por ahora -->
+@if (isTemporarilyUnavailable()) {
+  @switch (mode()) {
+    @case ("banner") {
+      <div
+        class="flex items-center justify-center transition-all duration-300 w-full py-3 px-4 rounded-xl border border-amber-300 bg-amber-50 text-sm font-bold text-amber-900"
+      >
+        <span class="uppercase tracking-wider">No disponible por ahora</span>
+      </div>
+    }
+    @case ("overlay") {
+      <div
+        class="flex items-center justify-center transition-all duration-300 px-4 py-1.5 rounded-md shadow-sm bg-amber-700 text-xs font-bold tracking-widest text-white"
+      >
+        <span class="uppercase tracking-wider">No disponible por ahora</span>
+      </div>
+    }
+    @default {
+      <!-- badge -->
+      <div
+        class="flex items-center justify-center transition-all duration-300 px-2.5 py-1 rounded-lg border border-amber-300 bg-amber-50 text-[11px] font-black text-amber-900"
+      >
+        <span class="uppercase tracking-wider">No disponible por ahora</span>
+      </div>
+    }
+  }
+}
+
+<!-- 1. PUBLICACIÓN PAUSADA (producto inactivo o categoría inactiva) -->
+@else if (isPaused()) {
   @switch (mode()) {
     @case ("banner") {
       <div

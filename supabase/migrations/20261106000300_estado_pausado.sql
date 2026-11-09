@@ -1,0 +1,22 @@
+-- ============================================================================
+-- Estado "Pausado" de los productos
+-- ============================================================================
+-- Discusión del ID 54 (docs/requerimientos/discusiones.md). El stock es la disponibilidad FÍSICA y
+-- el estado es la disponibilidad COMERCIAL, y son independientes:
+--
+--   Activo    se ve en la tienda y se puede comprar.
+--   Pausado   SE VE en la tienda como "no disponible por ahora" y no se puede comprar.
+--   Inactivo  NO aparece en la tienda.
+--
+-- create_order ya rechaza al confirmar todo producto que no esté Activo, así que un producto pausado
+-- no se puede comprar aunque alguien lo tenga en el carrito.
+--
+-- IMPORTANTE: el valor nuevo NO se puede usar en la misma transacción en la que se agrega, y por eso
+-- esta migración no hace otra cosa. Tiene que aplicarse a producción ANTES de desplegar `products` y
+-- `categories`: sus consultas ya nombran el estado 'Pausado' y fallarían sin el valor.
+--
+-- Reversa: PostgreSQL no permite quitar un valor de un tipo enumerado. Antes de desplegar, conviene
+-- confirmar que se quiere el estado; si hiciera falta volver atrás, se recrea el tipo.
+-- ============================================================================
+
+ALTER TYPE product_state ADD VALUE IF NOT EXISTS 'Pausado';

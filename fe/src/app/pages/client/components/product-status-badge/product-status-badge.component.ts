@@ -19,6 +19,14 @@ export class ProductStatusBadgeComponent {
    */
   mode = input<'badge' | 'banner' | 'overlay'>('badge');
 
+  // Producto PAUSADO (ID 54 de docs/requerimientos/discusiones.md): se ve en la tienda como "no disponible
+  // por ahora", aunque tenga stock. Es distinto de Inactivo, que directamente no aparece.
+  isTemporarilyUnavailable = computed(
+    () =>
+      this.productState() === ProductState.Pausado &&
+      this.categoryState() !== CategoryState.Inactivo
+  );
+
   isPaused = computed(
     () =>
       this.productState() === ProductState.Inactivo ||

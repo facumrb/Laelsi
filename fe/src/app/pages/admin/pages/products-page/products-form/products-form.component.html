@@ -93,7 +93,9 @@
                 [class]="
                   formProduct.get('state')?.value === 'Activo'
                     ? 'bg-green-500'
-                    : 'bg-red-500'
+                    : formProduct.get('state')?.value === 'Pausado'
+                      ? 'bg-amber-500'
+                      : 'bg-red-500'
                 "
               ></span>
               <span class="block truncate">{{
@@ -111,13 +113,17 @@
 
           @if (showStateMenu()) {
             <ul class="select-dropdown">
-              @for (option of ["Activo", "Inactivo"]; track option) {
+              @for (option of ["Activo", "Pausado", "Inactivo"]; track option) {
                 <li (click)="selectState(option)" class="select-option">
                   <div class="flex items-center">
                     <span
                       class="h-2.5 w-2.5 rounded-full mr-2"
                       [class]="
-                        option === 'Activo' ? 'bg-green-500' : 'bg-red-500'
+                        option === 'Activo'
+                          ? 'bg-green-500'
+                          : option === 'Pausado'
+                            ? 'bg-amber-500'
+                            : 'bg-red-500'
                       "
                     ></span>
                     <span

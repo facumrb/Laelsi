@@ -15,7 +15,7 @@ export type StockFilter =
   | 'MasProductos' // Productos de Mayor a menor stock
   | 'MenosProductos'; // Productos de Menor a mayor stock
 
-export type StatusFilter = 'Todos' | 'Activo' | 'Inactivo';
+export type StatusFilter = 'Todos' | 'Activo' | 'Pausado' | 'Inactivo';
 
 @Component({
   selector: 'app-products-toolbar',

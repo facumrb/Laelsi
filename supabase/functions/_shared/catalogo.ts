@@ -70,12 +70,16 @@ export function withParents(category: CategoryRow, byId: Map<number, CategoryRow
   return { ...category, parent: parent ? withParents(parent, byId) : null };
 }
 
-/** Cantidad de productos activos que tiene DIRECTAMENTE cada categoría. */
+/**
+ * Cantidad de productos VISIBLES (Activo o Pausado) que tiene DIRECTAMENTE cada categoría.
+ * Un producto pausado se sigue mostrando en la tienda, así que mantiene visible a su categoría.
+ * (Los estados visibles están en publicacion.ts.)
+ */
 export async function loadActiveProductCounts(db: Db = sql): Promise<Map<number, number>> {
   const rows = await db`
     select category_id, count(*)::int as total
     from product
-    where state = 'Activo'
+    where state in ('Activo', 'Pausado')
     group by category_id
   `;
   // deno-lint-ignore no-explicit-any

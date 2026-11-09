@@ -41,8 +41,10 @@
       entityType="producto"
       [canDeactivate]="true"
       [isDeactivated]="productToDelete()!.state === 'Inactivo'"
+      [canPause]="productToDelete()!.state === 'Activo'"
       (confirmDelete)="confirmDeleteProduct()"
       (confirmDeactivate)="confirmDeactivateProduct()"
+      (confirmPause)="confirmPauseProduct()"
       (close)="productToDelete.set(null)"
     />
   }

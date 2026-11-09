@@ -27,6 +27,8 @@ import {
   bootstrapLightningFill,
 } from '@ng-icons/bootstrap-icons';
 import { injectProductDetailQuery } from '@services/queries/product-queries';
+import { mensajeDeConsultaPorWhatsApp } from '@shared/utils/disponibilidad-producto';
+import { LEGAL_INFO } from '@client/pages/footer-pages/legal-info';
 
 @Component({
   selector: 'app-product-page',
@@ -61,6 +63,11 @@ export class ProductPageComponent implements OnInit {
 
   product = computed<IApiProduct | undefined>(() => this.productQuery.data());
   thumbnailIndex = signal(0);
+
+  // Consulta prearmada por WhatsApp para saber cuándo vuelve un producto pausado (ID 54 de discusiones.md)
+  whatsAppConsulta(nombre: string): string {
+    return `${LEGAL_INFO.whatsappUrl}?text=${encodeURIComponent(mensajeDeConsultaPorWhatsApp(nombre))}`;
+  }
 
   // Breadcrumbs
   breadcrumbSteps = computed<BreadcrumbStep[]>(() => {

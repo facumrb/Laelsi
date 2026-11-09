@@ -158,6 +158,22 @@ export class ProductsPageComponent {
     );
   }
 
+  // Pausar: la ficha se sigue viendo en la tienda como "no disponible por ahora" (ID 54)
+  confirmPauseProduct() {
+    const product = this.productToDelete();
+    if (!product) return;
+
+    this.updateMutation.mutate(
+      { id: product.id, product: { state: ProductState.Pausado } },
+      {
+        onSuccess: () => {
+          this.alertService.toast('Publicación pausada', 'success');
+          this.productToDelete.set(null);
+        },
+      },
+    );
+  }
+
   confirmDeleteProduct() {
     const product = this.productToDelete();
     if (!product) return;
