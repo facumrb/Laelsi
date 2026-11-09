@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { environment } from 'src/environments/environment';
 import { UserSession } from '@models/auth.model';
@@ -288,5 +288,78 @@ describe('AuthService: aceptación de los Términos y registro', () => {
     expect(peticion.request.headers.has('X-Turnstile-Token')).toBe(false);
     peticion.flush({ status: 'success', message: 'ok', data: { id: 9 } });
     await resultado;
+  });
+});
+
+// Cambiar la contraseña de una cuenta cierra TODAS sus sesiones en Supabase Auth (por seguridad: el código de GoTrue lo
+// hace al actualizar la contraseña con la API de administración, que es lo que usa el servidor). También cierra la de
+// quien la cambió: el siguiente pedido recibe un 401, la renovación del token falla y la persona veía un error rojo
+// ("Tu sesión ya no es válida") justo después de un cambio que salió bien. Por eso, después de cambiar la PROPIA
+// contraseña se vuelve a iniciar sesión con la nueva.
+describe('AuthService: sesión después de cambiar la propia contraseña', () => {
+  const urlLogin = `${environment.apiUrl}/auth/login`;
+  const respuesta = {
+    status: 'success',
+    message: 'Login exitoso',
+    data: { token: 'token-nuevo', refreshToken: 'refresh-nuevo', user: { id: 4, username: 'ana.perez', role: UserRole.Client } },
+  };
+
+  let servicio: AuthService;
+  let http: HttpTestingController;
+
+  beforeEach(() => {
+    localStorage.clear();
+    TestBed.configureTestingModule({
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
+    });
+    servicio = TestBed.inject(AuthService);
+    http = TestBed.inject(HttpTestingController);
+    vi.spyOn(supabase.auth, 'setSession').mockResolvedValue({ data: { session: null, user: null }, error: null } as never);
+    vi.spyOn(supabase.auth, 'signOut').mockResolvedValue({ error: null } as never);
+  });
+
+  afterEach(() => {
+    http.verify();
+    vi.restoreAllMocks();
+  });
+
+  it('inicia sesión de nuevo con el usuario y la contraseña NUEVA y responde que la sesión está vigente', async () => {
+    const resultado = new Promise<boolean>((resolve) =>
+      servicio.renewSessionAfterPasswordChange('ana.perez', 'Nueva1234').subscribe(resolve),
+    );
+
+    const peticion = http.expectOne(urlLogin);
+    expect(peticion.request.method).toBe('POST');
+    expect(peticion.request.body).toEqual({ username: 'ana.perez', password: 'Nueva1234' });
+    peticion.flush(respuesta);
+
+    expect(await resultado).toBe(true);
+    expect(servicio.isLoggedIn()).toBe(true);
+    expect(supabase.auth.setSession).toHaveBeenCalledWith({ access_token: 'token-nuevo', refresh_token: 'refresh-nuevo' });
+  });
+
+  it('con otro usuario y otra contraseña, envía esos (no valores fijos)', async () => {
+    const resultado = new Promise<boolean>((resolve) =>
+      servicio.renewSessionAfterPasswordChange('admin.demo', 'Otra5678x').subscribe(resolve),
+    );
+
+    const peticion = http.expectOne(urlLogin);
+    expect(peticion.request.body).toEqual({ username: 'admin.demo', password: 'Otra5678x' });
+    peticion.flush(respuesta);
+
+    expect(await resultado).toBe(true);
+  });
+
+  it('si no se puede iniciar sesión, cierra la sesión, lleva al login y responde que ya no está vigente', async () => {
+    const navegar = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    const resultado = new Promise<boolean>((resolve) =>
+      servicio.renewSessionAfterPasswordChange('ana.perez', 'Nueva1234').subscribe(resolve),
+    );
+
+    http.expectOne(urlLogin).flush({ message: 'Credenciales inválidas' }, { status: 401, statusText: 'Unauthorized' });
+
+    expect(await resultado).toBe(false);
+    expect(servicio.isLoggedIn()).toBe(false);
+    expect(navegar).toHaveBeenCalledWith('/auth/login');
   });
 });
