@@ -16,7 +16,7 @@ import { ApiClientService } from '@services/api-services/api-client.service';
 import { AlertService } from '@services/alert.service';
 import { PhotoManagerComponent } from '@shared/components/photo-manager/photo-manager.component';
 import { FormUtils } from '@shared/validators/form-utils';
-import { switchMap, of, catchError } from 'rxjs';
+import { switchMap, of, catchError, EMPTY } from 'rxjs';
 import { AuthService } from '@services/auth.service';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
@@ -159,9 +159,30 @@ export class ProfileUserComponent {
         clientData.currentPassword = this.verifiedCurrentPassword;
       }
     }
+    const nuevaContrasena: string | undefined = clientData.password;
     this.apiClientService
       .updateClient(userId, clientData)
-      .pipe(switchMap(() => this.photoManager().saveChanges(userId)))
+      .pipe(
+        // Cambiar la contraseña cierra todas las sesiones de la cuenta, también esta (Supabase Auth, por seguridad):
+        // se vuelve a iniciar sesión ANTES de cualquier otro pedido (la foto, la recarga del perfil), que si no
+        // recibirían un 401 y mostrarían "Tu sesión ya no es válida" tras un cambio que salió bien.
+        switchMap(() =>
+          nuevaContrasena
+            ? this.authService.renewSessionAfterPasswordChange(clientData.username, nuevaContrasena)
+            : of(true),
+        ),
+        switchMap((sesionVigente) => {
+          if (sesionVigente) return this.photoManager().saveChanges(userId);
+          // No se pudo renovar: el servicio ya cerró la sesión y llevó al login
+          this.saving.set(false);
+          this.alertService.toast(
+            'Cambiaste tu contraseña',
+            'info',
+            'Por seguridad, ingresá de nuevo con la contraseña nueva.',
+          );
+          return EMPTY;
+        }),
+      )
       .subscribe({
         next: () => {
           this.saving.set(false);
