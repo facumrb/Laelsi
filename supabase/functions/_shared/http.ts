@@ -12,6 +12,7 @@
 //   éxito: { statusCode, message, data, status: 'success' }
 //   error: { status: 'error', message }
 // ============================================================================
+import { cabecerasDeCache } from './cache-publica.ts';
 
 /** Error controlado: su mensaje se envía tal cual al cliente con el código indicado. */
 export class AppError extends Error {
@@ -27,9 +28,20 @@ export interface ApiResult {
   status: number;
   message: string;
   data: unknown;
+  /**
+   * Segundos que el navegador puede reutilizar esta respuesta (Cache-Control: max-age). Solo lo declaran las
+   * rutas públicas del catálogo; lo que no declara tiempo no se cachea. Ver cache-publica.ts.
+   */
+  cacheSeconds?: number;
 }
 
-export const ok = (message: string, data: unknown = null): ApiResult => ({ status: 200, message, data });
+/** `cacheSeconds`: solo para respuestas públicas que no dependen de quién pide (ver cache-publica.ts). */
+export const ok = (message: string, data: unknown = null, cacheSeconds?: number): ApiResult => ({
+  status: 200,
+  message,
+  data,
+  cacheSeconds,
+});
 export const created = (message: string, data: unknown = null): ApiResult => ({ status: 201, message, data });
 
 export interface RequestContext {
@@ -246,10 +258,15 @@ export async function runInBackground(task: Promise<unknown>): Promise<void> {
 
 // ─── Servidor ────────────────────────────────────────────────────────────────
 
-function jsonResponse(body: unknown, status: number, cors: Record<string, string>): Response {
+function jsonResponse(
+  body: unknown,
+  status: number,
+  cors: Record<string, string>,
+  extraHeaders: Record<string, string> = {},
+): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...cors, 'Content-Type': 'application/json; charset=utf-8' },
+    headers: { ...cors, ...extraHeaders, 'Content-Type': 'application/json; charset=utf-8' },
   });
 }
 
@@ -343,6 +360,7 @@ export function serveRoutes(functionName: string, routes: Route[]): void {
           { statusCode: result.status, message: result.message, data: result.data, status: 'success' },
           result.status,
           cors,
+          cabecerasDeCache(req.method, result.status, result.cacheSeconds),
         );
       }
 

@@ -26,6 +26,7 @@
 // ============================================================================
 import { sql, type Db } from '../_shared/db.ts';
 import { isAdminRequest, requireAdmin } from '../_shared/auth.ts';
+import { CACHE_CATALOGO_SEGUNDOS } from '../_shared/cache-publica.ts';
 import {
   AppError,
   created,
@@ -158,6 +159,9 @@ async function getTree(ctx: RequestContext) {
   return ok(
     'Árbol de categorías obtenido',
     roots.map((c) => armarNodoDeArbol(c, byParent, depthLimit, onlyActive)),
+    // Solo la vista de la tienda (state=Activo): es igual para todos. El panel pide el árbol sin estado para
+    // reordenar y tiene que ver siempre lo último, así que no se cachea.
+    onlyActive ? CACHE_CATALOGO_SEGUNDOS : undefined,
   );
 }
 
@@ -186,7 +190,7 @@ async function findAllActive() {
     // El límite es PROFUNDIDAD_MAXIMA: con un número menor, las categorías más profundas no llegan al menú
     .map((c) => armarNodoDeArbol(c, byParent, PROFUNDIDAD_MAXIMA, true));
 
-  return ok('Categorías activas encontradas', result);
+  return ok('Categorías activas encontradas', result, CACHE_CATALOGO_SEGUNDOS);
 }
 
 // ─── Escritura (helpers de orden y jerarquía) ────────────────────────────────

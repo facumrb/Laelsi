@@ -53,6 +53,7 @@ import {
 import { deleteObject } from '../_shared/r2.ts';
 import { idsDelSubarbol } from '../_shared/subarbol-categorias.ts';
 import { PRODUCTOS_POR_CARRUSEL, armarPortada, categoriasDeLaPortada } from '../_shared/portada.ts';
+import { CACHE_CATALOGO_SEGUNDOS } from '../_shared/cache-publica.ts';
 import {
   ESTADOS_PRODUCTO,
   ESTADOS_VISIBLES_EN_TIENDA,
@@ -142,7 +143,7 @@ async function searchProductsByText(ctx: RequestContext) {
     }),
     loadBrands(matching),
   ]);
-  return ok('Productos encontrados', { ...products, brands });
+  return ok('Productos encontrados', { ...products, brands }, CACHE_CATALOGO_SEGUNDOS);
 }
 
 async function findProductsByCategory(ctx: RequestContext) {
@@ -178,7 +179,7 @@ async function findActiveProductsByCategory(ctx: RequestContext) {
     }),
     loadBrands(inCategory),
   ]);
-  return ok('Productos activos encontrados en la categoría', { ...products, brands });
+  return ok('Productos activos encontrados en la categoría', { ...products, brands }, CACHE_CATALOGO_SEGUNDOS);
 }
 
 // ─── Consultas generales ─────────────────────────────────────────────────────
@@ -246,7 +247,7 @@ async function findOneActive(ctx: RequestContext) {
   if (!row) throw new AppError('Producto no encontrado', 404);
 
   const [product] = await loadProducts([id]);
-  return ok('Producto encontrado', product);
+  return ok('Producto encontrado', product, CACHE_CATALOGO_SEGUNDOS);
 }
 
 /**
@@ -340,6 +341,7 @@ async function findHome() {
       aProductos(idsGenerales),
       elegidas.map((category, i) => ({ category, products: aProductos(idsPorCategoria[i]) })),
     ),
+    CACHE_CATALOGO_SEGUNDOS,
   );
 }
 
@@ -349,7 +351,7 @@ function bestSellersLimit(ctx: RequestContext): number {
 }
 
 async function findBestSellers(ctx: RequestContext) {
-  return ok('Productos más vendidos encontrados', await bestSellers(bestSellersLimit(ctx)));
+  return ok('Productos más vendidos encontrados', await bestSellers(bestSellersLimit(ctx)), CACHE_CATALOGO_SEGUNDOS);
 }
 
 async function findBestSellersByCategory(ctx: RequestContext) {
@@ -357,6 +359,7 @@ async function findBestSellersByCategory(ctx: RequestContext) {
   return ok(
     'Productos más vendidos de la categoría encontrados',
     await bestSellers(bestSellersLimit(ctx), categoryId),
+    CACHE_CATALOGO_SEGUNDOS,
   );
 }
 
@@ -585,8 +588,8 @@ async function removeProduct(ctx: RequestContext) {
 serveRoutes('products', [
   // Rutas públicas (cualquier usuario puede ver productos)
   ['GET', '/', findAll],
-  ['GET', '/active', async (ctx) => ok('Productos activos encontrados', await findAllActive(ctx))],
-  ['GET', '/page', async (ctx) => ok('Página de productos encontrada', await findAllActive(ctx))],
+  ['GET', '/active', async (ctx) => ok('Productos activos encontrados', await findAllActive(ctx), CACHE_CATALOGO_SEGUNDOS)],
+  ['GET', '/page', async (ctx) => ok('Página de productos encontrada', await findAllActive(ctx), CACHE_CATALOGO_SEGUNDOS)],
   ['GET', '/search', searchProductsByText],
   ['GET', '/best-sellers', findBestSellers],
   ['GET', '/best-sellers/category/:categoryId', findBestSellersByCategory],
