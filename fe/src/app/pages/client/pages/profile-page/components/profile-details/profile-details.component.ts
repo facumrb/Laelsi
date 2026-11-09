@@ -23,6 +23,7 @@ import { CurrentPasswordService } from '@services/current-password.service';
 import { PhoneInputDirective } from '@shared/directives/phone-input.directive';
 import { NumericInputDirective } from '@shared/directives/numeric-input.directive';
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
+import { ListboxDirective } from '@shared/directives/listbox.directive';
 import { FormUtils } from '@shared/validators/form-utils';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
@@ -37,6 +38,7 @@ import { TrimInputDirective } from '@shared/directives/trim-input.directive';
     ClickOutsideDirective,
     FieldErrorComponent,
     TrimInputDirective,
+    ListboxDirective,
   ],
   viewProviders: [
     provideIcons({

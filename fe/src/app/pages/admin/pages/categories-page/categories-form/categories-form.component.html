@@ -67,6 +67,8 @@
             type="button"
             id="state"
             (click)="toggleStateMenu()"
+            aria-haspopup="listbox"
+            [attr.aria-expanded]="showStateMenu()"
             class="select-trigger focus:ring-1"
           >
             <span class="flex items-center gap-3">
@@ -92,9 +94,19 @@
           </button>
 
           @if (showStateMenu()) {
-            <ul class="select-dropdown">
+            <ul
+              class="select-dropdown"
+              appListbox
+              (closed)="showStateMenu.set(false)"
+            >
               @for (option of ["Activo", "Inactivo"]; track option) {
-                <li (click)="selectState(option)" class="select-option">
+                <li
+                  role="option"
+                  tabindex="-1"
+                  [attr.aria-selected]="formCategory.get('state')?.value === option"
+                  (click)="selectState(option)"
+                  class="select-option"
+                >
                   <div class="flex items-center">
                     <span
                       class="h-2.5 w-2.5 rounded-full mr-2"

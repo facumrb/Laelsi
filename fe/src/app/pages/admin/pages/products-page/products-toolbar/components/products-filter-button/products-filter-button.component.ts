@@ -1,5 +1,6 @@
 import { Component, model, signal, input, computed } from '@angular/core';
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
+import { ListboxDirective } from '@shared/directives/listbox.directive';
 import { FilterButtonComponent } from '@shared/components/buttons/filter-button/filter-button.component';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
@@ -18,6 +19,7 @@ import {
   selector: 'app-products-filter-button',
   imports: [
     ClickOutsideDirective,
+    ListboxDirective,
     FilterButtonComponent,
     NgIconComponent,
     FilterAccordionComponent,

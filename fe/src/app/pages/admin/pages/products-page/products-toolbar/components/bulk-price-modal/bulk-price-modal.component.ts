@@ -26,6 +26,7 @@ import { ApiProductService } from '@services/api-services/api-product.service';
 import { IBulkPricePreviewItem } from '@models/product.model';
 import { AlertService } from '@services/alert.service';
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
+import { ListboxDirective } from '@shared/directives/listbox.directive';
 import { PriceAdjustmentInputDirective } from '@shared/directives/price-adjustment-input.directive';
 import { CloseModalButtonComponent } from '@shared/components/buttons/close-modal-button/close-modal-button.component';
 
@@ -35,6 +36,7 @@ import { CloseModalButtonComponent } from '@shared/components/buttons/close-moda
     NgIconComponent,
     CurrencyPipe,
     ClickOutsideDirective,
+    ListboxDirective,
     PriceAdjustmentInputDirective,
     CloseModalButtonComponent,
     A11yModule,

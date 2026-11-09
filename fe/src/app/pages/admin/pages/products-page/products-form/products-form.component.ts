@@ -16,6 +16,7 @@ import { ProductCategorySelectComponent } from './components/product-category-se
 import { IApiProductPhoto } from '@models/photo.model';
 import { NumericInputDirective } from '@shared/directives/numeric-input.directive';
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
+import { ListboxDirective } from '@shared/directives/listbox.directive';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   bootstrapChevronDown,
@@ -40,6 +41,7 @@ import { injectInvalidateCatalog } from '@services/queries/catalog-cache';
     FieldErrorComponent,
     TrimInputDirective,
     ProductCategorySelectComponent,
+    ListboxDirective,
   ],
   viewProviders: [
     provideIcons({

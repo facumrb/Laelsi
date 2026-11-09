@@ -15,6 +15,7 @@ import { ProductDraftService } from '@services/product-draft.service';
 import { AlertService } from '@services/alert.service';
 import { FormUtils } from '@shared/validators/form-utils';
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
+import { ListboxDirective } from '@shared/directives/listbox.directive';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   bootstrapChevronDown,
@@ -37,6 +38,7 @@ import { injectInvalidateCatalog } from '@services/queries/catalog-cache';
     GoBackButtonComponent,
     FieldErrorComponent,
     CategoryParentSelectComponent,
+    ListboxDirective,
   ],
   viewProviders: [
     provideIcons({
