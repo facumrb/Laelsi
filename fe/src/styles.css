@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/* La barra de categorías (menús que se abren con mouse o teclado) solo se muestra donde se puede usar: un
+   dispositivo con hover y puntero fino, y una pantalla de al menos 1100 px (68,75 rem), que es lo que ocupan sus
+   menús de varios niveles. En cualquier otro lado (teléfono, tablet, teléfono en horizontal) se usa el menú móvil
+   con acordeón, aunque la pantalla sea ancha: tocar una categoría de la barra navegaba directo a su página y el
+   desplegable no se podía abrir. La barra, el botón hamburguesa y el menú móvil usan esta misma variante para que
+   siempre se vea uno de los dos y nunca los dos ni ninguno. */
+@custom-variant barra-hover (@media (min-width: 68.75rem) and (hover: hover) and (pointer: fine));
+
 @theme {
   /* 1. Defines la variable de la animación */
   --animate-fadeIn: fadeIn 0.2s ease-in-out;
@@ -248,12 +256,25 @@
     @apply absolute top-full left-0 mt-0 pt-3 w-50 opacity-0 invisible
            transition-all duration-200 z-50 translate-y-2;
   }
-  .group:hover .navbar-dropdown {
+  /* Ya no se abre con :group-hover. La clase la pone el componente (navbar-category-bar.component.ts) tanto al pasar
+     el mouse como al enfocar con el teclado, y se la saca con Esc: con :hover no había forma de abrirlo ni de cerrarlo
+     sin mouse. */
+  .navbar-dropdown-abierto {
     @apply opacity-100 visible translate-y-0;
+    /* Al abrir, `visibility` cambia en el acto: si entrara en la transición (transition-all de .navbar-dropdown), el
+       menú seguiría "hidden" durante el primer instante y no se le podría enfocar un ítem enseguida (flecha abajo).
+       Al cerrar vale la regla base, que sí transiciona `visibility` y conserva el fundido. */
+    transition-property: opacity, translate;
   }
 
   .navbar-dropdown-container {
     @apply bg-white rounded-xl shadow-xl overflow-visible border border-black/5 ring-1 ring-black/5;
+  }
+
+  /* Foco del teclado dentro de los menús: contorno hacia adentro, porque el menú tiene bordes redondeados y el
+     contorno hacia afuera quedaría recortado o tapado por el ítem vecino. */
+  .navbar-dropdown-item:focus-visible {
+    @apply bg-gray-100 outline-2 outline-[#5a2a8a] -outline-offset-2;
   }
 
   .navbar-dropdown-item {
@@ -315,7 +336,7 @@
   .navbar-chevron {
     @apply text-[10px] text-white/70 transition-transform;
   }
-  .group:hover .navbar-chevron {
+  .navbar-grupo-abierto .navbar-chevron {
     @apply rotate-180;
   }
 

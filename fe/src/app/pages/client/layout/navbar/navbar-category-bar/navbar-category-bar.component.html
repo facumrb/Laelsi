@@ -1,17 +1,32 @@
+<!--
+  Esta barra abre sus menús al pasar el mouse o al enfocar con el teclado, así que solo se muestra donde eso es posible:
+  un dispositivo con hover y puntero fino y una pantalla ancha (variante `barra-hover`, definida en styles.css). En los
+  táctiles, de cualquier tamaño, se usa el menú móvil con acordeón: en una tablet, tocar una categoría de esta barra
+  navegaba directo a su página sin abrir el desplegable. La barra y el menú móvil comparten la misma variante, para que
+  siempre se vea uno de los dos.
+-->
 <nav
-  class="hidden md:flex justify-around bg-[#805d8f] p-2.5 shadow-inner relative z-10"
+  class="hidden barra-hover:flex justify-around bg-[#805d8f] p-2.5 shadow-inner relative z-10"
   aria-label="Categorías de productos"
+  (keydown.escape)="descartar($event)"
 >
   @for (cat of categories(); track cat.id) {
     <div
       #grupo
       class="group relative flex items-center"
-      (mouseenter)="medirDireccion(cat, grupo)"
+      [class.navbar-grupo-abierto]="raizAbierta() === cat.id"
+      (mouseenter)="abrirRaiz(cat, grupo)"
+      (mouseleave)="salirDeLaRaiz(cat)"
+      (focusin)="abrirPorFoco(cat, grupo)"
+      (focusout)="perderFoco($event, grupo)"
     >
       <a
         [routerLink]="['/category', cat.id]"
         class="navbar-link"
         [class.navbar-link-active]="isCategoryActive(cat.id)"
+        [attr.aria-haspopup]="cat.children?.length ? 'true' : null"
+        [attr.aria-expanded]="cat.children?.length ? raizAbierta() === cat.id : null"
+        (keydown.arrowdown)="abrirConFlecha($event, cat, grupo)"
       >
         {{ cat.name }}
         @if (cat.children && cat.children.length > 0) {
@@ -24,7 +39,10 @@
       </a>
 
       @if (cat.children && cat.children.length > 0) {
-        <div class="navbar-dropdown">
+        <div
+          class="navbar-dropdown"
+          [class.navbar-dropdown-abierto]="raizAbierta() === cat.id"
+        >
           <div class="navbar-dropdown-container">
             <ng-container
               [ngTemplateOutlet]="nivel"
@@ -81,12 +99,15 @@
       class="relative"
       (mouseenter)="entrar(madre, item.id, !!item.children?.length)"
       (mouseleave)="salir(madre)"
+      (focusin)="enfocar(madre, item.id, !!item.children?.length)"
     >
       <a
         [routerLink]="['/category', item.id]"
         class="navbar-dropdown-item flex items-center justify-between gap-2"
         [class.flex-row-reverse]="izquierda"
         [class.navbar-dropdown-item-active]="isCategoryActive(item.id)"
+        [attr.aria-haspopup]="item.children?.length ? 'true' : null"
+        [attr.aria-expanded]="item.children?.length ? abiertos()[madre] === item.id : null"
       >
         {{ item.name }}
         @if (item.children && item.children.length > 0) {

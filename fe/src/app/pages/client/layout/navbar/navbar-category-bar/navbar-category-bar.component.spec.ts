@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { IApiCategory } from '@models/category.model';
 import { cadenaAnidada, categoria } from '@shared/testing/categorias';
@@ -241,5 +241,348 @@ describe('NavbarCategoryBarComponent: demora al cerrar los menús laterales', ()
     fixture.destroy();
 
     expect(vi.getTimerCount()).toBe(0);
+  });
+});
+
+// Antes el menú solo se abría con el mouse (con :hover de CSS): quien navega con teclado no podía abrirlo ni ver las
+// subcategorías, y no había forma de cerrarlo sin mover el puntero (WCAG 1.4.13: el contenido que aparece al pasar el
+// mouse o al enfocar tiene que poder descartarse con Esc). Ahora mouse y foco comparten el mismo estado: el menú abre
+// al entrar el mouse o el foco, cierra al salir, y Esc lo descarta sin mover nada.
+describe('NavbarCategoryBarComponent: teclado y descarte', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  /** Raíz con tres ítems en su desplegable: A y B tienen menú lateral, C no. */
+  const arbol = (): IApiCategory => ({
+    ...categoria(1, 'Raíz'),
+    children: [
+      { ...categoria(2, 'A', 1), children: [categoria(21, 'A1', 2)] },
+      { ...categoria(3, 'B', 1), children: [categoria(31, 'B1', 3)] },
+      categoria(4, 'C', 1),
+    ],
+  });
+
+  function armar(categorias: IApiCategory[] = [arbol()]) {
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    const fixture = TestBed.createComponent(NavbarCategoryBarComponent);
+    fixture.componentRef.setInput('categories', categorias);
+    fixture.componentRef.setInput('activeCategoryIds', new Set<number>());
+    fixture.detectChanges();
+    const raiz = fixture.nativeElement as HTMLElement;
+    const grupo = raiz.querySelector<HTMLElement>('.group') as HTMLElement;
+    const enlaceRaiz = grupo.querySelector<HTMLAnchorElement>('a.navbar-link') as HTMLAnchorElement;
+    const [a, b, c] = Array.from(raiz.querySelectorAll<HTMLElement>('.navbar-dropdown-container > div'));
+    const enlace = (item: HTMLElement) => item.querySelector(':scope > a') as HTMLAnchorElement;
+    const desplegableAbierto = () => grupo.querySelector('.navbar-dropdown')?.classList.contains('navbar-dropdown-abierto') ?? false;
+    const lateralAbierto = (item: HTMLElement) => item.querySelector(':scope > .navbar-subdropdown')?.classList.contains('navbar-subdropdown-abierto') ?? false;
+    const actuar = {
+      mouseEntra: (el: HTMLElement) => { el.dispatchEvent(new Event('mouseenter')); fixture.detectChanges(); },
+      mouseSale: (el: HTMLElement) => { el.dispatchEvent(new Event('mouseleave')); fixture.detectChanges(); },
+      focoEntra: (el: HTMLElement) => { el.dispatchEvent(new FocusEvent('focusin', { bubbles: true })); fixture.detectChanges(); },
+      focoSale: (el: HTMLElement, haciaDonde: Element | null) => { el.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: haciaDonde })); fixture.detectChanges(); },
+      esc: (en: HTMLElement) => { en.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); fixture.detectChanges(); },
+    };
+    return { fixture, grupo, enlaceRaiz, a, b, c, enlace, desplegableAbierto, lateralAbierto, actuar };
+  }
+
+  it('el mouse abre el desplegable al entrar y lo cierra al salir, pasada la demora', () => {
+    const { fixture, grupo, desplegableAbierto, actuar } = armar();
+    expect(desplegableAbierto()).toBe(false);
+
+    actuar.mouseEntra(grupo);
+    expect(desplegableAbierto()).toBe(true);
+
+    actuar.mouseSale(grupo);
+    vi.advanceTimersByTime(DEMORA_MENU_LATERAL_MS - 1);
+    fixture.detectChanges();
+    expect(desplegableAbierto()).toBe(true); // todavía no: la demora protege al puntero que roza el borde
+
+    vi.advanceTimersByTime(1);
+    fixture.detectChanges();
+    expect(desplegableAbierto()).toBe(false);
+  });
+
+  // Una diagonal apurada hacia un menú lateral lejano puede salir un instante del menú y volver a entrar. Antes de este
+  // cambio el desplegable se cerraba con :hover y su transición de 200 ms le daba margen; al pasar a depender del
+  // estado del componente, se cerraba en el acto y se olvidaba de los menús laterales abiertos (en el navegador, una
+  // diagonal apurada llegaba a 3 de los 5 niveles).
+  it('si el mouse sale del menú y vuelve antes de la demora, sigue abierto con su menú lateral', () => {
+    const { fixture, grupo, a, desplegableAbierto, lateralAbierto, actuar } = armar();
+    actuar.mouseEntra(grupo);
+    actuar.mouseEntra(a);
+    expect(lateralAbierto(a)).toBe(true);
+
+    actuar.mouseSale(a);
+    actuar.mouseSale(grupo);
+    vi.advanceTimersByTime(DEMORA_MENU_LATERAL_MS - 50);
+    fixture.detectChanges();
+    // Durante la excursión el menú tiene que seguir en pantalla: si desaparece, el puntero no tiene adónde volver
+    expect(desplegableAbierto()).toBe(true);
+    expect(lateralAbierto(a)).toBe(true);
+
+    actuar.mouseEntra(grupo); // el puntero vuelve al menú: entra al grupo y, dentro, al ítem
+    actuar.mouseEntra(a);
+    vi.advanceTimersByTime(DEMORA_MENU_LATERAL_MS * 2);
+    fixture.detectChanges();
+
+    expect(desplegableAbierto()).toBe(true);
+    expect(lateralAbierto(a)).toBe(true);
+  });
+
+  it('al pasar de una categoría a la de al lado, la primera se cierra y la segunda queda abierta', () => {
+    const otra: IApiCategory = { ...categoria(5, 'Otra'), children: [categoria(51, 'O1', 5)] };
+    const { fixture, grupo, desplegableAbierto, actuar } = armar([arbol(), otra]);
+    const segundoGrupo = fixture.nativeElement.querySelectorAll('.group')[1] as HTMLElement;
+    const desplegableDelSegundo = () =>
+      segundoGrupo.querySelector('.navbar-dropdown')?.classList.contains('navbar-dropdown-abierto') ?? false;
+
+    actuar.mouseEntra(grupo);
+    actuar.mouseSale(grupo);
+    actuar.mouseEntra(segundoGrupo);
+    vi.advanceTimersByTime(DEMORA_MENU_LATERAL_MS * 2);
+    fixture.detectChanges();
+
+    expect(desplegableDelSegundo()).toBe(true); // el cierre pendiente de la primera no se lleva a la segunda
+    expect(desplegableAbierto()).toBe(false);
+  });
+
+  it('el foco en la categoría abre el desplegable y lo marca como expandido para los lectores de pantalla', () => {
+    const { enlaceRaiz, desplegableAbierto, actuar } = armar();
+    expect(enlaceRaiz.getAttribute('aria-expanded')).toBe('false');
+
+    actuar.focoEntra(enlaceRaiz);
+
+    expect(desplegableAbierto()).toBe(true);
+    expect(enlaceRaiz.getAttribute('aria-expanded')).toBe('true');
+    expect(enlaceRaiz.getAttribute('aria-haspopup')).toBe('true');
+  });
+
+  it('si el foco sale del grupo cierra el desplegable; si pasa a algo de adentro, no', () => {
+    const { enlaceRaiz, a, enlace, desplegableAbierto, actuar } = armar();
+    actuar.focoEntra(enlaceRaiz);
+
+    actuar.focoSale(enlaceRaiz, enlace(a)); // pasa al primer ítem del desplegable: sigue adentro
+    expect(desplegableAbierto()).toBe(true);
+
+    actuar.focoSale(enlace(a), document.body); // se va a otra parte de la página
+    expect(desplegableAbierto()).toBe(false);
+  });
+
+  it('el foco en un ítem con menú lateral lo abre enseguida, sin esperar', () => {
+    const { enlaceRaiz, a, enlace, lateralAbierto, actuar } = armar();
+    actuar.focoEntra(enlaceRaiz);
+
+    actuar.focoEntra(enlace(a));
+
+    expect(lateralAbierto(a)).toBe(true);
+  });
+
+  it('el foco en un ítem sin menú lateral cierra enseguida el que estaba abierto', () => {
+    const { enlaceRaiz, a, c, enlace, lateralAbierto, actuar } = armar();
+    actuar.focoEntra(enlaceRaiz);
+    actuar.focoEntra(enlace(a));
+    expect(lateralAbierto(a)).toBe(true);
+
+    actuar.focoEntra(enlace(c));
+
+    expect(lateralAbierto(a)).toBe(false);
+  });
+
+  it('Esc descarta el desplegable y los menús laterales sin mover el mouse ni el foco', () => {
+    const { grupo, a, desplegableAbierto, lateralAbierto, actuar } = armar();
+    actuar.mouseEntra(grupo);
+    actuar.mouseEntra(a);
+    expect(desplegableAbierto()).toBe(true);
+    expect(lateralAbierto(a)).toBe(true);
+
+    actuar.esc(grupo);
+
+    expect(desplegableAbierto()).toBe(false);
+    expect(lateralAbierto(a)).toBe(false);
+  });
+
+  it('Esc devuelve el foco a la categoría cuando estaba adentro del menú', () => {
+    const { enlaceRaiz, a, enlace, desplegableAbierto, actuar } = armar();
+    actuar.focoEntra(enlaceRaiz);
+    enlace(a).focus();
+    expect(document.activeElement).toBe(enlace(a));
+
+    actuar.esc(enlace(a));
+    vi.runAllTimers();
+
+    expect(document.activeElement).toBe(enlaceRaiz);
+    expect(desplegableAbierto()).toBe(false); // y devolver el foco no lo vuelve a abrir
+  });
+
+  // ClickOutsideDirective (shared/directives), que usan los menús y modales de la tienda, escucha Esc en el documento y
+  // le hace blur() al elemento activo. El Esc llega primero a la barra y después al documento: si la barra devolvía el
+  // foco en el acto, esa directiva se lo sacaba enseguida y el foco quedaba en el body (se vio en una prueba con
+  // teclado en el navegador: los menús cerraban pero el foco se perdía).
+  it('Esc devuelve el foco a la categoría aunque otro componente le suelte el foco al mismo Esc', () => {
+    const { enlaceRaiz, a, enlace, actuar } = armar();
+    const sueltaElFoco = () => (document.activeElement as HTMLElement | null)?.blur();
+    document.addEventListener('keydown', sueltaElFoco);
+    try {
+      actuar.focoEntra(enlaceRaiz);
+      enlace(a).focus();
+
+      actuar.esc(enlace(a));
+      vi.runAllTimers();
+
+      expect(document.activeElement).toBe(enlaceRaiz);
+    } finally {
+      document.removeEventListener('keydown', sueltaElFoco);
+    }
+  });
+
+  it('después de Esc, con el mouse todavía encima, no se reabre solo hasta que vuelva a entrar', () => {
+    const { grupo, desplegableAbierto, actuar } = armar();
+    actuar.mouseEntra(grupo);
+    actuar.esc(grupo);
+
+    expect(desplegableAbierto()).toBe(false);
+
+    actuar.mouseSale(grupo);
+    actuar.mouseEntra(grupo);
+    expect(desplegableAbierto()).toBe(true);
+  });
+
+  it('al cerrarse se olvidan los menús laterales que estaban abiertos', () => {
+    const { fixture, grupo, a, lateralAbierto, actuar } = armar();
+    actuar.mouseEntra(grupo);
+    actuar.mouseEntra(a);
+    expect(lateralAbierto(a)).toBe(true);
+
+    actuar.mouseSale(grupo);
+    vi.advanceTimersByTime(DEMORA_MENU_LATERAL_MS);
+    fixture.detectChanges();
+    actuar.mouseEntra(grupo);
+
+    expect(lateralAbierto(a)).toBe(false);
+  });
+
+  // Un portátil con pantalla táctil y mouse muestra esta barra (su entrada principal tiene hover y puntero fino), pero
+  // quien toca con el dedo no puede "pasar el mouse": el toque navegaba directo a la categoría y el menú quedaba
+  // inalcanzable, el mismo problema que tenían las tablets. El primer toque en una categoría con menú lo abre y el
+  // segundo navega. Con mouse, y en las categorías sin menú, nada cambia.
+  describe('toque con el dedo', () => {
+    /**
+     * Un toque como lo manda el navegador: pointerdown (con el tipo de puntero), después el mouse emulado entra al
+     * elemento (mouseenter, que abre el menú) y recién al final llega el click. Devuelve cuántas veces se navegó.
+     */
+    function tocar(
+      enlace: HTMLElement,
+      entrada: HTMLElement,
+      actuar: { mouseEntra: (el: HTMLElement) => void },
+      tipo: 'touch' | 'mouse' = 'touch',
+    ): void {
+      const bajar = new Event('pointerdown', { bubbles: true, cancelable: true });
+      Object.defineProperty(bajar, 'pointerType', { value: tipo });
+      enlace.dispatchEvent(bajar);
+      actuar.mouseEntra(entrada);
+      enlace.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    }
+
+    it('el primer toque en una categoría con menú lo abre y no navega; el segundo navega', () => {
+      const { grupo, enlaceRaiz, desplegableAbierto, actuar } = armar();
+      const navegar = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+
+      tocar(enlaceRaiz, grupo, actuar);
+      expect(desplegableAbierto()).toBe(true);
+      expect(navegar).not.toHaveBeenCalled();
+
+      tocar(enlaceRaiz, grupo, actuar);
+      expect(navegar).toHaveBeenCalledTimes(1);
+    });
+
+    it('con mouse el clic navega enseguida, como siempre', () => {
+      const { grupo, enlaceRaiz, actuar } = armar();
+      const navegar = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+
+      tocar(enlaceRaiz, grupo, actuar, 'mouse');
+
+      expect(navegar).toHaveBeenCalledTimes(1);
+    });
+
+    it('una categoría sin menú navega en el primer toque', () => {
+      const hoja = categoria(9, 'Sin hijas');
+      const { fixture, actuar } = armar([arbol(), hoja]);
+      const navegar = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+      const grupoDeLaHoja = fixture.nativeElement.querySelectorAll('.group')[1] as HTMLElement;
+      const enlaceDeLaHoja = grupoDeLaHoja.querySelector('a.navbar-link') as HTMLElement;
+
+      tocar(enlaceDeLaHoja, grupoDeLaHoja, actuar);
+
+      expect(navegar).toHaveBeenCalledTimes(1);
+    });
+
+    it('en el menú, el primer toque en un ítem con menú lateral lo abre y no navega; el segundo navega', () => {
+      const { grupo, a, enlace, lateralAbierto, actuar } = armar();
+      const navegar = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+      actuar.mouseEntra(grupo); // el menú ya está abierto
+
+      tocar(enlace(a), a, actuar);
+      expect(lateralAbierto(a)).toBe(true);
+      expect(navegar).not.toHaveBeenCalled();
+
+      tocar(enlace(a), a, actuar);
+      expect(navegar).toHaveBeenCalledTimes(1);
+    });
+
+    it('en el menú, un ítem sin menú lateral navega en el primer toque', () => {
+      const { grupo, c, enlace, actuar } = armar();
+      const navegar = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+      actuar.mouseEntra(grupo);
+
+      tocar(enlace(c), c, actuar);
+
+      expect(navegar).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // Después de Esc el foco queda en la categoría y el menú cerrado: sin otra tecla, la única forma de volver a verlo era
+  // salir y volver a entrar. Flecha abajo lo abre y entra al primer ítem, como en los menús de las aplicaciones.
+  describe('flecha abajo', () => {
+    it('abre el menú y lleva el foco al primer ítem, aunque se lo haya descartado antes con Esc', () => {
+      const { fixture, grupo, enlaceRaiz, a, enlace, desplegableAbierto, actuar } = armar();
+      actuar.mouseEntra(grupo);
+      actuar.esc(grupo);
+      vi.runAllTimers();
+      expect(desplegableAbierto()).toBe(false);
+
+      const tecla = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true });
+      enlaceRaiz.dispatchEvent(tecla);
+      fixture.detectChanges();
+      TestBed.tick(); // corre lo que se programó para después de dibujar
+
+      expect(desplegableAbierto()).toBe(true);
+      expect(document.activeElement).toBe(enlace(a));
+      expect(tecla.defaultPrevented).toBe(true); // y la página no baja con la flecha
+    });
+
+    it('en una categoría sin menú no hace nada y deja que la página baje', () => {
+      const hoja = categoria(9, 'Sin hijas');
+      const { fixture } = armar([hoja]);
+      const enlaceDeLaHoja = fixture.nativeElement.querySelector('a.navbar-link') as HTMLElement;
+
+      const tecla = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true });
+      enlaceDeLaHoja.dispatchEvent(tecla);
+
+      expect(tecla.defaultPrevented).toBe(false);
+    });
+  });
+
+  it('Esc sin nada abierto no hace nada ni le roba el foco a otro elemento', () => {
+    const { fixture, grupo, desplegableAbierto, actuar } = armar();
+    const otro = document.createElement('button');
+    document.body.appendChild(otro);
+    otro.focus();
+
+    actuar.esc(grupo);
+
+    expect(desplegableAbierto()).toBe(false);
+    expect(document.activeElement).toBe(otro);
+    otro.remove();
+    fixture.destroy();
   });
 });
