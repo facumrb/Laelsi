@@ -9,11 +9,11 @@
     role="dialog"
     aria-modal="true"
     aria-labelledby="confirm-delete-modal-title"
-    class="bg-white rounded-2xl shadow-xl w-full max-w-xl md:max-w-2xl animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col"
+    class="bg-white rounded-2xl shadow-xl w-full max-w-xl md:max-w-2xl animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[90vh]"
   >
     <!-- Header -->
     <header
-      class="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-gray-50/50"
+      class="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-gray-50/50 shrink-0"
     >
       <div class="flex items-center gap-3 min-w-0 pr-2">
         <!-- Si se borra de verdad: advertencia en rojo. Si no se borra nada (se desactiva): ícono de desactivar, sin
@@ -53,7 +53,7 @@
     </header>
 
     <!-- Body -->
-    <div class="px-6 py-6 space-y-4">
+    <div class="px-6 py-6 space-y-4 overflow-y-auto overscroll-contain">
       @if (allowPermanentDelete()) {
       <!-- Alerta de riesgo de pérdida permanente -->
       <div
@@ -125,7 +125,7 @@
 
     <!-- Footer -->
     <footer
-      class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50"
+      class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50 shrink-0"
     >
       <button
         type="button"
