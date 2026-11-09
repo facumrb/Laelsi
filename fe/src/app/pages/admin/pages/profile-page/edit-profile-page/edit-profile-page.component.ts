@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { switchMap } from 'rxjs';
+import { EMPTY, of, switchMap } from 'rxjs';
 import { Router, RouterLink } from '@angular/router';
 import { ApiAdminService } from '@services/api-services/api-admin.service';
 import { IApiAdmin, ICreateAdmin, UserRole } from '@models/user.model';
@@ -214,8 +214,23 @@ export class EditProfilePageComponent implements OnInit {
     this.apiService
       .updateAdmin(userId!, adminData as Partial<ICreateAdmin>)
       .pipe(
-        switchMap(() => {
-          return this.photoManager().saveChanges(userId!);
+        // Cambiar la contraseña cierra todas las sesiones de la cuenta, también esta (Supabase Auth, por seguridad):
+        // se vuelve a iniciar sesión ANTES de cualquier otro pedido (la foto, la vista del perfil), que si no
+        // recibirían un 401 y mostrarían "Tu sesión ya no es válida" tras un cambio que salió bien.
+        switchMap(() =>
+          formValue.password
+            ? this.authService.renewSessionAfterPasswordChange(formValue.username!, formValue.password)
+            : of(true),
+        ),
+        switchMap((sesionVigente) => {
+          if (sesionVigente) return this.photoManager().saveChanges(userId!);
+          // No se pudo renovar: el servicio ya cerró la sesión y llevó al login
+          this.alertService.toast(
+            'Cambiaste tu contraseña',
+            'info',
+            'Por seguridad, ingresá de nuevo con la contraseña nueva.',
+          );
+          return EMPTY;
         }),
       )
       .subscribe({

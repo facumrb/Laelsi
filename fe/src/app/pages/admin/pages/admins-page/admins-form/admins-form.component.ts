@@ -2,7 +2,7 @@ import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Location } from '@angular/common';
-import { switchMap, of } from 'rxjs';
+import { switchMap, of, EMPTY } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { ApiAdminService } from '@services/api-services/api-admin.service';
 import { AuthService } from '@services/auth.service';
@@ -282,6 +282,24 @@ export class AdminsFormComponent implements OnInit {
     // Una vez guardado el usuario, procesamos la foto
     userRequest$
       .pipe(
+        // Cambiar la contraseña cierra todas las sesiones de ESA cuenta (Supabase Auth, por seguridad). Si es la
+        // propia, se vuelve a iniciar sesión ANTES de cualquier otro pedido (la foto, la lista), que si no recibirían
+        // un 401 y mostrarían "Tu sesión ya no es válida" tras un cambio que salió bien.
+        switchMap((res: any) => {
+          if (!(editingOwnAccount && formValue.password)) return of(res);
+          return this.authService.renewSessionAfterPasswordChange(formValue.username!, formValue.password).pipe(
+            switchMap((sesionVigente) => {
+              if (sesionVigente) return of(res);
+              // No se pudo renovar: el servicio ya cerró la sesión y llevó al login
+              this.alertService.toast(
+                'Cambiaste tu contraseña',
+                'info',
+                'Por seguridad, ingresá de nuevo con la contraseña nueva.',
+              );
+              return EMPTY;
+            }),
+          );
+        }),
         switchMap((res: any) => {
           const userId = this.isEditMode()
             ? this.adminId()!
