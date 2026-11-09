@@ -7,6 +7,7 @@
     type="button"
     (click)="toggle()"
     class="relative w-full cursor-pointer bg-white rounded-lg border border-gray-300 py-2.5 pl-3 pr-10 text-left shadow-sm focus:outline-none focus:ring-1 sm:text-sm transition-colors"
+    aria-haspopup="listbox"
     [attr.aria-expanded]="isOpen()"
     [attr.aria-label]="label()"
   >
@@ -27,14 +28,16 @@
   @if (isOpen()) {
     <div
       class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm animate-fadeIn"
-      role="listbox"
+      appListbox
       [attr.aria-label]="label()"
+      (closed)="isOpen.set(false)"
     >
       @for (option of options(); track option.value) {
         <div
           (click)="select(option.value)"
           class="relative cursor-pointer select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-100 transition-colors"
           role="option"
+          tabindex="-1"
           [attr.aria-selected]="selected() === option.value"
         >
           <span

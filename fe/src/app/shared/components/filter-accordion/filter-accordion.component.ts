@@ -1,5 +1,6 @@
 import { Component, input, model, signal } from '@angular/core';
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
+import { ListboxDirective } from '@shared/directives/listbox.directive';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   bootstrapChevronDown,
@@ -13,7 +14,7 @@ export interface FilterOption {
 
 @Component({
   selector: 'app-filter-accordion',
-  imports: [ClickOutsideDirective, NgIconComponent],
+  imports: [ClickOutsideDirective, ListboxDirective, NgIconComponent],
   viewProviders: [provideIcons({ bootstrapChevronDown, bootstrapCheckLg })],
   templateUrl: './filter-accordion.component.html',
 })

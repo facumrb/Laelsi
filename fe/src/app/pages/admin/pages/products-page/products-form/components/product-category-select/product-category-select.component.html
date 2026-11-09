@@ -27,8 +27,17 @@
     <div
       class="select-dropdown absolute z-20 mt-1 max-h-60 min-w-full w-max max-w-[min(28rem,calc(100vw-4rem))] overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm animate-fadeIn"
     >
+      <!-- Solo las opciones van dentro de la lista; el botón "Nueva Categoría" queda afuera -->
+      <div
+        appListbox
+        aria-labelledby="category-label"
+        (closed)="showCategoryMenu.set(false)"
+      >
       @for (cat of hierarchicalCategories(); track cat.id) {
         <div
+          role="option"
+          tabindex="-1"
+          [attr.aria-selected]="control().value?.id === cat.id"
           (click)="selectCategory(cat)"
           class="relative cursor-pointer select-none py-2 pr-9 text-gray-900 hover:bg-gray-100 transition-colors"
           [style.padding-left.rem]="0.75 + cat.depth * 1"
@@ -56,6 +65,7 @@
           }
         </div>
       }
+      </div>
 
       @if (hierarchicalCategories().length === 0) {
         <div

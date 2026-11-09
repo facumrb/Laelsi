@@ -39,6 +39,16 @@ describe('CategoriesOrderModalComponent: niveles', () => {
     expect(texto).toContain('Inalámbricos');
   });
 
+  it('se anuncia como diálogo modal y su nombre es su título', () => {
+    const raiz = modalExpandido();
+
+    const dialogo = raiz.querySelector('[role="dialog"]')!;
+
+    expect(dialogo.getAttribute('aria-modal')).toBe('true');
+    const titulo = raiz.querySelector(`#${dialogo.getAttribute('aria-labelledby')}`);
+    expect(titulo?.textContent?.trim()).toBe('Reordenar Categorías');
+  });
+
   it('cada nivel es una lista donde se puede arrastrar: una por nivel', () => {
     expect(modalExpandido().querySelectorAll('.cdk-drop-list').length).toBe(5);
   });

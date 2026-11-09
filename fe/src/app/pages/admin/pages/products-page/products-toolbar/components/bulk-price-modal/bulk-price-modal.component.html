@@ -101,13 +101,19 @@
             class="space-y-2 relative"
             (clickOutside)="showRoundingOptions.set(false)"
           >
-            <label class="block text-sm font-medium text-gray-700">
+            <label
+              id="rounding-label"
+              class="block text-sm font-medium text-gray-700"
+            >
               Regla de Redondeo
             </label>
 
             <button
               type="button"
               (click)="showRoundingOptions.set(!showRoundingOptions())"
+              aria-labelledby="rounding-label"
+              aria-haspopup="listbox"
+              [attr.aria-expanded]="showRoundingOptions()"
               class="relative w-full cursor-pointer bg-white rounded-xl border border-gray-300 py-2.5 pl-4 pr-10 text-left shadow-sm focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors sm:text-sm"
             >
               <span class="block truncate text-gray-900">
@@ -127,8 +133,14 @@
             @if (showRoundingOptions()) {
               <div
                 class="absolute z-20 mt-1 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm animate-fadeIn"
+                appListbox
+                aria-labelledby="rounding-label"
+                (closed)="showRoundingOptions.set(false)"
               >
                 <div
+                  role="option"
+                  tabindex="-1"
+                  [attr.aria-selected]="roundingRule() === 'none'"
                   (click)="selectRoundingRule('none')"
                   class="relative cursor-pointer select-none py-2.5 pl-4 pr-9 text-gray-900 hover:bg-gray-100 transition-colors"
                 >
@@ -151,6 +163,9 @@
                 </div>
 
                 <div
+                  role="option"
+                  tabindex="-1"
+                  [attr.aria-selected]="roundingRule() === 'ceil'"
                   (click)="selectRoundingRule('ceil')"
                   class="relative cursor-pointer select-none py-2.5 pl-4 pr-9 text-gray-900 hover:bg-gray-100 transition-colors"
                 >
@@ -173,6 +188,9 @@
                 </div>
 
                 <div
+                  role="option"
+                  tabindex="-1"
+                  [attr.aria-selected]="roundingRule() === 'floor'"
                   (click)="selectRoundingRule('floor')"
                   class="relative cursor-pointer select-none py-2.5 pl-4 pr-9 text-gray-900 hover:bg-gray-100 transition-colors"
                 >
@@ -328,7 +346,7 @@
                       </span>
                       <ng-icon
                         name="bootstrapArrowClockwise"
-                        class="text-[10px] text-gray-500"
+                        class="text-xs text-gray-500"
                       ></ng-icon>
                       <span
                         class="text-sm font-bold"

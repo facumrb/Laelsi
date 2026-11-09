@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { IApiClient } from '@models/user.model';
@@ -94,5 +94,73 @@ describe('ClientsPageComponent: desactivar y reactivar clientes', () => {
 
     expect(api.setClientState).toHaveBeenCalledWith(6, 'Activo');
     expect(alerta.toast).toHaveBeenCalledWith('Cliente reactivado', 'success');
+  });
+});
+
+// El nombre del cliente abre su edición, pero era un <div> con clic: con teclado no se podía llegar ni activar.
+describe('ClientsPageComponent: el nombre del cliente con teclado', () => {
+  const clienteAna = {
+    id: 5,
+    name: 'Ana',
+    lastName: 'Pérez',
+    dni: '30123456',
+    phone: '3415550000',
+    username: 'ana5',
+    email: 'ana5@ejemplo.test',
+    role: 'Client',
+    photo: null,
+    state: 'Activo',
+    fiscalCondition: 'Consumidor Final',
+  } as unknown as IApiClient;
+
+  function abrir() {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        {
+          provide: ApiClientService,
+          useValue: {
+            getAllClients: () => of({ data: [clienteAna], totalPages: 1, total: 1, page: 1, limit: 16 }),
+            searchClients: vi.fn(),
+            setClientState: vi.fn(),
+          },
+        },
+        { provide: AlertService, useValue: { toast: vi.fn() } },
+      ],
+    });
+    const navegar = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const fixture = TestBed.createComponent(ClientsPageComponent);
+    fixture.detectChanges();
+    const nombre = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('[title="ana5"]')!;
+    return { nombre, navegar };
+  }
+
+  const tecla = (el: HTMLElement, key: string) =>
+    el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+
+  it('el nombre se puede alcanzar con Tab y se anuncia como botón', () => {
+    const { nombre } = abrir();
+
+    expect(nombre.getAttribute('role')).toBe('button');
+    expect(nombre.getAttribute('tabindex')).toBe('0');
+  });
+
+  it('Enter sobre el nombre abre la edición del cliente', () => {
+    const { nombre, navegar } = abrir();
+
+    tecla(nombre, 'Enter');
+
+    expect(navegar).toHaveBeenCalledWith(['/admin/clients/edit', 5]);
+  });
+
+  it('Espacio también la abre, y otra tecla no', () => {
+    const { nombre, navegar } = abrir();
+
+    tecla(nombre, 'a');
+    expect(navegar).not.toHaveBeenCalled();
+
+    tecla(nombre, ' ');
+    expect(navegar).toHaveBeenCalledWith(['/admin/clients/edit', 5]);
   });
 });

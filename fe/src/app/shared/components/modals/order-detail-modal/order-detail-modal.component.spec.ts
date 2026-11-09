@@ -52,6 +52,16 @@ describe('OrderDetailModalComponent: contacto del cliente', () => {
     expect(enlace?.textContent).toContain('+54 9 341-555-1234');
   });
 
+  it('se anuncia como diálogo modal y su nombre es el número de pedido', () => {
+    const html = renderizar('+54 9 341-555-1234');
+
+    const dialogo = html.querySelector('[role="dialog"]')!;
+
+    expect(dialogo.getAttribute('aria-modal')).toBe('true');
+    const titulo = html.querySelector(`#${dialogo.getAttribute('aria-labelledby')}`);
+    expect(titulo?.textContent?.replace(/\s+/g, ' ').trim()).toBe('ID de Pedido: #15');
+  });
+
   it('sin teléfono: el detalle se muestra igual, sin enlace de WhatsApp', () => {
     const html = renderizar(null);
 

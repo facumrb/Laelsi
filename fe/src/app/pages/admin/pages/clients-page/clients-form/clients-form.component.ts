@@ -19,6 +19,7 @@ import { AlertService } from '@services/alert.service';
 import { FormUtils } from '@shared/validators/form-utils';
 import { NumericInputDirective } from '@shared/directives/numeric-input.directive';
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
+import { ListboxDirective } from '@shared/directives/listbox.directive';
 import { AuditInfoComponent } from '@admin/components/audit-info/audit-info.component';
 import { PhoneInputDirective } from '@shared/directives/phone-input.directive';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
@@ -37,6 +38,7 @@ import { TrimInputDirective } from '@shared/directives/trim-input.directive';
     GoBackButtonComponent,
     FieldErrorComponent,
     TrimInputDirective,
+    ListboxDirective,
   ],
   viewProviders: [
     provideIcons({

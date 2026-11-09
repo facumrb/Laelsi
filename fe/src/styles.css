@@ -51,8 +51,9 @@
     }
   }
 
+  /* Por debajo de lg la fila es una tarjeta de DOS columnas (ID 64); desde lg, una fila de tabla */
   .admin-table-row {
-    @apply flex flex-col relative lg:static bg-white rounded-xl shadow border border-gray-200 mb-4 mt-4 lg:mt-0 lg:mb-0 lg:table-row lg:shadow-none lg:border-0 lg:rounded-none hover:bg-gray-50 transition-colors;
+    @apply grid grid-cols-2 relative lg:static bg-white rounded-xl shadow border border-gray-200 mb-4 mt-4 lg:mt-0 lg:mb-0 lg:table-row lg:shadow-none lg:border-0 lg:rounded-none hover:bg-gray-50 transition-colors;
   }
 
   @media (max-width: 1023px) {
@@ -62,15 +63,16 @@
   }
 
   .admin-table-cell-first {
-    @apply sm:col-span-2 lg:col-span-1 px-5 pt-6 pb-2 border-b border-gray-50 lg:border-b lg:border-gray-100 lg:px-6 lg:py-4 lg:table-cell lg:align-middle;
+    @apply col-span-2 lg:col-span-1 min-w-0 px-5 pt-6 pb-2 border-b border-gray-50 lg:border-b lg:border-gray-100 lg:px-6 lg:py-4 lg:table-cell lg:align-middle;
   }
 
+  /* Una columna; si el contenido es largo o quedaría solo, la plantilla agrega max-sm:col-span-2 o col-span-2 */
   .admin-table-cell {
-    @apply px-5 py-2 border-b border-gray-50 lg:border-b lg:border-gray-100 lg:px-6 lg:py-4 lg:table-cell lg:align-middle;
+    @apply col-span-1 min-w-0 px-5 py-2 border-b border-gray-50 lg:border-b lg:border-gray-100 lg:px-6 lg:py-4 lg:table-cell lg:align-middle;
   }
 
   .admin-table-cell-last {
-    @apply sm:col-span-2 lg:col-span-1 px-5 pt-2 pb-5 lg:px-6 lg:py-4 lg:table-cell lg:align-middle lg:border-b lg:border-gray-100;
+    @apply col-span-2 lg:col-span-1 min-w-0 px-5 pt-2 pb-5 lg:px-6 lg:py-4 lg:table-cell lg:align-middle lg:border-b lg:border-gray-100;
   }
 
   .admin-table-header-cell {
@@ -121,11 +123,11 @@
   }
 
   .form-grid-2 {
-    @apply grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3;
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3;
   }
 
   .form-footer {
-    @apply pt-6 flex items-center justify-end gap-x-4 border-t border-gray-100;
+    @apply pt-6 flex flex-wrap items-center justify-end gap-x-4 gap-y-2 border-t border-gray-100;
   }
 
   /* ── Botones ── */
@@ -463,7 +465,8 @@
   }
 
   .elsi-modal-card {
-    @apply bg-white rounded-2xl shadow-xl max-w-md w-full p-6 text-center;
+    /* max-h y overflow-y-auto: en una ventana baja (celular apaisado) el cartel no se sale de la pantalla (ID 64) */
+    @apply bg-white rounded-2xl shadow-xl max-w-md w-full p-6 text-center max-h-[90vh] overflow-y-auto;
     animation: fadeIn 0.3s ease-out;
   }
 

@@ -9,6 +9,7 @@ import {
   bootstrapPlusLg,
 } from '@ng-icons/bootstrap-icons';
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
+import { ListboxDirective } from '@shared/directives/listbox.directive';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 
 @Component({
@@ -16,6 +17,7 @@ import { FieldErrorComponent } from '@shared/validators/field-error/field-error.
   imports: [
     ReactiveFormsModule,
     ClickOutsideDirective,
+    ListboxDirective,
     NgIconComponent,
     FieldErrorComponent,
   ],

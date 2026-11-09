@@ -42,6 +42,7 @@
                   [lastName]="client.lastName"
                 />
                 <div
+                  appActivable
                   (click)="onEdit.emit(client)"
                   class="font-semibold text-gray-900 truncate text-base lg:text-sm cursor-pointer hover:underline"
                   title="{{ client.username }}"
@@ -54,16 +55,19 @@
               </div>
             </td>
 
-            <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
+            <td class="admin-table-cell max-sm:col-span-2" [class.lg:border-b-0]="isLast">
               <span class="admin-table-mobile-label block mb-1"
                 >Nombre Completo:</span
               >
-              <div class="text-gray-900 truncate font-medium">
+              <div class="text-gray-900 line-clamp-2 wrap-break-word lg:line-clamp-none lg:truncate font-medium">
                 {{ client | nombrePersona: "Sin nombre" }}
               </div>
             </td>
 
-            <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
+            <td
+              class="admin-table-cell max-[359px]:col-span-2"
+              [class.lg:border-b-0]="isLast"
+            >
               <div class="flex flex-col items-start justify-center">
                 <span class="admin-table-mobile-label mb-1">DNI / CUIT:</span>
                 <div class="text-gray-900 font-medium">
@@ -77,7 +81,10 @@
               </div>
             </td>
 
-            <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
+            <td
+              class="admin-table-cell max-[359px]:col-span-2"
+              [class.lg:border-b-0]="isLast"
+            >
               <span class="admin-table-mobile-label block mb-2"
                 >Condición Fiscal:</span
               >
@@ -89,7 +96,7 @@
               </span>
             </td>
 
-            <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
+            <td class="admin-table-cell max-sm:col-span-2" [class.lg:border-b-0]="isLast">
               <span class="admin-table-mobile-label block mb-1">Contacto:</span>
               <div class="flex flex-col text-sm min-w-0">
                 <div
@@ -100,7 +107,7 @@
                     class="text-gray-400"
                   ></ng-icon>
                   <span
-                    class="truncate max-w-full"
+                    class="line-clamp-2 break-all lg:line-clamp-none lg:break-normal lg:truncate max-w-full"
                     title="{{ client.email }}"
                     >{{ client.email }}</span
                   >

@@ -1,9 +1,9 @@
-<div class="flex items-center justify-start lg:justify-center gap-3">
+<div class="flex items-center justify-start lg:justify-center gap-1">
   <button
     type="button"
     (click)="onEdit.emit(item())"
     aria-label="Editar"
-    class="cursor-pointer text-blue-600 hover:text-blue-900 transition-colors flex items-center justify-center"
+    class="cursor-pointer p-2 rounded-lg text-blue-600 hover:text-blue-900 transition-colors flex items-center justify-center"
     title="Editar"
   >
     <ng-icon name="bootstrapPencilSquare" class="text-xl"></ng-icon>
@@ -14,7 +14,7 @@
       type="button"
       (click)="onReactivate.emit(item())"
       aria-label="Reactivar"
-      class="cursor-pointer text-emerald-600 hover:text-emerald-900 transition-colors flex items-center justify-center"
+      class="cursor-pointer p-2 rounded-lg text-emerald-600 hover:text-emerald-900 transition-colors flex items-center justify-center"
       title="Reactivar"
     >
       <ng-icon [name]="reactivateIcon()" class="text-xl"></ng-icon>
@@ -26,7 +26,7 @@
       type="button"
       (click)="onDelete.emit(item())"
       [attr.aria-label]="deleteLabel()"
-      class="cursor-pointer text-red-600 hover:text-red-900 transition-colors flex items-center justify-center"
+      class="cursor-pointer p-2 rounded-lg text-red-600 hover:text-red-900 transition-colors flex items-center justify-center"
       [attr.title]="deleteLabel()"
     >
       <ng-icon [name]="deleteIcon()" class="text-xl"></ng-icon>

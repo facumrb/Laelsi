@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { from, map, Observable, switchMap, tap } from 'rxjs';
+import { catchError, from, map, Observable, of, switchMap, tap } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
 import {
@@ -218,6 +218,28 @@ export class AuthService {
         }
         this.accessToken = data.session.access_token;
         return true;
+      }),
+    );
+  }
+
+  /**
+   * Vuelve a iniciar sesión con la contraseña NUEVA después de que alguien cambió la suya.
+   *
+   * Cambiar la contraseña de una cuenta cierra todas sus sesiones en Supabase Auth (por seguridad), también la de
+   * quien la cambió: el siguiente pedido recibía un 401 y la persona veía el error "Tu sesión ya no es válida" justo
+   * después de un cambio que salió bien. Con esto la sesión se renueva sola, sin que se note.
+   *
+   * Llamarlo DESPUÉS del cambio y ANTES de cualquier otro pedido (por ejemplo, subir la foto del perfil).
+   *
+   * @returns true si la sesión quedó vigente; false si no se pudo (ya se cerró la sesión y se llevó al login: quien
+   *          llama solo tiene que avisarle a la persona que ingrese de nuevo con la contraseña nueva)
+   */
+  renewSessionAfterPasswordChange(username: string, newPassword: string): Observable<boolean> {
+    return this.login(username, newPassword).pipe(
+      map(() => true),
+      catchError(() => {
+        this.logout('/auth/login');
+        return of(false);
       }),
     );
   }

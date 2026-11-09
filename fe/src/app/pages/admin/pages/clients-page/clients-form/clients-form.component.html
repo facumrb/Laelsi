@@ -208,6 +208,8 @@
               type="button"
               id="fiscalConditionBtn"
               (click)="toggleFiscalMenu()"
+              aria-haspopup="listbox"
+              [attr.aria-expanded]="isFiscalMenuOpen()"
               class="select-trigger"
             >
               <span class="block truncate text-gray-900 font-medium">
@@ -227,9 +229,18 @@
             </button>
 
             @if (isFiscalMenuOpen()) {
-              <ul class="select-dropdown">
+              <ul
+                class="select-dropdown"
+                appListbox
+                (closed)="isFiscalMenuOpen.set(false)"
+              >
                 @for (condition of fiscalConditions; track condition) {
                   <li
+                    role="option"
+                    tabindex="-1"
+                    [attr.aria-selected]="
+                      formClient.get('fiscalCondition')?.value === condition
+                    "
                     (click)="selectFiscalCondition(condition)"
                     class="select-option"
                   >

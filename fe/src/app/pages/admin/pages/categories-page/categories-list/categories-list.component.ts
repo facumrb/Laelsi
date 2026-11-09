@@ -8,10 +8,12 @@ import { CategoryProductsModalComponent } from './category-products-modal/catego
 import { Router } from '@angular/router';
 import { IProductSummary } from '@models/product.model';
 import { TableEmptyStateComponent } from '@admin/components/table-components/table-empty-state/table-empty-state.component';
+import { ActivableDirective } from '@shared/directives/activable.directive';
 
 @Component({
   selector: 'app-categories-list',
   imports: [
+    ActivableDirective,
     TableActionsComponent,
     NgIconComponent,
     CategoryProductsModalComponent,

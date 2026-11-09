@@ -6,7 +6,10 @@
   <div
     cdkTrapFocus
     cdkTrapFocusAutoCapture
-    class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="order-detail-modal-title"
+    class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden [@media(max-height:480px)]:overflow-y-auto animate-in zoom-in-95 duration-300"
     (click)="$event.stopPropagation()"
   >
     <!-- Modal Header -->
@@ -14,7 +17,7 @@
       class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0"
     >
       <div>
-        <h2 class="text-xl font-bold text-gray-800">
+        <h2 id="order-detail-modal-title" class="text-xl font-bold text-gray-800">
           ID de Pedido: #{{ order().id }}
         </h2>
         <p class="text-sm font-medium text-gray-500 mt-1">
@@ -26,7 +29,7 @@
     </header>
 
     <!-- Modal Body -->
-    <div class="p-6 overflow-y-auto overscroll-contain grow custom-scrollbar">
+    <div class="p-6 overflow-y-auto [@media(max-height:480px)]:overflow-visible overscroll-contain grow custom-scrollbar">
       <!-- Info de Transferencia (Solo si esta Pendiente y es Transferencia) -->
       @if (
         order().status === OrderState.Pending &&
@@ -181,7 +184,7 @@
 
               <div class="flex items-center justify-between mt-auto">
                 <span
-                  class="bg-gray-100 text-gray-600 text-[11px] font-black px-2 py-1 rounded-md uppercase tracking-wider"
+                  class="bg-gray-100 text-gray-600 text-xs font-black px-2 py-1 rounded-md uppercase tracking-wider"
                 >
                   Cant: {{ item.quantity }}
                 </span>

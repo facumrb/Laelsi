@@ -105,6 +105,7 @@
                         >{{ category.order }} -</span
                       >
                       <span
+                        appActivable
                         (click)="onEdit.emit(category)"
                         class="font-semibold text-gray-900 text-base lg:text-sm cursor-pointer hover:underline wrap-break-word lg:truncate min-w-0"
                         title="{{ category.name }}"
@@ -112,7 +113,7 @@
                         {{ category.name }}
                       </span>
                       <span
-                        class="text-[10px] bg-gray-100 text-indigo-600 px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap ml-1 shrink-0"
+                        class="text-xs bg-gray-100 text-indigo-600 px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap ml-1 shrink-0"
                       >
                         Nivel {{ (category.depth || 0) + 1 }}
                       </span>
@@ -128,7 +129,7 @@
               </div>
             </td>
 
-            <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
+            <td class="admin-table-cell max-sm:col-span-2" [class.lg:border-b-0]="isLast">
               <span class="admin-table-mobile-label block mb-1"
                 >Descripción:</span
               >
@@ -140,9 +141,9 @@
               </div>
             </td>
 
-            <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
+            <td class="admin-table-cell max-sm:col-span-2" [class.lg:border-b-0]="isLast">
               <div
-                class="flex items-center justify-start lg:justify-center gap-2"
+                class="flex items-center gap-2 sm:max-lg:flex-col sm:max-lg:items-start sm:max-lg:gap-1 lg:justify-center"
               >
                 <span class="admin-table-mobile-label whitespace-nowrap"
                   >Productos:</span

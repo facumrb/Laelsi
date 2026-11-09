@@ -31,6 +31,38 @@ describe('ConfirmDeleteModalComponent', () => {
     });
   });
 
+  // ID 64 (hallazgo 5): en un celular el título ("Eliminar producto: "Mochila…"") se cortaba con "…" y no se veía qué
+  // producto se estaba por eliminar. Ahora el título puede ocupar dos líneas y el nombre completo está también en el
+  // cuerpo, donde se parte en líneas.
+  describe('nombre largo', () => {
+    const NOMBRE = 'Mochila escolar reforzada con ruedas y portanotebook 15 pulgadas';
+
+    it('el nombre completo se ve en el cuerpo del modal', () => {
+      const fixture = crear({ entityType: 'producto', entityName: NOMBRE });
+
+      const enElCuerpo = (fixture.nativeElement as HTMLElement).querySelector('[data-testid="nombre-completo"]');
+
+      expect(enElCuerpo?.textContent?.trim()).toBe(NOMBRE);
+    });
+
+    it('con otro nombre, el cuerpo muestra ese nombre (no uno fijo)', () => {
+      const fixture = crear({ entityType: 'cliente', allowPermanentDelete: false, entityName: 'María Fernanda González Rodríguez' });
+
+      const enElCuerpo = (fixture.nativeElement as HTMLElement).querySelector('[data-testid="nombre-completo"]');
+
+      expect(enElCuerpo?.textContent?.trim()).toBe('María Fernanda González Rodríguez');
+    });
+
+    it('el título no se corta en una sola línea: admite dos', () => {
+      const fixture = crear({ entityType: 'producto', entityName: NOMBRE });
+
+      const titulo = (fixture.nativeElement as HTMLElement).querySelector('h2')!;
+
+      expect(titulo.classList.contains('line-clamp-2')).toBe(true);
+      expect(titulo.classList.contains('truncate')).toBe(false);
+    });
+  });
+
   describe('sin borrado permanente (clientes y administradores)', () => {
     it('no ofrece eliminar: solo desactivar, y explica que no se borra nada', () => {
       const fixture = crear({ entityType: 'cliente', allowPermanentDelete: false });

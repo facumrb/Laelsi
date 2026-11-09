@@ -196,4 +196,19 @@ describe('CategoryPageComponent: esqueleto mientras carga', () => {
       expect(esqueletos(raiz)).toBe(0);
     });
   });
+
+  // El cartel de "categoría no disponible" atrapa el foco como un diálogo pero no se anunciaba como tal: el lector de
+  // pantalla seguía leyendo la página de atrás sin avisar que se abrió un cuadro.
+  it('el cartel de categoría no disponible se anuncia como diálogo modal con su título', () => {
+    const fixture = TestBed.createComponent(CategoryPageComponent);
+    fixture.componentInstance.showInactiveCategoryModal.set(true);
+    fixture.detectChanges();
+    const raiz = fixture.nativeElement as HTMLElement;
+
+    const dialogo = raiz.querySelector('[role="dialog"]')!;
+
+    expect(dialogo.getAttribute('aria-modal')).toBe('true');
+    const titulo = raiz.querySelector(`#${dialogo.getAttribute('aria-labelledby')}`);
+    expect(titulo?.textContent?.trim()).toBe('Categoría no disponible');
+  });
 });
