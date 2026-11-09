@@ -149,6 +149,46 @@ Deno.test('las tarjetas del panel son una grilla de dos columnas por debajo de l
   assert.ok(celda.has('col-span-1') && celda.has('min-w-0'), 'la celda común ocupa una columna y puede encogerse (min-w-0)');
 });
 
+// ID 64 (hallazgos 7, 11, 12 y 13): formularios en dos columnas desde sm, pie de formulario que envuelve, diálogos largos
+// que scrollean enteros en ventanas bajas y encabezado que no parte "Ver Tienda" en dos líneas.
+const leer = (ruta: string) => Deno.readTextFile(new URL('../../../fe/src/' + ruta, import.meta.url));
+
+Deno.test('los formularios usan dos columnas desde sm y el pie de formulario envuelve', async () => {
+  const css = await leer('styles.css');
+  const grilla = clasesDe(css, 'form-grid-2');
+  const pie = clasesDe(css, 'form-footer');
+
+  assert.ok(grilla.has('grid-cols-1') && grilla.has('sm:grid-cols-2'), 'form-grid-2: una columna y dos desde sm');
+  assert.ok(!grilla.has('md:grid-cols-2'), 'form-grid-2 ya no espera hasta md');
+  assert.ok(pie.has('flex-wrap'), 'form-footer envuelve: en 320 px dos botones no entran en una fila');
+});
+
+Deno.test('el registro pone sus campos en dos columnas desde sm', async () => {
+  const html = await leer('app/pages/auth/pages/register-page/register-page.component.html');
+
+  assert.match(html, /grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-12/);
+  assert.ok(!/grid grid-cols-1 lg:grid-cols-2/.test(html), 'el registro ya no espera hasta lg');
+});
+
+Deno.test('el detalle del pedido y reordenar categorías scrollean enteros en ventanas bajas (alto máximo 480 px)', async () => {
+  for (const ruta of [
+    'app/shared/components/modals/order-detail-modal/order-detail-modal.component.html',
+    'app/pages/admin/pages/categories-page/categories-toolbar/components/categories-order-modal/categories-order-modal.component.html',
+  ]) {
+    const html = await leer(ruta);
+    assert.ok(html.includes('[@media(max-height:480px)]:overflow-y-auto'), `${ruta}: el panel scrollea entero en ventanas bajas`);
+    assert.ok(html.includes('[@media(max-height:480px)]:overflow-visible'), `${ruta}: el cuerpo no scrollea aparte en ventanas bajas`);
+  }
+});
+
+Deno.test('el encabezado del panel muestra solo el ícono de "Ver Tienda" por debajo de 400 px, con nombre accesible', async () => {
+  const html = await leer('app/pages/admin/layout/navbar/navbar.component.html');
+
+  // El nombre accesible contiene el texto visible ("Ver Tienda"): si no, quien dicta "clic en Ver Tienda" no lo alcanza
+  assert.match(html, /aria-label="Ver Tienda[^"]*"/);
+  assert.match(html, /<span class="hidden min-\[400px\]:inline[^"]*">\s*Ver Tienda\s*<\/span>/);
+});
+
 Deno.test('el modal compartido de styles.css (elsi-modal-card) topa su alto y scrollea por dentro', async () => {
   const css = await Deno.readTextFile(new URL('../../../fe/src/styles.css', import.meta.url));
   const regla = css.match(/\.elsi-modal-card\s*\{([^}]*)\}/)?.[1] ?? '';
