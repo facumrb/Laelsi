@@ -55,6 +55,16 @@ describe('TurnstileComponent: tamaño con el que dibuja el widget', () => {
     expect(opciones['size']).toBe('normal');
   });
 
+  // ID 64: `app-turnstile` es un elemento personalizado, en línea por defecto: el margen que le da `space-y-4` a sus
+  // hermanos no se aplica en vertical y el widget quedaba pegado al botón "Crear Cuenta". Como bloque, el espacio vale.
+  it('el elemento del componente es un bloque, para que el espacio entre hermanos se aplique', async () => {
+    await dibujarConUnAncho(360);
+    const fixture = TestBed.createComponent(TurnstileComponent);
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).classList.contains('block')).toBe(true);
+  });
+
   it('sigue pasando la clave y los avisos de token', async () => {
     const [, opciones] = await dibujarConUnAncho(360);
 

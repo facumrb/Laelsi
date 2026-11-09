@@ -72,6 +72,8 @@ function loadTurnstileScript(): Promise<void> {
  */
 @Component({
   selector: 'app-turnstile',
+  // Bloque: un elemento personalizado es en línea por defecto y el espacio de `space-y-*` del formulario no se aplica
+  host: { class: 'block' },
   template: `<div #container class="flex justify-center"></div>`,
 })
 export class TurnstileComponent implements AfterViewInit, OnDestroy {
