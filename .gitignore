@@ -62,8 +62,8 @@ Thumbs.db
 
 # --- AI Agents & Graphify ---
 graphify-out/
-.agents/local/
-.agents/cache/
+.agents/
+CLAUDE.md
 .claude/settings.local.json
 .mcp.json
 .specify/local/
