@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import type { SweetAlertIcon } from 'sweetalert2';
+import { validarTelefono } from '@shared/utils/telefono';
 
 // sweetalert2 se carga bajo demanda: queda fuera del bundle inicial (~79 kB)
 // y solo se descarga la primera vez que se muestra una alerta.
@@ -75,6 +76,27 @@ export class AlertService {
       confirmButtonText: confirmButtonText,
       cancelButtonText: 'Cancelar',
     }).then((result) => result.isConfirmed);
+  }
+
+  /**
+   * Pide un teléfono de contacto (al confirmar un pedido, si el cliente no lo tiene cargado). Devuelve el
+   * teléfono sin espacios de los bordes, o null si la persona cancela. Las reglas están en shared/utils/telefono.ts.
+   */
+  async askPhone(text: string): Promise<string | null> {
+    const Swal = await cargarSwal();
+    const { value } = await Swal.fire({
+      title: 'Teléfono de contacto',
+      text,
+      input: 'tel',
+      inputPlaceholder: 'Ej.: 341 555-0000',
+      showCancelButton: true,
+      confirmButtonText: 'Guardar y continuar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#3d4494',
+      inputAttributes: { autocomplete: 'tel' },
+      inputValidator: (valor) => validarTelefono(valor ?? ''),
+    });
+    return typeof value === 'string' && value.trim() !== '' ? value.trim() : null;
   }
 
   /**

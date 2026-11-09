@@ -10,6 +10,9 @@ import {
 } from '@ng-icons/bootstrap-icons';
 import { CartService } from '@services/cart.service';
 import { ApiOrderService } from '@services/api-services/api-order.service';
+import { ApiClientService } from '@services/api-services/api-client.service';
+import { hayTelefono } from '@shared/utils/telefono';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from '@services/auth.service';
 import { AlertService } from '@services/alert.service';
 import { injectInvalidateCatalog } from '@services/queries/catalog-cache';
@@ -31,6 +34,7 @@ import { environment } from 'src/environments/environment';
 export class OrderSummaryComponent {
   private cartService = inject(CartService);
   private apiOrderService = inject(ApiOrderService);
+  private apiClientService = inject(ApiClientService);
   private authService = inject(AuthService);
   private router = inject(Router);
   private alertService = inject(AlertService);
@@ -74,6 +78,28 @@ export class OrderSummaryComponent {
     });
   }
 
+  /**
+   * Se asegura de que el cliente tenga un teléfono de contacto: si falta, lo pide y lo guarda en su perfil.
+   * Devuelve false si no se puede seguir (la persona cancela, o falla la consulta o el guardado: en ese caso
+   * el interceptor de errores ya avisó).
+   */
+  private async asegurarTelefono(userId: number): Promise<boolean> {
+    try {
+      const cuenta = await firstValueFrom(this.apiClientService.getAccountInfoById(userId));
+      if (hayTelefono(cuenta.phone)) return true;
+
+      const telefono = await this.alertService.askPhone(
+        'Para coordinar el retiro y el pago necesitamos un teléfono de contacto. Lo guardamos en tu perfil.',
+      );
+      if (telefono === null) return false;
+
+      await firstValueFrom(this.apiClientService.updateClient(userId, { phone: telefono }));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async checkout() {
     const user = this.authService.currentUser();
     if (!user) {
@@ -94,6 +120,10 @@ export class OrderSummaryComponent {
       );
       return;
     }
+
+    // El negocio necesita un teléfono para coordinar el retiro y el pago (ID 71): si no lo tiene cargado se le
+    // pide ahora, que es el único momento en que hace falta, y se guarda en su perfil.
+    if (!(await this.asegurarTelefono(user.id))) return;
 
     const orderData = {
       clientId: user.id,
