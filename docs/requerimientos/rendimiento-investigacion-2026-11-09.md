@@ -80,6 +80,20 @@ Lo que dice la medición:
 
 **Pendiente de verificar con el sitio desplegado:** repetir PageSpeed del inicio (esperable: bajar la transferencia inicial ~28 kB, del orden de 0,1 a 0,3 s de LCP en laboratorio; es una estimación, no una medición) y probar el inicio de sesión real (correo y contraseña, cerrar sesión, recuperar contraseña, Google) y que una sesión ya iniciada siga iniciada.
 
+## Después de subir a `main` el recorte de JavaScript, el logo y el ID 64 (2026-11-09, noche)
+
+Misma medición (PageSpeed móvil, sitio publicado, 3 corridas y mediana), commit `3954296` en producción. Se verificó antes en `www`: el trozo de Supabase pesa 108 kB (era 225 kB), sin realtime, postgrest ni storage en los trozos iniciales; la precarga del logo está en `index.html` y `Logo-500.webp` (20 kB) responde 200.
+
+| Página | Puntaje antes → ahora | LCP | CLS | TBT | Oportunidad "JavaScript sin usar" |
+| --- | --- | --- | --- | --- | --- |
+| Inicio | 91 → **92** (96, 92, 92) | 3,2 → 3,0 s | 0,073 → 0,073 | 38 ms | −490 ms |
+| Categoría | 86 → **87** (85, 87, 87) | 3,8 → 3,7 s | 0,011 → **0,000** | 28 ms | −300 ms |
+| Ficha de producto | 90 → **92** (92, 92, 92) | 3,5 → 3,2 s | 0,050 → 0,050 | 0 ms | −490 ms |
+
+- **La mejora es chica y está dentro del ruido de PageSpeed**: de +1 a +2 puntos y de −0,1 a −0,3 s de LCP, que coincide con lo que se había estimado (0,1 a 0,3 s) pero no se puede separar de la variación entre corridas (una corrida suelta del inicio, antes de estos cambios, había dado 94 y 2,7 s). No se debe presentar como una mejora medida con certeza.
+- **El LCP sigue en ~3 s** porque el retraso es de renderizado: el párrafo de la portada no se puede pintar hasta que el JavaScript arma la página. Bajar eso de verdad exige prerenderizar la portada o el paso a Next.js (ADR 0002), no más recortes al paquete de Angular.
+- **Pendiente:** el elemento del LCP sigue sin informarse en esta medición; la causa más probable sigue siendo el párrafo del cartel de bienvenida.
+
 ## Qué puede explicar el 60 % (hipótesis a confirmar al medir)
 
 | Hipótesis | Por qué | Qué métrica toca |
