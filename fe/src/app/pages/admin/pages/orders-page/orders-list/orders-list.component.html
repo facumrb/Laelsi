@@ -44,7 +44,7 @@
                 [routerLink]="['/admin/clients/edit', order.client.id]"
                 class="inline-block text-gray-900 font-semibold truncate hover:underline"
               >
-                {{ order.client.name }} {{ order.client.lastName }}
+                {{ order.client | nombrePersona: order.client.email }}
               </a>
               <div
                 class="text-xs text-gray-500 truncate max-w-50 xl:max-w-xs"

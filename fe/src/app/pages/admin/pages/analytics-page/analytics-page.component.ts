@@ -1,6 +1,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { FormatDatePipe } from '@shared/pipes/format-date.pipe';
+import { NombrePersonaPipe } from '@shared/pipes/nombre-persona.pipe';
 import { RouterModule } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
@@ -24,6 +25,7 @@ import { injectAnalyticsSummaryQuery } from '@services/queries/analytics-queries
     NgIconComponent,
     CurrencyPipe,
     FormatDatePipe,
+    NombrePersonaPipe,
     OrderDetailModalComponent,
     ProductImageComponent,
   ],

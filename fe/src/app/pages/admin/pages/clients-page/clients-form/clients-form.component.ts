@@ -86,10 +86,11 @@ export class ClientsFormComponent implements OnInit {
   formClient = this.fb.group(
     {
       // --- DATOS PERSONALES ---
+      // ID 71: nombre, apellido, DNI y teléfono son opcionales (la base los guarda como NULL y el registro
+      // propio tampoco los pide). Si se cargan, se siguen validando.
       name: [
         '',
         [
-          Validators.required,
           FormUtils.minLength(2),
           FormUtils.maxLength(100),
           FormUtils.notOnlyWhiteSpace,
@@ -98,7 +99,6 @@ export class ClientsFormComponent implements OnInit {
       lastName: [
         '',
         [
-          Validators.required,
           FormUtils.minLength(2),
           FormUtils.maxLength(100),
           FormUtils.notOnlyWhiteSpace,
@@ -107,7 +107,6 @@ export class ClientsFormComponent implements OnInit {
       dni: [
         '',
         [
-          Validators.required,
           FormUtils.minLength(7),
           FormUtils.maxLength(15),
           Validators.pattern(FormUtils.numberPattern),
@@ -116,7 +115,6 @@ export class ClientsFormComponent implements OnInit {
       phone: [
         '',
         [
-          Validators.required,
           FormUtils.minLength(7),
           FormUtils.maxLength(20),
           Validators.pattern(FormUtils.phonePattern),

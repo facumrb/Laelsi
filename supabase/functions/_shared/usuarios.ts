@@ -18,6 +18,12 @@ import {
   validarCambioDeEstado,
   type EstadoUsuario,
 } from './estado-usuario.ts';
+import {
+  CAMPOS_CLIENTE_OPCIONALES_DE_TEXTO,
+  camposFaltantes,
+  mensajeDeCamposFaltantes,
+  textosVaciosANulos,
+} from './campos-usuario.ts';
 
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -136,7 +142,10 @@ export function sanitizeUserInput(body: any, role: UserRole): Record<string, any
 
   const input = pickFields(body, allowed);
   if (input.cuit === '') delete input.cuit;
-  return input;
+
+  // Nombre, apellido, teléfono y DNI de un cliente son opcionales (ID 71): un texto vacío se guarda como
+  // NULL. Un DNI '' chocaría con el de otro cliente en el índice único; NULL se puede repetir.
+  return role === 'Client' ? textosVaciosANulos(input, CAMPOS_CLIENTE_OPCIONALES_DE_TEXTO) : input;
 }
 
 /** Convierte los datos recibidos en las columnas del perfil (sin credenciales). */
@@ -263,23 +272,19 @@ export async function createUser(
   // deno-lint-ignore no-explicit-any
   input: Record<string, any>,
   role: UserRole,
-  // El alta desde el panel admin exige el perfil completo; el registro público solo las credenciales.
+  // requireFullProfile: los administradores se dan de alta con el perfil completo. Los clientes (en el
+  // registro propio y, desde el ID 71, también en el panel) solo con las credenciales: nombre de usuario,
+  // correo y contraseña. Ver campos-usuario.ts.
   // termsVersion: solo el registro público lo informa; se guarda junto con la fecha de aceptación.
   options: { requireFullProfile: boolean; termsVersion?: string } = { requireFullProfile: true },
 ) {
-  const { email, password, confirmPassword, name, lastName, phone, username, dni } = input;
+  const { email, password, confirmPassword, name, lastName, username, dni } = input;
 
   validatePasswords(password, confirmPassword);
 
-  if (options.requireFullProfile) {
-    if (!email || !password || !name || !lastName || !phone || !username || !dni) {
-      throw new AppError(
-        'Todos los campos obligatorios deben ser proporcionados (email, contraseña, nombre, apellido, teléfono, nombre de usuario, DNI)',
-        400,
-      );
-    }
-  } else if (!email || !password || !username) {
-    throw new AppError('El email, el nombre de usuario y la contraseña son obligatorios', 400);
+  const perfil = options.requireFullProfile ? 'completo' : 'minimo';
+  if (camposFaltantes(input, perfil).length > 0) {
+    throw new AppError(mensajeDeCamposFaltantes(perfil), 400);
   }
 
   if (!EMAIL_REGEX.test(email)) {

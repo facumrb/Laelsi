@@ -99,7 +99,9 @@ async function searchClientByText(ctx: RequestContext) {
 
 async function add(ctx: RequestContext) {
   await requireAdmin(ctx.req);
-  const client = await createUser(sanitizeUserInput(ctx.body, 'Client'), 'Client');
+  // ID 71: el alta desde el panel pide lo mismo que el registro propio y la base: nombre de usuario,
+  // correo y contraseña. Nombre, apellido, teléfono y DNI son opcionales.
+  const client = await createUser(sanitizeUserInput(ctx.body, 'Client'), 'Client', { requireFullProfile: false });
 
   return created('Usuario registrado exitosamente', {
     id: client.id,

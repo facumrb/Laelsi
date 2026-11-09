@@ -10,6 +10,7 @@ import {
 import { TableEmptyStateComponent } from '@admin/components/table-components/table-empty-state/table-empty-state.component';
 import { EntityStateBadgeComponent } from '@admin/components/table-components/entity-state-badge/entity-state-badge.component';
 import { UserAvatarComponent } from '@shared/components/user-avatar/user-avatar.component';
+import { NombrePersonaPipe } from '@shared/pipes/nombre-persona.pipe';
 
 @Component({
   selector: 'app-clients-list',
@@ -19,6 +20,7 @@ import { UserAvatarComponent } from '@shared/components/user-avatar/user-avatar.
     TableEmptyStateComponent,
     UserAvatarComponent,
     EntityStateBadgeComponent,
+    NombrePersonaPipe,
   ],
   viewProviders: provideIcons({
     bootstrapEnvelope,

@@ -89,7 +89,7 @@
             <div class="flex items-center md:justify-start gap-2">
               <ng-icon name="bootstrapPerson"></ng-icon>
               <span class="text-sm font-bold text-gray-800">
-                {{ order().client.name }} {{ order().client.lastName }}
+                {{ order().client | nombrePersona: order().client.email }}
               </span>
             </div>
             <div class="flex items-center md:justify-center">

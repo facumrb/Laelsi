@@ -11,6 +11,7 @@ import {
 import { A11yModule } from '@angular/cdk/a11y';
 import { CurrencyPipe, DOCUMENT } from '@angular/common';
 import { FormatDatePipe } from '@shared/pipes/format-date.pipe';
+import { NombrePersonaPipe } from '@shared/pipes/nombre-persona.pipe';
 import { RouterModule } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
@@ -29,6 +30,7 @@ import { ProductImageComponent } from '@shared/components/product-image/product-
     NgIconComponent,
     CurrencyPipe,
     FormatDatePipe,
+    NombrePersonaPipe,
     RouterModule,
     CloseModalButtonComponent,
     ProductImageComponent,
@@ -56,13 +58,13 @@ export class OrderDetailModalComponent implements OnInit, OnDestroy {
   private document = inject(DOCUMENT);
   private authService = inject(AuthService);
 
+  private nombrePersona = new NombrePersonaPipe();
+
+  // Nombre de quien está viendo el pedido (o, sin sesión, del cliente). Nombre y apellido de un cliente son
+  // opcionales (ID 71): sin ellos se usa el correo del cliente en vez de mostrar "null null".
   currentUserName = computed(() => {
-    const user = this.authService.currentUser();
-    if (user) {
-      return `${user.name} ${user.lastName}`;
-    }
-    const client = this.order().client;
-    return `${client.name} ${client.lastName}`;
+    const persona = this.authService.currentUser() ?? this.order().client;
+    return this.nombrePersona.transform(persona, this.order().client.email);
   });
 
   ngOnInit() {
