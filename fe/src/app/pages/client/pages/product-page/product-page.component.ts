@@ -62,6 +62,9 @@ export class ProductPageComponent implements OnInit {
   private productQuery = injectProductDetailQuery(this.productId);
 
   product = computed<IApiProduct | undefined>(() => this.productQuery.data());
+
+  // Mientras llega el producto se muestra un esqueleto que reserva el lugar (ID 70: evita el salto de diseño)
+  loading = computed(() => this.productQuery.isPending());
   thumbnailIndex = signal(0);
 
   // Consulta prearmada por WhatsApp para saber cuándo vuelve un producto pausado (ID 54 de discusiones.md)

@@ -189,5 +189,44 @@
         </div>
       </div>
     </div>
+  } @else if (loading()) {
+    <!-- Esqueleto de la ficha (ID 70): misma estructura que la ficha real, para que la página no se corra cuando
+         llegan los datos (Lighthouse medía un salto de diseño de 0,578). Es decorativo: el aviso lo da el estado. -->
+    <p role="status" class="sr-only">Cargando producto…</p>
+    <div
+      data-testid="ficha-esqueleto"
+      aria-busy="true"
+      aria-hidden="true"
+      class="flex flex-col gap-6 md:grid md:grid-cols-2 md:gap-12"
+    >
+      <div class="flex flex-col gap-8">
+        <div class="flex w-full flex-col gap-4 md:flex-row">
+          <div class="hidden flex-col gap-3 md:flex">
+            @for (n of [1, 2, 3]; track n) {
+              <div class="size-16 animate-pulse rounded-xl bg-gray-100"></div>
+            }
+          </div>
+          <div
+            class="aspect-4/3 flex-1 animate-pulse rounded-2xl border border-gray-100 bg-gray-100"
+          ></div>
+        </div>
+        <div class="border-t border-gray-100 pt-4 md:border-none md:pt-0">
+          <div class="mb-3 h-6 w-32 animate-pulse rounded bg-gray-200"></div>
+          <div class="space-y-2">
+            <div class="h-4 w-full animate-pulse rounded bg-gray-200"></div>
+            <div class="h-4 w-11/12 animate-pulse rounded bg-gray-200"></div>
+            <div class="h-4 w-2/3 animate-pulse rounded bg-gray-200"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col">
+        <div class="mb-2 h-10 w-4/5 animate-pulse rounded-md bg-gray-200"></div>
+        <div class="mb-6 h-8 w-44 animate-pulse rounded-full bg-gray-100"></div>
+        <div class="mb-8 h-10 w-40 animate-pulse rounded-md bg-gray-200"></div>
+        <div class="mb-6 h-12 w-full animate-pulse rounded-xl bg-gray-100"></div>
+        <div class="h-12 w-full animate-pulse rounded-xl bg-gray-200"></div>
+      </div>
+    </div>
   }
 </div>
