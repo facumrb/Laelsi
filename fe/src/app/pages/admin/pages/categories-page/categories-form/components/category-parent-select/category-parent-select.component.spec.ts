@@ -24,4 +24,22 @@ describe('CategoryParentSelectComponent: madres posibles', () => {
   it('al editar, no ofrece la categoría editada ni sus descendientes', () => {
     expect(madresPosibles(3)).toEqual(['Tecnología', 'Computación']);
   });
+
+  // Lo que ve la persona: se abre el menú y se leen las opciones dibujadas (no solo la lista calculada), para
+  // descartar que la plantilla imponga su propio tope de niveles.
+  it('con el menú abierto, dibuja como madre posible hasta la categoría del cuarto nivel', () => {
+    const fixture = TestBed.createComponent(CategoryParentSelectComponent);
+    fixture.componentRef.setInput('control', new FormControl<number | null>(null));
+    fixture.componentRef.setInput('categories', cadenaPlana());
+    fixture.componentRef.setInput('currentCategoryId', null);
+    fixture.componentRef.setInput('currentParentId', null);
+    fixture.detectChanges();
+    const raiz = fixture.nativeElement as HTMLElement;
+    raiz.querySelector<HTMLButtonElement>('button#parentId')?.click();
+    fixture.detectChanges();
+
+    const opciones = Array.from(raiz.querySelectorAll('ul li span.block')).map((s) => (s.textContent ?? '').trim());
+
+    expect(opciones).toEqual(['Tecnología', 'Computación', 'Periféricos', 'Mouses']);
+  });
 });

@@ -23,6 +23,7 @@ import {
 } from '@tanstack/angular-query-experimental';
 import { authInterceptor } from './interceptors/auth.interceptor';
 import { errorInterceptor } from './interceptors/error.interceptor';
+import { AppUpdateService } from '@services/app-update.service';
 import { NavigationHistoryService } from '@services/navigation-history.service';
 import { SeoService } from '@services/seo.service';
 
@@ -59,6 +60,8 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(() => {
       inject(NavigationHistoryService);
       inject(SeoService);
+      // Pregunta si actualizar cuando hay una versión nueva del sitio (si no, el navegador sigue mostrando la vieja)
+      inject(AppUpdateService).iniciar();
     }),
   ],
 };
