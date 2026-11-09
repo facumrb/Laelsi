@@ -20,7 +20,7 @@
           >
             <!-- ID Column -->
             <td
-              class="admin-table-cell-first font-bold"
+              class="admin-table-cell-first sm:col-span-1 font-bold"
               [class.lg:rounded-bl-lg]="isLast"
               [class.lg:border-b-0]="isLast"
             >
@@ -37,18 +37,18 @@
             </td>
 
             <!-- Client Column -->
-            <td class="admin-table-cell group" [class.lg:border-b-0]="isLast">
+            <td class="admin-table-cell max-sm:col-span-2 sm:max-lg:pt-6 group" [class.lg:border-b-0]="isLast">
               <span class="admin-table-mobile-label block mb-1 text-xs"
                 >Cliente:</span
               >
               <a
                 [routerLink]="['/admin/clients/edit', order.client.id]"
-                class="inline-block text-gray-900 font-semibold truncate hover:underline"
+                class="block text-gray-900 font-semibold line-clamp-2 wrap-break-word lg:line-clamp-none lg:truncate hover:underline"
               >
                 {{ order.client | nombrePersona: order.client.email }}
               </a>
               <div
-                class="text-xs text-gray-500 truncate max-w-50 xl:max-w-xs"
+                class="text-xs text-gray-500 line-clamp-2 break-all lg:line-clamp-none lg:break-normal lg:truncate lg:max-w-50 xl:max-w-xs"
                 title="{{ order.client.email }}"
               >
                 {{ order.client.email }}
@@ -60,7 +60,7 @@
               <span class="admin-table-mobile-label block mb-1 text-xs"
                 >Método:</span
               >
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <ng-icon
                   [name]="
                     order.deliveryMethod === DeliveryMethod.Envio

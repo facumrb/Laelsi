@@ -57,17 +57,17 @@
               </div>
             </td>
 
-            <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
+            <td class="admin-table-cell max-sm:col-span-2" [class.lg:border-b-0]="isLast">
               <span class="admin-table-mobile-label block mb-1"
                 >Nombre Completo:</span
               >
-              <div class="text-gray-900 truncate font-medium">
+              <div class="text-gray-900 line-clamp-2 wrap-break-word lg:line-clamp-none lg:truncate font-medium">
                 {{ admin.name }} {{ admin.lastName }}
               </div>
             </td>
 
             <td
-              class="admin-table-cell lg:text-center"
+              class="admin-table-cell max-sm:col-span-2 lg:text-center"
               [class.lg:border-b-0]="isLast"
             >
               <span class="admin-table-mobile-label block mb-1">DNI:</span>
@@ -76,7 +76,7 @@
               </span>
             </td>
 
-            <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
+            <td class="admin-table-cell col-span-2" [class.lg:border-b-0]="isLast">
               <span class="admin-table-mobile-label block mb-1">Contacto:</span>
               <div class="flex flex-col text-sm">
                 <div class="flex items-center gap-1.5 text-gray-900 mb-0.5">
@@ -85,7 +85,7 @@
                     class="text-gray-400"
                   ></ng-icon>
                   <span
-                    class="truncate max-w-50 xl:max-w-xs"
+                    class="line-clamp-2 break-all lg:line-clamp-none lg:break-normal lg:truncate lg:max-w-50 xl:max-w-xs"
                     title="{{ admin.email }}"
                     >{{ admin.email }}</span
                   >

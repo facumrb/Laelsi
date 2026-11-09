@@ -95,7 +95,7 @@
 
             <!-- Este Estado es para la version CARD -->
             <td
-              class="flex flex-col p-0 border-b border-gray-50 lg:border-b lg:border-gray-100 lg:pl-1 lg:pr-6 lg:py-4 lg:table-cell lg:align-middle"
+              class="col-span-2 lg:col-span-1 min-w-0 flex flex-col p-0 border-b border-gray-50 lg:border-b lg:border-gray-100 lg:pl-1 lg:pr-6 lg:py-4 lg:table-cell lg:align-middle"
               [class.lg:border-b-0]="isLast"
             >
               <div class="flex justify-end w-full px-2 pt-2 pb-0 lg:hidden">
@@ -140,7 +140,7 @@
                 <div
                   appActivable
                   (click)="onEdit.emit(product)"
-                  class="font-semibold text-gray-900 text-base lg:text-sm cursor-pointer hover:underline truncate"
+                  class="font-semibold text-gray-900 text-base lg:text-sm cursor-pointer hover:underline line-clamp-2 wrap-break-word lg:line-clamp-none lg:truncate"
                   title="{{ product.name }}"
                 >
                   {{ product.name }}
@@ -148,7 +148,7 @@
               </div>
             </td>
 
-            <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
+            <td class="admin-table-cell max-sm:col-span-2" [class.lg:border-b-0]="isLast">
               <span class="admin-table-mobile-label block mb-1"
                 >Categoría:</span
               >
@@ -158,10 +158,10 @@
             </td>
 
             <td
-              class="px-5 py-2 border-b border-gray-50 lg:border-b lg:border-gray-100 lg:pl-10 lg:pr-6 lg:py-4 lg:table-cell lg:align-middle lg:text-left"
+              class="col-span-1 min-w-0 px-5 py-2 border-b border-gray-50 lg:border-b lg:border-gray-100 lg:pl-10 lg:pr-6 lg:py-4 lg:table-cell lg:align-middle lg:text-left"
               [class.lg:border-b-0]="isLast"
             >
-              <div class="flex items-center justify-start gap-2">
+              <div class="flex flex-col items-start gap-1 lg:flex-row lg:items-center lg:gap-2">
                 <span class="admin-table-mobile-label">Precio:</span>
                 <span class="text-gray-900 font-semibold">
                   {{
@@ -180,11 +180,11 @@
               [class.lg:border-b-0]="isLast"
             >
               <div
-                class="flex items-center justify-start lg:justify-center gap-2"
+                class="flex flex-col items-start gap-1 lg:flex-row lg:items-center lg:justify-center lg:gap-2"
               >
                 <span class="admin-table-mobile-label">Stock:</span>
                 <span
-                  class="w-28 shrink-0 h-7 inline-flex items-center justify-center rounded-md text-xs font-medium border whitespace-nowrap"
+                  class="px-2.5 lg:px-0 lg:w-28 shrink-0 h-7 inline-flex items-center justify-center rounded-md text-xs font-medium border whitespace-nowrap"
                   [class.bg-red-50]="product.stock === 0"
                   [class.text-red-700]="product.stock === 0"
                   [class.border-red-200]="product.stock === 0"
@@ -213,12 +213,12 @@
             </td>
 
             <td
-              class="admin-table-cell-last"
+              class="admin-table-cell-last sm:col-span-1"
               [class.lg:rounded-br-lg]="isLast"
               [class.lg:border-b-0]="isLast"
             >
               <div
-                class="flex items-center justify-start lg:justify-center gap-2"
+                class="flex items-center justify-start lg:justify-center gap-2 sm:max-lg:flex-col sm:max-lg:items-start sm:max-lg:gap-1"
               >
                 <span class="admin-table-mobile-label">Acciones:</span>
                 <app-table-actions
