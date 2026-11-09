@@ -24,6 +24,20 @@ declare global {
   }
 }
 
+/**
+ * Tamaño del widget según el ancho de la ventana (ID 64, hallazgo 6).
+ *
+ * Según la documentación de Cloudflare: `normal` mide 300×65 px, `flexible` ocupa el 100 % con un mínimo de 300 px y
+ * `compact` mide 150×140 px. En un celular de 320 o 360 px el contenido de una tarjeta mide 222 o 262 px, así que
+ * `normal` sobresale y `flexible` tampoco entra (su mínimo es 300): solo `compact` cabe. El tamaño se pasa al dibujar el
+ * widget y la documentación no dice que se pueda cambiar después, por eso se decide una sola vez, al dibujarlo.
+ */
+export const ANCHO_DESDE_EL_QUE_ENTRA_EL_NORMAL = 400;
+
+export function elegirTamanoDelWidget(anchoDeVentana: number): 'normal' | 'compact' {
+  return anchoDeVentana < ANCHO_DESDE_EL_QUE_ENTRA_EL_NORMAL ? 'compact' : 'normal';
+}
+
 // El script se carga una sola vez, la primera vez que hace falta
 let scriptLoading: Promise<void> | null = null;
 
@@ -84,6 +98,7 @@ export class TurnstileComponent implements AfterViewInit, OnDestroy {
 
     this.widgetId = window.turnstile.render(this.container().nativeElement, {
       sitekey: environment.turnstileSiteKey,
+      size: elegirTamanoDelWidget(window.innerWidth),
       callback: (token: string) => this.tokenChange.emit(token),
       'expired-callback': () => this.tokenChange.emit(null),
       'error-callback': () => this.tokenChange.emit(null),
