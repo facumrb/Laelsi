@@ -36,6 +36,18 @@ Responde a la pregunta de Facundo: ¿las cuestiones de accesibilidad están impl
 | E | Celdas clicables solo con mouse (usuario o nombre que abre la edición) | Listas de clientes, administradores y productos | Baja: ya hay un botón "Editar" con teclado |
 | F | Fondos de modales que cierran al hacer clic (`div` con `(click)`) | Casi todos los modales | **No es un defecto**: el modal ya se cierra con Escape y tiene su botón Cancelar |
 
+## Estado de las correcciones (2026-11-09)
+
+| # | Estado | Cómo |
+| --- | --- | --- |
+| A | **Corregido** | Directiva `appListbox` en los 9 selectores y en el acordeón de filtros de las listas (foco en la opción elegida, flechas, Inicio y Fin, Enter y Espacio, Escape y Tab). Escape cierra solo la lista y devuelve el foco al botón (antes `clickOutside` se lo sacaba y, dentro de un modal, cerraba también el modal) |
+| B | **Corregido** | `role="dialog"`, `aria-modal` y `aria-labelledby` en reordenar categorías, detalle del pedido y "Categoría no disponible" |
+| C | **Corregido** | El botón "Filtros" y el enlace de WhatsApp del carrito dejan que el texto visible sea el nombre; el del pie lo incluye en el `aria-label` |
+| D | **No era un defecto** | Es un campo oculto de usuario para los gestores de contraseñas; la prueba permanente lo exceptúa |
+| E | **Corregido** | Directiva `appActivable` (rol de botón, `tabindex`, Enter y Espacio) en las celdas clicables de clientes, administradores, productos, categorías, pedidos y analítica |
+
+Prueba permanente: `supabase/functions/_tests/interfaz_accesible_test.ts` revisa todas las plantillas (imagen sin `alt`, botón de ícono sin nombre, diálogo sin rol, clic sin teclado, opción sin lista, nombre que no contiene el texto visible, campo sin etiqueta). Corre con `npm run test:funciones`.
+
 ## Lo que esta auditoría NO cubre
 
 - **El panel de administración no se midió con Lighthouse** (exige iniciar sesión): está solo el barrido del código.
