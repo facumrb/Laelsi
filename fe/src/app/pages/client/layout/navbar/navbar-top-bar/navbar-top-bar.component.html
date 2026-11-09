@@ -128,7 +128,7 @@
         <ng-icon name="bootstrapCart3" class="text-xl"></ng-icon>
         @if (cartCount() > 0) {
           <span
-            class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#f4abac] text-[10px] font-bold text-[#3d4494] shadow-sm border-2 border-[#3d4494]"
+            class="absolute -top-1 -right-1 flex h-5 min-w-5 px-1 items-center justify-center rounded-full bg-[#f4abac] text-xs font-bold text-[#3d4494] shadow-sm border-2 border-[#3d4494]"
           >
             {{ cartCount() }}
           </span>
