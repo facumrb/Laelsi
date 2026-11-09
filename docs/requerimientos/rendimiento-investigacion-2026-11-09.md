@@ -4,7 +4,7 @@ Responde al ID 70 de [discusiones.md](./discusiones.md): Lighthouse da alrededor
 
 ## Lo más importante, primero
 
-1. **No tengo todavía una medición propia de Lighthouse, y sin ella no se puede afirmar cuál es la causa del 60 %.** La API pública de PageSpeed Insights respondió 429 (cuota anónima agotada: pide una clave de Google, gratuita) y medir con Lighthouse en local exige compilar y servir la aplicación. Lo que sí medí es lo que descarga y consulta el sitio publicado (ver abajo). **El primer paso del plan es medir.**
+1. **Ya hay una medición propia de Lighthouse** (sección "Línea de base", más abajo): el 60 % está en la categoría y la ficha, y la causa principal es el salto de diseño, no el peso. Lo que sigue de este párrafo es el contexto de cuando todavía no la tenía: **No tengo todavía una medición propia de Lighthouse, y sin ella no se puede afirmar cuál es la causa del 60 %.** La API pública de PageSpeed Insights respondió 429 (cuota anónima agotada: pide una clave de Google, gratuita) y medir con Lighthouse en local exige compilar y servir la aplicación. Lo que sí medí es lo que descarga y consulta el sitio publicado (ver abajo). **El primer paso del plan es medir.**
 2. **El peso del JavaScript no parece ser el problema.** La carga inicial (JS y CSS) pesa unos **251 kB comprimidos** en 12 archivos.
 3. **Lo más caro de la portada es el patrón de llamadas a la API: 8 invocaciones por carga, en dos tandas.** Eso afecta la sensación de velocidad y, sobre todo, **el cupo gratuito de Supabase** (500.000 invocaciones por mes, ver [limites-planes-gratuitos-2026-11-07.md](./limites-planes-gratuitos-2026-11-07.md)): a 8 por visita, el cupo alcanza para unas 62.000 visitas a la portada al mes, sin contar el resto de las pantallas.
 4. **Una sola llamada para la portada** es la mejora con más valor y es compatible con el cupo gratuito: baja de 8 invocaciones a 1 y quita la espera en dos tandas.
@@ -26,6 +26,24 @@ Responde al ID 70 de [discusiones.md](./discusiones.md): Lighthouse da alrededor
 | Pre-renderizado | Solo `/privacidad` y `/terminos`. **Toda la tienda es una aplicación del lado del navegador**: hay que descargar y ejecutar el JavaScript antes de ver algo | Leído: `app.routes.server.ts` |
 | Elemento más grande de la portada (candidato a LCP) | El banner de bienvenida (título y logo, este último con `loading="eager"`) es **estático**: no depende de la API. Las fotos de producto sí dependen, y todas llevan `loading="lazy"` | Leído. **El elemento real lo dirá la medición** |
 | Indicador de carga de la portada | Un `spinner` hasta tener **todas** las llamadas (para que los carruseles aparezcan juntos); sin esqueletos | Leído |
+
+## Línea de base de Lighthouse (PageSpeed Insights, móvil, sitio publicado antes del despliegue de estas mejoras)
+
+Medida el 2026-11-09 con la clave gratuita de PageSpeed, **3 corridas por página y mediana**, sobre `https://www.laelsi.com.ar`:
+
+| Página | Puntaje (corridas) | FCP | LCP | TBT | **CLS** | Speed Index | Peso y pedidos |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Inicio | **88** (93, 88, 88) | 0,8 s | 2,7 s | 7 ms | 0,073 | 7,4 s | 482 kB, 55 |
+| Categoría | **71** (71, 72, 71) | 0,8 s | 3,3 s | 41 ms | **0,361** | 4,8 s | 483 kB, 56 |
+| Ficha de producto | **68** (62, 68, 69) | 0,8 s | 3,5 s | 18 ms | **0,578** | 3,6 s | 416 kB, 43 |
+
+Lo que dice la medición:
+
+- **El 60 % no es el inicio** (88): está en la categoría y la ficha (68 a 71).
+- **El problema principal es el salto de diseño (CLS)** en la categoría (0,361) y sobre todo en la ficha (0,578); por encima de 0,25 se considera malo. La categoría muestra "No hay productos que coincidan con tus filtros" mientras carga y recién después aparece la grilla, y el título entra tarde; la ficha arma su contenido cuando llegan los datos, sin reservar el lugar. **Esto confirma la idea de los esqueletos del ID 70.**
+- **El peso del JavaScript no es el problema** (TBT de 7 a 41 ms). La única oportunidad grande que informa Lighthouse es "JavaScript sin usar": entre 450 y 600 ms.
+- **Datos de usuarios reales (CrUX): sin datos**, el sitio todavía tiene poco tráfico para que Google los publique.
+- PageSpeed no informó el elemento del LCP; hay que mirarlo con DevTools.
 
 ## Qué puede explicar el 60 % (hipótesis a confirmar al medir)
 
