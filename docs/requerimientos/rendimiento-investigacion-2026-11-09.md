@@ -45,6 +45,19 @@ Lo que dice la medición:
 - **Datos de usuarios reales (CrUX): sin datos**, el sitio todavía tiene poco tráfico para que Google los publique.
 - PageSpeed no informó el elemento del LCP; hay que mirarlo con DevTools.
 
+## Después del despliegue (misma medición, 2026-11-09, sitio publicado con las mejoras 1 a 4 y los esqueletos)
+
+| Página | Puntaje antes → después | LCP | **CLS antes → después** | Speed Index |
+| --- | --- | --- | --- | --- |
+| Inicio | 88 → **91** (91, 91, 91) | 2,7 → 3,2 s | 0,073 → 0,073 | 7,4 → **3,6 s** |
+| Categoría | 71 → **86** (86, 86, 86) | 3,3 → 3,8 s | 0,361 → **0,011** | 4,8 → 4,6 s |
+| Ficha de producto | 68 → **90** (88, 90, 90) | 3,5 → 3,5 s | 0,578 → **0,050** | 3,6 → 3,4 s |
+
+- **El salto de diseño quedó resuelto** en la categoría (de "malo" a casi cero) y en la ficha. Eso explica casi toda la suba de puntaje (+15 y +22 puntos).
+- **El LCP no mejoró** (en inicio y categoría empeoró algo, 0,5 s): ahora el elemento más grande llega junto con los datos reales y los esqueletos no cuentan como contenido, como se había anticipado. El próximo paso para bajarlo es identificar el elemento del LCP con DevTools y priorizar su carga, o servir la portada con menos espera de la API.
+- **Lo que sigue pendiente:** "JavaScript sin usar" (entre 470 y 620 ms de ahorro posible) y el inicio, que sigue en 91.
+- **Verificado en producción:** `main-….js`, `chunk-….js` y `styles-….css` salen con `Cache-Control: public, max-age=31536000, immutable`; `index.csr.html`, `ngsw.json` y `ngsw-worker.js` siguen con `no-cache`.
+
 ## Qué puede explicar el 60 % (hipótesis a confirmar al medir)
 
 | Hipótesis | Por qué | Qué métrica toca |
