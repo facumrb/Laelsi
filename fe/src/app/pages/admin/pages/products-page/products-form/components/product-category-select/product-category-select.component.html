@@ -25,7 +25,7 @@
 
   @if (showCategoryMenu()) {
     <div
-      class="select-dropdown absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm animate-fadeIn"
+      class="select-dropdown absolute z-20 mt-1 max-h-60 min-w-full w-max max-w-[min(28rem,calc(100vw-4rem))] overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm animate-fadeIn"
     >
       @for (cat of hierarchicalCategories(); track cat.id) {
         <div
@@ -40,7 +40,7 @@
               <span class="text-gray-300">↳</span>
             }
             <span
-              class="block truncate"
+              class="block wrap-break-word"
               [class.text-[#3d4494]]="control().value?.id === cat.id"
             >
               {{ cat.name }}

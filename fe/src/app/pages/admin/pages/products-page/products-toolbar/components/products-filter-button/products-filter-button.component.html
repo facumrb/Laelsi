@@ -9,7 +9,7 @@
 
   @if (showFilterMenu()) {
     <div
-      class="absolute left-0 sm:left-auto sm:right-0 mt-2 w-72 max-w-[90vw] origin-top-left sm:origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 z-50"
+      class="absolute left-0 sm:left-auto sm:right-0 mt-2 w-72 sm:w-96 max-w-[90vw] origin-top-left sm:origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 z-50"
     >
       <div class="p-4 space-y-4">
         <!-- Categoría: mantiene implementación custom con jerarquía -->
@@ -48,7 +48,7 @@
                 class="relative cursor-pointer select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-100 transition-colors"
               >
                 <span
-                  class="block truncate font-normal"
+                  class="block wrap-break-word font-normal"
                   [class.font-semibold]="categoryFilter() === 'Todos'"
                   [class.text-[#3d4494]]="categoryFilter() === 'Todos'"
                 >
@@ -76,7 +76,7 @@
                       <span class="text-gray-300">↳</span>
                     }
                     <span
-                      class="block truncate"
+                      class="block wrap-break-word"
                       [class.text-[#3d4494]]="categoryFilter() === cat.id"
                     >
                       {{ cat.name }}

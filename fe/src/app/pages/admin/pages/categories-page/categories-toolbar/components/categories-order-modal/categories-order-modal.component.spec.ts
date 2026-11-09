@@ -43,6 +43,32 @@ describe('CategoriesOrderModalComponent: niveles', () => {
     expect(modalExpandido().querySelectorAll('.cdk-drop-list').length).toBe(5);
   });
 
+  // En un teléfono de 360 px, con cinco niveles abiertos cada nivel restaba 32 px de sangría y el botón "Ver
+  // subcategorías (n)" ocupaba más de la mitad de la fila: el nombre de la categoría quedaba en 45 px y se partía en 4
+  // líneas (visto en el navegador con un árbol de 5 niveles). Ahora el botón baja a otra línea cuando no entra, el nombre
+  // conserva un ancho mínimo y la sangría es menor en pantallas chicas.
+  it('el nombre conserva un ancho mínimo y el botón de subcategorías baja de línea si no entra', () => {
+    const modal = modalExpandido();
+    const nombres = Array.from(modal.querySelectorAll<HTMLElement>('span.flex-1'));
+
+    expect(nombres.length).toBe(5);
+    for (const nombre of nombres) {
+      expect(nombre.classList.contains('min-w-32')).toBe(true);
+      expect((nombre.parentElement as HTMLElement).classList.contains('flex-wrap')).toBe(true);
+    }
+  });
+
+  it('la sangría de cada nivel es menor en pantallas chicas', () => {
+    const contenedoresDeHijas = Array.from(modalExpandido().querySelectorAll<HTMLElement>('div.border-t.border-gray-100'));
+
+    expect(contenedoresDeHijas.length).toBe(4);
+    for (const contenedor of contenedoresDeHijas) {
+      expect(contenedor.classList.contains('pl-4')).toBe(true);
+      expect(contenedor.classList.contains('sm:pl-8')).toBe(true);
+      expect(contenedor.classList.contains('pl-8')).toBe(false);
+    }
+  });
+
   it('mientras las ramas están cerradas solo se ve el primer nivel', () => {
     TestBed.configureTestingModule({
       providers: [
