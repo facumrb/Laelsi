@@ -32,6 +32,15 @@ describe('CategoriesToolbarComponent: la fila de controles envuelve en vez de sa
     expect(grupo.classList.contains('lg:justify-end')).toBe(true);
   });
 
+  // ID 64 (hallazgo 14): a 768 px "Ordenar" ocupaba una fila entera. Desde sm, Ordenar, Filtros y Agregar van en una fila.
+  it('desde sm, ordenar, filtros y agregar comparten una sola fila', () => {
+    const grilla = crear().querySelector<HTMLElement>('.toolbar-container > div > div.grid')!;
+    const ordenar = grilla.firstElementChild as HTMLElement;
+
+    expect(grilla.classList.contains('sm:grid-cols-3')).toBe(true);
+    expect(ordenar.classList.contains('sm:col-span-1')).toBe(true);
+  });
+
   it('el botón de agregar sigue estando y dice "Agregar Categoría"', () => {
     const boton = crear().querySelector<HTMLButtonElement>('app-create-entity-button button')!;
 
