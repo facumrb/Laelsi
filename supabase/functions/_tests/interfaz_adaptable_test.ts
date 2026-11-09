@@ -94,6 +94,35 @@ Deno.test('ninguna plantilla de la interfaz tiene un problema de diseño adaptab
   );
 });
 
+// ID 64 (hallazgos 4 y 5): por debajo de lg las listas del panel se ven como tarjetas. Eran una sola columna de
+// 215 a 537 px de alto por tarjeta, igual a 360 que a 768 px de ancho, con los datos en un tercio del ancho. Ahora la
+// fila es una grilla de dos columnas: la primera y la última celda (nombre y acciones) ocupan las dos, el resto una
+// (o las dos, según la plantilla, cuando el contenido es largo o quedaría solo). Desde lg vuelve a ser una tabla.
+const clasesDe = (css: string, selector: string) => {
+  const bloque = css.match(new RegExp(`\\.${selector}\\s*\\{([^}]*)\\}`))?.[1] ?? '';
+  const aplicadas = [...bloque.matchAll(/@apply\s+([^;]+);/g)].map((m) => m[1]).join(' ');
+  return new Set(aplicadas.split(/\s+/).filter(Boolean));
+};
+
+Deno.test('las tarjetas del panel son una grilla de dos columnas por debajo de lg y una tabla desde lg', async () => {
+  const css = await Deno.readTextFile(new URL('../../../fe/src/styles.css', import.meta.url));
+  const fila = clasesDe(css, 'admin-table-row');
+  const primera = clasesDe(css, 'admin-table-cell-first');
+  const celda = clasesDe(css, 'admin-table-cell');
+  const ultima = clasesDe(css, 'admin-table-cell-last');
+
+  assert.ok(fila.has('grid') && fila.has('grid-cols-2'), 'la fila de la tarjeta tiene que ser una grilla de dos columnas');
+  assert.ok(!fila.has('flex-col'), 'la fila ya no es una columna de flex (nunca aplicaba sm:col-span-2)');
+  assert.ok(fila.has('lg:table-row'), 'desde lg la fila vuelve a ser una fila de tabla');
+
+  for (const [nombre, clases] of [['primera', primera], ['última', ultima]] as const) {
+    assert.ok(clases.has('col-span-2'), `la celda ${nombre} ocupa las dos columnas`);
+    assert.ok(clases.has('lg:col-span-1'), `la celda ${nombre} vuelve a una columna desde lg`);
+    assert.ok(!clases.has('sm:col-span-2'), `la celda ${nombre} no usa el sm:col-span-2 viejo`);
+  }
+  assert.ok(celda.has('col-span-1') && celda.has('min-w-0'), 'la celda común ocupa una columna y puede encogerse (min-w-0)');
+});
+
 Deno.test('el modal compartido de styles.css (elsi-modal-card) topa su alto y scrollea por dentro', async () => {
   const css = await Deno.readTextFile(new URL('../../../fe/src/styles.css', import.meta.url));
   const regla = css.match(/\.elsi-modal-card\s*\{([^}]*)\}/)?.[1] ?? '';
