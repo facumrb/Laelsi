@@ -6,6 +6,7 @@ import {
   IBulkPricePreviewItem,
   IBulkPriceResult,
   ICreateProduct,
+  IHome,
   IPaginatedProducts,
   IUpdateProduct,
   ProductState,
@@ -96,6 +97,16 @@ export class ApiProductService {
         message: string;
         data: IApiProduct;
       }>(`${this.apiUrl}/active/${id}`)
+      .pipe(map((response) => response.data));
+  }
+
+  /**
+   * La portada de la tienda en una sola llamada: más vendidos y carruseles de las primeras categorías.
+   * Reemplaza a las 8 llamadas en dos tandas que hacía la portada (ID 70, mejora de rendimiento 2).
+   */
+  getHome(): Observable<IHome> {
+    return this.http
+      .get<{ message: string; data: IHome }>(`${this.apiUrl}/home`)
       .pipe(map((response) => response.data));
   }
 

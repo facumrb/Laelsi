@@ -8,11 +8,7 @@ import { ProductCardComponent } from '../../components/product-card/product-card
 import { LogoComponent } from '@shared/components/logo/logo.component';
 import { ScrollTrackerDirective } from '@shared/directives/scroll-tracker.directive';
 import { CarouselNavComponent } from '@client/components/carousel-nav/carousel-nav.component';
-import {
-  injectBestSellersQuery,
-  injectBestSellersByCategoryQuery,
-} from '@services/queries/product-queries';
-import { injectActiveCategoriesQuery } from '@services/queries/category-queries';
+import { injectHomeQuery } from '@services/queries/product-queries';
 
 @Component({
   selector: 'app-main-page',
@@ -26,65 +22,22 @@ import { injectActiveCategoriesQuery } from '@services/queries/category-queries'
   templateUrl: './main-page.component.html',
 })
 export class MainPageComponent {
-  // Capa de queries (TanStack Query): toda la carga de datos queda en caché
+  // Capa de queries (TanStack Query): toda la carga de datos queda en caché.
+  //
+  // ID 70 (mejora de rendimiento 2): la portada pide TODO con una sola llamada a /products/home (los más
+  // vendidos y el carrusel de cada una de las primeras categorías con productos). Antes eran 8 llamadas en
+  // dos tandas: las categorías primero y, recién cuando llegaban, los más vendidos de cada una.
+  private homeQuery = injectHomeQuery();
 
-  // 1. Obtener los más vendidos generales
-  private bestSellersQuery = injectBestSellersQuery(10);
+  globalBestSellers = computed<IApiProduct[]>(() => this.homeQuery.data()?.bestSellers ?? []);
 
-  // 2. Obtener categorías activas y sus más vendidos
-  private categoriesQuery = injectActiveCategoriesQuery();
-
-  globalBestSellers = computed(() => this.bestSellersQuery.data() ?? []);
-
-  // Limitamos a algunas categorías para la home
-  private topCategories = computed<IApiCategory[]>(() =>
-    (this.categoriesQuery.data() ?? []).slice(0, 5),
-  );
-
-  // Un ID por cada lugar de categoría de la home (hasta 5).
-  // Vale 0 mientras no haya categoría para ese lugar, y en ese caso la query queda deshabilitada.
-  private categoryId0 = computed(() => this.topCategories()[0]?.id ?? 0);
-  private categoryId1 = computed(() => this.topCategories()[1]?.id ?? 0);
-  private categoryId2 = computed(() => this.topCategories()[2]?.id ?? 0);
-  private categoryId3 = computed(() => this.topCategories()[3]?.id ?? 0);
-  private categoryId4 = computed(() => this.topCategories()[4]?.id ?? 0);
-
-  // Más vendidos de cada categoría: TanStack Query cachea cada una por separado
-  private categoryBestSellersQueries = [
-    injectBestSellersByCategoryQuery(this.categoryId0, 10),
-    injectBestSellersByCategoryQuery(this.categoryId1, 10),
-    injectBestSellersByCategoryQuery(this.categoryId2, 10),
-    injectBestSellersByCategoryQuery(this.categoryId3, 10),
-    injectBestSellersByCategoryQuery(this.categoryId4, 10),
-  ];
-
+  // El servidor ya deja afuera las categorías sin más vendidos
   categoriesWithBestSellers = computed<
     { category: IApiCategory; products: IApiProduct[] }[]
-  >(() => {
-    return (
-      this.topCategories()
-        .map((cat, i) => ({
-          category: cat,
-          products: this.categoryBestSellersQueries[i].data() ?? [],
-        }))
-        // Mostramos solo categorías con productos vendidos
-        .filter((r) => r.products.length > 0)
-    );
-  });
+  >(() => this.homeQuery.data()?.categories ?? []);
 
-  // Mostramos el spinner hasta tener todos los datos iniciales. También esperamos a los
-  // más vendidos de cada categoría para que los carruseles aparezcan todos juntos.
-  loading = computed(() => {
-    const categoriesPending = this.topCategories().some((_, i) =>
-      this.categoryBestSellersQueries[i].isPending(),
-    );
-
-    return (
-      this.bestSellersQuery.isPending() ||
-      this.categoriesQuery.isPending() ||
-      categoriesPending
-    );
-  });
+  // Mostramos el spinner hasta tener los datos iniciales: todos los carruseles aparecen juntos.
+  loading = computed(() => this.homeQuery.isPending());
 
   scrollCarousel(
     container: HTMLElement,

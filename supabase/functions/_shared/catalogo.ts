@@ -7,6 +7,7 @@
 import { sql, type Db } from './db.ts';
 import { paginated } from './http.ts';
 import { idsDelSubarbol, type OpcionesSubarbol } from './subarbol-categorias.ts';
+import { groupByParent, hasActiveProductsInSubtree } from './categorias-arbol.ts';
 
 export interface CategoryRow {
   id: number;
@@ -52,16 +53,9 @@ export function indexById(categories: CategoryRow[]): Map<number, CategoryRow> {
   return new Map(categories.map((c) => [c.id, c]));
 }
 
-/** Agrupa las categorías por su padre (la clave null agrupa a las raíces). */
-export function groupByParent(categories: CategoryRow[]): Map<number | null, CategoryRow[]> {
-  const groups = new Map<number | null, CategoryRow[]>();
-  for (const category of categories) {
-    const siblings = groups.get(category.parentId) ?? [];
-    siblings.push(category);
-    groups.set(category.parentId, siblings);
-  }
-  return groups;
-}
+// groupByParent y hasActiveProductsInSubtree se movieron a categorias-arbol.ts (puras, con pruebas) y se siguen
+// exportando desde acá para no tocar a quienes las importan.
+export { groupByParent, hasActiveProductsInSubtree };
 
 /** Devuelve la categoría con sus ancestros anidados en `parent` (sirve para los breadcrumbs). */
 // deno-lint-ignore no-explicit-any
@@ -84,18 +78,6 @@ export async function loadActiveProductCounts(db: Db = sql): Promise<Map<number,
   `;
   // deno-lint-ignore no-explicit-any
   return new Map(rows.map((r: any) => [r.categoryId as number, r.total as number]));
-}
-
-/** Verifica si una categoría (o alguna de su subárbol) tiene al menos un producto activo. */
-export function hasActiveProductsInSubtree(
-  categoryId: number,
-  byParent: Map<number | null, CategoryRow[]>,
-  activeCounts: Map<number, number>,
-): boolean {
-  if ((activeCounts.get(categoryId) ?? 0) > 0) return true;
-  return (byParent.get(categoryId) ?? []).some((child) =>
-    hasActiveProductsInSubtree(child.id, byParent, activeCounts),
-  );
 }
 
 /**

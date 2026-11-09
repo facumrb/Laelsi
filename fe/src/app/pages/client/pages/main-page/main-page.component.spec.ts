@@ -1,9 +1,11 @@
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideTanStackQuery, QueryClient } from '@tanstack/angular-query-experimental';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { environment } from 'src/environments/environment';
+import { IApiProduct } from '@models/product.model';
 import { MainPageComponent } from './main-page.component';
 
 // Los pedidos de productos nunca se responden: la home queda cargando y el cartel tiene que verse igual
@@ -21,6 +23,63 @@ beforeEach(() => {
       provideHttpClientTesting(),
       provideTanStackQuery(new QueryClient({ defaultOptions: { queries: { retry: false } } })),
     ],
+  });
+});
+
+// ID 70 de docs/requerimientos/discusiones.md (mejora 2 de rendimiento-investigacion-2026-11-09.md): la portada
+// hacía 8 llamadas a la API en dos tandas (más vendidos, categorías y, recién después, los más vendidos de cada
+// una de las 5 primeras). Ahora pide todo con una sola llamada a /products/home.
+describe('MainPageComponent: portada con una sola llamada', () => {
+  const producto = (id: number, nombre: string) =>
+    ({
+      id,
+      name: nombre,
+      brand: 'Marca',
+      state: 'Activo',
+      stock: 5,
+      photos: [],
+      prices: [{ id, amount: 100, currency: 'ARS', validFrom: '', isCurrent: true }],
+      category: { id: 1, name: 'Útiles', state: 'Activo' },
+    }) as unknown as IApiProduct;
+
+  // Las consultas se disparan en la tarea siguiente: se deja pasar antes de mirar los pedidos
+  const dejarPasar = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+  const urlHome = `${environment.apiUrl}/products/home`;
+
+  it('hace un solo pedido: el de la portada, sin los de más vendidos ni categorías', async () => {
+    const http = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(MainPageComponent);
+    fixture.detectChanges();
+    await dejarPasar();
+
+    const pedidos = http.match(() => true);
+
+    expect(pedidos.map((p) => p.request.url)).toEqual([urlHome]);
+  });
+
+  it('muestra los más vendidos y el carrusel de cada categoría que llegan juntos', async () => {
+    const http = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(MainPageComponent);
+    fixture.detectChanges();
+    await dejarPasar();
+
+    http.expectOne(urlHome).flush({
+      message: 'Portada encontrada',
+      data: {
+        bestSellers: [producto(1, 'Cuaderno rayado')],
+        categories: [{ category: { id: 1, name: 'Útiles' }, products: [producto(2, 'Lapicera azul')] }],
+      },
+    });
+
+    // TanStack Query publica el resultado en una tarea posterior: se espera hasta que aparezca
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      expect(texto).toContain('Cuaderno rayado');
+      expect(texto).toContain('Útiles - Más Populares');
+      expect(texto).toContain('Lapicera azul');
+    });
   });
 });
 

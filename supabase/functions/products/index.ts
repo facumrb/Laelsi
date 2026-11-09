@@ -13,6 +13,7 @@
 //     GET    /products/active/category/:categoryId  Activos de una categoría
 //     GET    /products/active/:id                   Detalle (solo si está activo o pausado)
 //     GET    /products/availability?ids=1,2,3       Estado actual de varios productos (lo usa el carrito)
+//     GET    /products/home                         La portada en una sola llamada: más vendidos y carruseles
 //     GET    /products/:id                          Detalle (también de un producto inactivo: la página
 //                                                   de producto muestra el aviso de "no disponible")
 //   Solo Admin
@@ -43,11 +44,15 @@ import {
 import {
   checkAndDeactivateCategory,
   idsDeCategoria,
+  loadActiveProductCounts,
+  loadCategories,
   likePattern,
   loadProducts,
   paginateProducts,
 } from '../_shared/catalogo.ts';
 import { deleteObject } from '../_shared/r2.ts';
+import { idsDelSubarbol } from '../_shared/subarbol-categorias.ts';
+import { PRODUCTOS_POR_CARRUSEL, armarPortada, categoriasDeLaPortada } from '../_shared/portada.ts';
 import {
   ESTADOS_PRODUCTO,
   ESTADOS_VISIBLES_EN_TIENDA,
@@ -282,9 +287,8 @@ async function findAllActive(ctx: RequestContext) {
 
 // ─── Productos destacados (best sellers) ─────────────────────────────────────
 
-async function bestSellers(limit: number, categoryId?: number) {
-  // PROVISIONAL-2026-11-08 (subárbol de categorías): los más vendidos de una madre salen de todo su subárbol
-  const categoryIds = categoryId ? await idsDeCategoria(categoryId, { soloActivas: true }) : undefined;
+/** Ids de los productos más vendidos, de todo el catálogo o de las categorías indicadas. */
+async function bestSellerIds(limit: number, categoryIds?: number[]): Promise<number[]> {
   const rows = await sql`
     select p.id
     from product p
@@ -294,7 +298,49 @@ async function bestSellers(limit: number, categoryId?: number) {
     order by p.total_sold desc, p.id asc
     limit ${limit}
   `;
-  return await loadProducts(rows.map((r) => r.id));
+  return rows.map((r) => r.id);
+}
+
+async function bestSellers(limit: number, categoryId?: number) {
+  // PROVISIONAL-2026-11-08 (subárbol de categorías): los más vendidos de una madre salen de todo su subárbol
+  const categoryIds = categoryId ? await idsDeCategoria(categoryId, { soloActivas: true }) : undefined;
+  return await loadProducts(await bestSellerIds(limit, categoryIds));
+}
+
+/**
+ * GET /products/home
+ *
+ * La portada de la tienda en una sola llamada (ID 70, mejora 2 de rendimiento-investigacion-2026-11-09.md): antes
+ * eran 8 invocaciones en dos tandas. Devuelve los más vendidos y, de las 5 primeras categorías raíz activas con
+ * productos, sus más vendidos. Las reglas están en portada.ts. Para no repetir consultas, se buscan primero los ids
+ * y los productos se cargan una sola vez.
+ */
+async function findHome() {
+  const [categorias, conteos, idsGenerales] = await Promise.all([
+    loadCategories(),
+    loadActiveProductCounts(),
+    bestSellerIds(PRODUCTOS_POR_CARRUSEL),
+  ]);
+
+  const elegidas = categoriasDeLaPortada(categorias, conteos);
+  const idsPorCategoria = await Promise.all(
+    elegidas.map((categoria) =>
+      bestSellerIds(PRODUCTOS_POR_CARRUSEL, idsDelSubarbol(categoria.id, categorias, { soloActivas: true })),
+    ),
+  );
+
+  const productos = await loadProducts([...new Set([...idsGenerales, ...idsPorCategoria.flat()])]);
+  // deno-lint-ignore no-explicit-any
+  const porId = new Map<number, any>(productos.map((p: any) => [p.id, p]));
+  const aProductos = (ids: number[]) => ids.map((id) => porId.get(id)).filter((p) => p !== undefined);
+
+  return ok(
+    'Portada encontrada',
+    armarPortada(
+      aProductos(idsGenerales),
+      elegidas.map((category, i) => ({ category, products: aProductos(idsPorCategoria[i]) })),
+    ),
+  );
 }
 
 function bestSellersLimit(ctx: RequestContext): number {
@@ -548,6 +594,7 @@ serveRoutes('products', [
   ['GET', '/active/category/:categoryId', findActiveProductsByCategory],
   ['GET', '/active/:id', findOneActive],
   ['GET', '/availability', findAvailability],
+  ['GET', '/home', findHome],
   ['GET', '/:id', findOne],
 
   // Rutas protegidas (solo Admin puede crear/editar/eliminar)

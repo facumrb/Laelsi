@@ -206,6 +206,20 @@ export function injectBulkPriceMutation() {
 }
 
 /**
+ * Query de la portada completa (Página principal): los más vendidos y el carrusel de cada una de las primeras
+ * categorías, con UNA sola llamada. Antes la portada hacía 8 llamadas en dos tandas (ID 70).
+ */
+export function injectHomeQuery() {
+  const apiProductService = inject(ApiProductService);
+
+  return injectQuery(() => ({
+    queryKey: ['products', 'home'],
+    queryFn: () => firstValueFrom(apiProductService.getHome()),
+    staleTime: 1000 * 60 * 10, // 10 minutos: igual que los más vendidos, que cambian con poca frecuencia
+  }));
+}
+
+/**
  * Query de los más vendidos generales (Página principal)
  */
 export function injectBestSellersQuery(limit: number = 10) {

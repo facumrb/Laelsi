@@ -45,6 +45,15 @@ export interface IPaginatedProducts extends IPaginatedResult<IApiProduct> {
 }
 
 /**
+ * La portada de la tienda en una sola llamada (GET /products/home): los más vendidos y, de las primeras
+ * categorías con productos, sus más vendidos. Las categorías sin más vendidos no vienen.
+ */
+export interface IHome {
+  bestSellers: IApiProduct[];
+  categories: { category: IApiCategory; products: IApiProduct[] }[];
+}
+
+/**
  * Resumen de un producto dentro de una categoría (GET /categories, panel admin). Es lo justo para
  * contarlos y listarlos con su miniatura: no trae precio, stock ni descripción.
  */
