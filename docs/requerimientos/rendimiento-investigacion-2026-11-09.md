@@ -58,6 +58,28 @@ Lo que dice la medición:
 - **Lo que sigue pendiente:** "JavaScript sin usar" (entre 470 y 620 ms de ahorro posible) y el inicio, que sigue en 91.
 - **Verificado en producción:** `main-….js`, `chunk-….js` y `styles-….css` salen con `Cache-Control: public, max-age=31536000, immutable`; `index.csr.html`, `ngsw.json` y `ngsw-worker.js` siguen con `no-cache`.
 
+## LCP y JavaScript sin usar: qué se encontró (2026-11-09, tarde)
+
+**El LCP del inicio lo frena el JavaScript, no la imagen.** En PageSpeed (inicio publicado: 94, FCP 0,76 s, LCP 2,70 s) el elemento del LCP es el **párrafo** "Todo en librería, juguetería y tecnología…", no el logo (que sí fue el elemento en el DevTools local). Fases: TTFB 2 ms y "retraso de renderizado" de ~3,8 s en laboratorio; sin recursos que bloqueen el render. Los 10 trozos iniciales se precargan (`modulepreload`) y la cadena termina a ~875 ms: lo que tarda es bajar y ejecutar ~890 kB de JavaScript antes de que Angular arme la portada. Solo `privacidad` y `terminos` se prerenderizan (`app.routes.server.ts`); el resto es SPA, porque el layout depende del navegador y de la sesión.
+
+**Qué hay en el JavaScript inicial** (identificado bajando los trozos publicados y confirmado con el build):
+
+| Trozo | Raw | Transferido | Contenido |
+| --- | --- | --- | --- |
+| `chunk-DP2OGCHJ` | 334 kB | 94,8 kB | framework Angular (core, common, platform-browser) |
+| `chunk-B5YGYN2E` | 225 kB | 50,2 kB | **`@supabase/supabase-js` completo** (auth, realtime, postgrest, storage) |
+| `chunk-IQZBS3MN` | 119 kB | 30,1 kB | router |
+| `chunk-XQFZMIDH` | 40 kB | 8,3 kB | formularios |
+
+**Lo que se hizo** (commits `f33e3d6` y `28e0bbf`):
+
+1. **Solo el cliente de autenticación.** La aplicación usa Supabase únicamente para `supabase.auth` (sesión, Google, recuperar contraseña); nada de tablas, archivos ni realtime. `supabase.client.ts` ahora crea un `GoTrueClient` de `@supabase/auth-js` (la misma versión que ya estaba en el lock) en vez de `createClient`. **Medido con `ng build` de producción, antes y después:** inicial **892,2 → 774,4 kB (−118 kB)** y **216,0 → 188,5 kB transferidos (−27,6 kB, −12,8 %)**; el trozo de supabase pasó de 225 a 107,6 kB (lo que queda es `auth-js`) y realtime, postgrest y storage ya no están en el paquete. La sesión se guarda con la misma clave de siempre (`sb-<proyecto>-auth-token`): `supabase.client.spec.ts` lo comprueba contra el cliente que armaría `supabase-js`, junto con la dirección, las cabeceras y los flags (PKCE, persistente, renovación, lectura del código de Google). `bundle_liviano_test.ts` impide que algún archivo vuelva a importar `supabase-js` completo.
+2. **Logo.** Variante de 500 px (20 kB, la mitad del original de 996 px) con `srcset` y precarga en `index.html`. PageSpeed lo marcaba como imagen sobredimensionada; como el LCP de PageSpeed es el párrafo, **no se espera que mueva ese número**: se verifica al medir después del despliegue.
+
+**Lo que no se hizo y por qué.** El presupuesto del paquete inicial sigue superado (774 kB contra 700 kB de aviso). Bajar más implica partir el framework, sacar `forms` del arranque o prerenderizar la portada (que requiere un layout sin dependencias del navegador). Como `fe/` se reemplaza por Next.js (ADR 0002), que resuelve el retraso de renderizado de raíz, no conviene invertir más en el paquete de Angular.
+
+**Pendiente de verificar con el sitio desplegado:** repetir PageSpeed del inicio (esperable: bajar la transferencia inicial ~28 kB, del orden de 0,1 a 0,3 s de LCP en laboratorio; es una estimación, no una medición) y probar el inicio de sesión real (correo y contraseña, cerrar sesión, recuperar contraseña, Google) y que una sesión ya iniciada siga iniciada.
+
 ## Qué puede explicar el 60 % (hipótesis a confirmar al medir)
 
 | Hipótesis | Por qué | Qué métrica toca |
