@@ -116,20 +116,25 @@
       </a>
     }
 
-    <a
-      routerLink="/cart"
-      class="relative flex items-center justify-center h-10 w-10 rounded-full bg-[#037971] text-white hover:bg-[#049A8F] hover:scale-105 transition-all shadow-sm border border-white/10"
-      aria-label="Ver carrito de compras"
-    >
-      <ng-icon name="bootstrapCart3" class="text-xl"></ng-icon>
-      @if (cartCount() > 0) {
-        <span
-          class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#f4abac] text-[10px] font-bold text-[#3d4494] shadow-sm border-2 border-[#3d4494]"
-        >
-          {{ cartCount() }}
-        </span>
-      }
-    </a>
+    <!-- PROVISIONAL-2026-11-09 (ID 68 de docs/requerimientos/discusiones.md): una cuenta de administrador no
+         puede hacer pedidos, así que no se le muestra el ícono del carrito. Se vuelve a mostrar cuando se
+         decida qué uso tendrá un carrito de administrador. -->
+    @if (!isAdmin()) {
+      <a
+        routerLink="/cart"
+        class="relative flex items-center justify-center h-10 w-10 rounded-full bg-[#037971] text-white hover:bg-[#049A8F] hover:scale-105 transition-all shadow-sm border border-white/10"
+        aria-label="Ver carrito de compras"
+      >
+        <ng-icon name="bootstrapCart3" class="text-xl"></ng-icon>
+        @if (cartCount() > 0) {
+          <span
+            class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#f4abac] text-[10px] font-bold text-[#3d4494] shadow-sm border-2 border-[#3d4494]"
+          >
+            {{ cartCount() }}
+          </span>
+        }
+      </a>
+    }
   </div>
 </nav>
 
