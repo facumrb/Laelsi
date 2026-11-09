@@ -199,12 +199,22 @@
       <app-turnstile (tokenChange)="turnstileToken.set($event)" />
     }
 
+    @if (hasUnavailable()) {
+      <p
+        role="status"
+        class="text-xs text-amber-900 bg-amber-50 p-2.5 rounded-lg border border-amber-200"
+      >
+        Hay productos no disponibles en tu carrito. Quitalos para poder
+        confirmar el pedido.
+      </p>
+    }
+
     <button
       (click)="checkout()"
-      [disabled]="shippingMethod() === DeliveryMethodEnum.Envio"
+      [disabled]="confirmDisabled()"
       class="w-full text-white font-bold py-3 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2"
       [class]="
-        shippingMethod() === DeliveryMethodEnum.Envio
+        confirmDisabled()
           ? 'bg-[#3d4494] opacity-50 cursor-not-allowed'
           : 'bg-[#3d4494] hover:bg-[#2a2f63] shadow-blue-900/10 active:scale-[0.98] cursor-pointer'
       "

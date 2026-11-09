@@ -1,6 +1,7 @@
 import { Component, input, inject, computed } from '@angular/core';
 import { CartService } from '@services/cart.service';
 import { IApiProduct } from '@models/product.model';
+import { esComprable } from '@shared/utils/disponibilidad-producto';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   bootstrapPlusLg,
@@ -29,6 +30,9 @@ export class AddToCartControlComponent {
     return items.find((i) => i.product.id === this.product().id)?.quantity || 0;
   });
 
+  // Un producto pausado o inactivo se ve pero no se puede comprar (ID 54 de discusiones.md)
+  canBuy = computed(() => esComprable(this.product().state));
+
   // Calculo para ver si podemos agregar mas unidades basado en el stock
   canIncrease = computed(() => {
     const qty = this.currentQuantity();
@@ -38,7 +42,8 @@ export class AddToCartControlComponent {
 
   addInitial(event: Event) {
     this.stopEvent(event);
-    if (this.product().stock > 0) {
+
+    if (this.canBuy() && this.product().stock > 0) {
       this.cartService.addToCart(this.product(), 1);
     }
   }

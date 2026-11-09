@@ -39,11 +39,19 @@ export class OrderSummaryComponent {
   totalItems = this.cartService.totalItems;
   totalAmount = this.cartService.totalAmount;
   items = this.cartService.items; // Necesario para el WhatsApp link
+  // Hay productos pausados o inactivos: el servidor rechazaría el pedido entero, así que se piden quitar antes
+  hasUnavailable = this.cartService.hasUnavailable;
 
   DeliveryMethodEnum = DeliveryMethod;
   PaymentMethodEnum = PaymentMethod;
 
   shippingMethod = signal<DeliveryMethod>(DeliveryMethod.RetiroSucursal);
+
+  // El pedido no se puede confirmar con envío (todavía no se hace) ni con productos no disponibles
+  confirmDisabled = computed(
+    () =>
+      this.shippingMethod() === DeliveryMethod.Envio || this.hasUnavailable(),
+  );
   paymentMethod = signal<PaymentMethod>(PaymentMethod.Transferencia);
   mpAlias = 'laelsi.libreria.mp';
 
@@ -75,6 +83,15 @@ export class OrderSummaryComponent {
         'info',
       );
       this.router.navigate(['/auth/login']);
+      return;
+    }
+
+    if (this.hasUnavailable()) {
+      this.alertService.modal(
+        'Hay productos no disponibles',
+        'Quitá del carrito los productos que están pausados o ya no se ofrecen para poder confirmar el pedido.',
+        'info',
+      );
       return;
     }
 
@@ -131,6 +148,8 @@ export class OrderSummaryComponent {
     const message =
       `Hola! Quiero realizar un pedido:\n\n` +
       this.items()
+        // Los productos pausados o inactivos no se piden por WhatsApp: no se pueden comprar ahora
+        .filter((i) => this.cartService.availabilityOf(i.product.id).disponible)
         .map((i) => `- ${i.product.name} x${i.quantity}`)
         .join('\n') +
       `\n\nTotal: ${this.totalAmount().toLocaleString('es-AR', {

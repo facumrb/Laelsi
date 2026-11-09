@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CartService } from '@services/cart.service';
 import { RouterLink } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -21,9 +21,15 @@ import { OrderSummaryComponent } from './order-summary/order-summary.component';
   ],
   templateUrl: './cart-page.component.html',
 })
-export class CartPageComponent {
+export class CartPageComponent implements OnInit {
   private cartService = inject(CartService);
 
   items = this.cartService.items;
   totalItems = this.cartService.totalItems;
+
+  ngOnInit(): void {
+    // El carrito guarda una copia de cada producto: se pregunta cuáles se pausaron o desactivaron
+    // desde que se agregaron, para avisarlo (ID 54 de docs/requerimientos/discusiones.md)
+    this.cartService.refreshAvailability();
+  }
 }

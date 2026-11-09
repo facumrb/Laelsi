@@ -8,6 +8,7 @@ import {
   ICreateProduct,
   IPaginatedProducts,
   IUpdateProduct,
+  ProductState,
 } from '@models/product.model';
 import { IPaginatedResult } from '../../models/pagination.model';
 import { environment } from 'src/environments/environment';
@@ -95,6 +96,20 @@ export class ApiProductService {
         message: string;
         data: IApiProduct;
       }>(`${this.apiUrl}/active/${id}`)
+      .pipe(map((response) => response.data));
+  }
+
+  /**
+   * Estado actual de varios productos juntos (lo usa el carrito, que guarda una copia vencida).
+   * Un producto que ya no existe figura como Inactivo.
+   */
+  getAvailability(ids: number[]): Observable<Record<number, ProductState>> {
+    const params = new HttpParams().set('ids', ids.join(','));
+    return this.http
+      .get<{
+        message: string;
+        data: Record<number, ProductState>;
+      }>(`${this.apiUrl}/availability`, { params })
       .pipe(map((response) => response.data));
   }
 

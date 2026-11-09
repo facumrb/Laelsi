@@ -6,8 +6,8 @@
     <!-- Boton de agregar inicial -->
     <button
       (click)="addInitial($event)"
-      [disabled]="product().stock <= 0"
-      aria-label="Añadir al carrito"
+      [disabled]="product().stock <= 0 || !canBuy()"
+      [attr.aria-label]="canBuy() ? 'Añadir al carrito' : 'No disponible por ahora'"
       class="elsi-add-initial-btn"
       [class.btn-full]="layout() === 'full'"
     >
@@ -16,7 +16,7 @@
       } @else {
         <span class="flex items-center gap-2">
           <ng-icon name="bootstrapPlusLg" class="text-lg"></ng-icon>
-          AÑADIR AL CARRITO
+          {{ canBuy() ? "AÑADIR AL CARRITO" : "NO DISPONIBLE POR AHORA" }}
         </span>
       }
     </button>

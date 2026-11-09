@@ -3,6 +3,7 @@
 >
   <div class="divide-y divide-neutral-100">
     @for (item of items(); track $index) {
+      @let aviso = availability(item.product.id);
       <div
         class="p-3 sm:p-4 flex items-center gap-3 sm:gap-6 hover:bg-neutral-50/50 transition-colors animate-in fade-in slide-in-from-bottom-2"
       >
@@ -46,6 +47,36 @@
             {{ item.product.brand }}
           </p>
 
+          @if (!aviso.disponible) {
+            <!-- Producto pausado o inactivo: sigue en el carrito pero no se puede comprar -->
+            <div
+              role="status"
+              class="mb-2 flex flex-col gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs sm:text-sm text-amber-900"
+            >
+              <p class="font-semibold">{{ aviso.mensaje }}</p>
+              <p class="text-amber-800">No se incluye en el total del pedido.</p>
+              <div class="flex flex-wrap gap-x-4 gap-y-1">
+                <button
+                  type="button"
+                  (click)="removeItem(item.product.id)"
+                  class="cursor-pointer font-bold underline underline-offset-2 hover:text-amber-950"
+                >
+                  Quitar del carrito
+                </button>
+                @if (aviso.motivo === "pausado") {
+                  <a
+                    [href]="whatsAppUrl(item.product.name)"
+                    target="_blank"
+                    rel="noopener"
+                    class="font-bold underline underline-offset-2 hover:text-amber-950"
+                  >
+                    Consultar por WhatsApp
+                  </a>
+                }
+              </div>
+            </div>
+          }
+
           <div
             class="flex flex-wrap items-end justify-between gap-y-3 gap-x-2 mt-2 sm:mt-4"
           >
@@ -79,7 +110,7 @@
                 (click)="updateQuantity(item.product.id, item.quantity + 1)"
                 class="cursor-pointer w-8 sm:w-9 h-full flex items-center justify-center text-neutral-500 hover:text-[#3d4494] hover:bg-neutral-50 rounded-r-lg transition-colors disabled:opacity-50 disabled:hover:text-neutral-500 disabled:hover:bg-transparent disabled:cursor-not-allowed"
                 [attr.aria-label]="'Aumentar cantidad de ' + item.product.name"
-                [disabled]="item.quantity >= item.product.stock"
+                [disabled]="item.quantity >= item.product.stock || !aviso.disponible"
               >
                 <ng-icon
                   name="bootstrapPlus"

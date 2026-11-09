@@ -11,6 +11,8 @@ import { IApiProduct } from '@models/product.model';
 import { CartService } from '@services/cart.service';
 import { AlertService } from '@services/alert.service';
 import { ProductImageComponent } from '@shared/components/product-image/product-image.component';
+import { mensajeDeConsultaPorWhatsApp } from '@shared/utils/disponibilidad-producto';
+import { LEGAL_INFO } from '@client/pages/footer-pages/legal-info';
 
 @Component({
   selector: 'app-cart-items',
@@ -33,6 +35,16 @@ export class CartItemsComponent {
 
   getCurrentPrice(product: IApiProduct): number {
     return product.prices?.find((p) => p.isCurrent)?.amount || 0;
+  }
+
+  // Aviso de un producto pausado o inactivo (ID 54 de docs/requerimientos/discusiones.md)
+  availability(productId: number) {
+    return this.cartService.availabilityOf(productId);
+  }
+
+  // Consulta prearmada por WhatsApp para saber cuándo vuelve un producto pausado
+  whatsAppUrl(productName: string): string {
+    return `${LEGAL_INFO.whatsappUrl}?text=${encodeURIComponent(mensajeDeConsultaPorWhatsApp(productName))}`;
   }
 
   updateQuantity(productId: number, quantity: number) {
