@@ -2,6 +2,7 @@
   <app-clients-toolbar
     [(searchQuery)]="searchQuery"
     [(fiscalFilter)]="fiscalFilter"
+    [(stateFilter)]="stateFilter"
     (onAdd)="handleNavigateToCreate()"
   />
 
@@ -11,6 +12,7 @@
     [isFilterActive]="filtersActive()"
     (onEdit)="handleNavigateToEdit($event)"
     (onDelete)="handleDelete($event)"
+    (onReactivate)="reactivateClient($event)"
   />
 
   <app-pagination
@@ -20,11 +22,14 @@
   />
 
   @if (clientToDelete()) {
+    <!-- Sin borrado permanente: solo se desactiva (ID 65 de discusiones.md) -->
     <app-confirm-delete-modal
       [entityName]="clientToDelete()!.name + ' ' + clientToDelete()!.lastName"
       entityType="cliente"
-      [canDeactivate]="false"
-      (confirmDelete)="confirmDeleteClient()"
+      [canDeactivate]="true"
+      [allowPermanentDelete]="false"
+      [isDeactivated]="clientToDelete()!.state === 'Inactivo'"
+      (confirmDeactivate)="confirmDeactivateClient()"
       (close)="clientToDelete.set(null)"
     />
   }

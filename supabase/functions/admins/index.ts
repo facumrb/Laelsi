@@ -4,13 +4,17 @@
 // Reemplaza a admin.routes.ts + admin.controller.ts + admin.service.ts.
 // Todas las rutas son exclusivas de los administradores:
 //
-//   GET    /admins                   Listado paginado
-//   GET    /admins/search?query=     Búsqueda por nombre, apellido, email o DNI
+//   GET    /admins                   Listado paginado (filtro: estado)
+//   GET    /admins/search?query=     Búsqueda por nombre, apellido, email o DNI (filtro: estado)
 //   GET    /admins/account/:id       Datos de la cuenta
 //   GET    /admins/:id
 //   POST   /admins
 //   PATCH  /admins/:id
-//   DELETE /admins/:id
+//   PATCH  /admins/:id/state         Activa o desactiva al administrador (body: { state })
+//   DELETE /admins/:id               DESACTIVA al administrador: no se elimina físicamente a nadie
+//
+// Protecciones al desactivar: un administrador no puede desactivar su propia cuenta y no se puede
+// desactivar al último administrador activo (ver estado-usuario.ts).
 // ============================================================================
 import { sql } from '../_shared/db.ts';
 import { requireAdmin } from '../_shared/auth.ts';
@@ -25,7 +29,17 @@ import {
   type RequestContext,
 } from '../_shared/http.ts';
 import { likePattern } from '../_shared/catalogo.ts';
-import { createUser, findUser, listUsers, removeUser, sanitizeUserInput, updateUser } from '../_shared/usuarios.ts';
+import {
+  createUser,
+  findUser,
+  listUsers,
+  readStateFilter,
+  sanitizeUserInput,
+  setUserState,
+  updateUser,
+  userStateFilter,
+} from '../_shared/usuarios.ts';
+import { esEstadoUsuario } from '../_shared/estado-usuario.ts';
 
 const NOT_FOUND = 'Administrador no encontrado';
 
@@ -44,7 +58,9 @@ async function findOne(ctx: RequestContext) {
 async function findAll(ctx: RequestContext) {
   await requireAdmin(ctx.req);
   const { page, limit } = getPagination(ctx);
-  return ok('Todos los Administradores fueron encontrados', await listUsers('Admin', page, limit));
+  const state = readStateFilter(queryParam(ctx, 'state'));
+  const admins = await listUsers('Admin', page, limit, () => userStateFilter(state));
+  return ok('Todos los Administradores fueron encontrados', admins);
 }
 
 async function searchAdminByText(ctx: RequestContext) {
@@ -54,6 +70,7 @@ async function searchAdminByText(ctx: RequestContext) {
 
   const { page, limit } = getPagination(ctx);
   const pattern = likePattern(query);
+  const state = readStateFilter(queryParam(ctx, 'state'));
 
   const admins = await listUsers(
     'Admin',
@@ -62,7 +79,7 @@ async function searchAdminByText(ctx: RequestContext) {
     () => sql`and (
       u.name ilike ${pattern} or u.last_name ilike ${pattern}
       or u.email ilike ${pattern} or u.dni ilike ${pattern}
-    )`,
+    ) ${userStateFilter(state)}`,
   );
   return ok('Resultados de búsqueda', admins);
 }
@@ -85,17 +102,22 @@ async function update(ctx: RequestContext) {
   return ok('Administrador actualizado', admin);
 }
 
+/** DELETE: desactiva al administrador (las protecciones están en setUserState). Se lo puede reactivar. */
 async function remove(ctx: RequestContext) {
   const requester = await requireAdmin(ctx.req);
   const id = intParam(ctx, 'id', 'ID de administrador inválido');
+  await setUserState(id, 'Admin', 'Inactivo', NOT_FOUND, requester.id);
+  return ok('Administrador desactivado');
+}
 
-  // Evita que un administrador se quede sin acceso borrando su propia cuenta por error
-  if (requester.id === id) {
-    throw new AppError('No podés eliminar tu propia cuenta de administrador', 400);
-  }
+async function changeState(ctx: RequestContext) {
+  const requester = await requireAdmin(ctx.req);
+  const id = intParam(ctx, 'id', 'ID de administrador inválido');
+  const state = ctx.body?.state;
+  if (!esEstadoUsuario(state)) throw new AppError('El estado debe ser Activo o Inactivo', 400);
 
-  await removeUser(id, 'Admin', NOT_FOUND);
-  return ok('Administrador eliminado');
+  const admin = await setUserState(id, 'Admin', state, NOT_FOUND, requester.id);
+  return ok(state === 'Inactivo' ? 'Administrador desactivado' : 'Administrador reactivado', admin);
 }
 
 serveRoutes('admins', [
@@ -106,5 +128,6 @@ serveRoutes('admins', [
   ['GET', '/:id', findOne],
   ['POST', '/', add],
   ['DELETE', '/:id', remove],
+  ['PATCH', '/:id/state', changeState],
   ['PATCH', '/:id', update],
 ]);

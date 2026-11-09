@@ -8,6 +8,7 @@ import {
 } from '@ng-icons/bootstrap-icons';
 
 import { TableEmptyStateComponent } from '@admin/components/table-components/table-empty-state/table-empty-state.component';
+import { EntityStateBadgeComponent } from '@admin/components/table-components/entity-state-badge/entity-state-badge.component';
 import { UserAvatarComponent } from '@shared/components/user-avatar/user-avatar.component';
 
 @Component({
@@ -17,6 +18,7 @@ import { UserAvatarComponent } from '@shared/components/user-avatar/user-avatar.
     NgIconComponent,
     TableEmptyStateComponent,
     UserAvatarComponent,
+    EntityStateBadgeComponent,
   ],
   viewProviders: provideIcons({
     bootstrapEnvelope,
@@ -28,6 +30,7 @@ export class ClientsListComponent {
   clients = input.required<IApiClient[]>();
   onEdit = output<IApiClient>();
   onDelete = output<IApiClient>();
+  onReactivate = output<IApiClient>();
 
   isFilterActive = input<boolean>(false);
 

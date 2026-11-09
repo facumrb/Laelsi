@@ -12,6 +12,14 @@ export enum FiscalCondition {
   Exento = 'Exento',
 }
 
+// Estado de un cliente o administrador (ID 65 de docs/requerimientos/discusiones.md): por ahora no se
+// elimina a nadie, solo se lo DESACTIVA. Un usuario Inactivo conserva sus datos y su historial, pero no
+// puede ingresar ni hacer pedidos. Es un texto (no un enum) para poder usarlo en el filtro y en la insignia.
+export type UserState = 'Activo' | 'Inactivo';
+
+// Filtro de las pestañas de Administradores y Clientes
+export type UserStateFilter = UserState | 'Todos';
+
 // ==========================================================
 // MODELOS DE LECTURA (READ / GET)
 // ==========================================================
@@ -27,6 +35,7 @@ export interface IApiUser {
   email: string;
   role: UserRole;
   photo: IApiUserPhoto | null; // Puede ser null si el usuario no cargo una foto de perfil
+  state?: UserState; // Ausente = Activo (datos anteriores a la columna de estado)
 
   // Las fechas vienen como string ISO desde la API
   createdAt: string;
@@ -55,7 +64,8 @@ export interface IApiClient extends IApiUser {
 // ==========================================================
 
 // Helper para excluir campos automáticos
-type OmitAutoFields = 'id' | 'photo' | 'createdAt' | 'updatedAt' | 'deletedAt';
+// (el estado tampoco se envía al crear ni al editar: se cambia con su propia ruta, PATCH /:id/state)
+type OmitAutoFields = 'id' | 'photo' | 'state' | 'createdAt' | 'updatedAt' | 'deletedAt';
 
 // Para crear Admin
 export type ICreateAdmin = Omit<IApiAdmin, OmitAutoFields> & {

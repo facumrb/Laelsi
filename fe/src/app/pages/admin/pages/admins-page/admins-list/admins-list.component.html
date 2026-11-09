@@ -50,6 +50,9 @@
                 >
                   {{ admin.username }}
                 </div>
+                @if (admin.state === "Inactivo") {
+                  <app-entity-state-badge state="Inactivo" />
+                }
               </div>
             </td>
 
@@ -110,8 +113,11 @@
 
                 <app-table-actions
                   [item]="admin"
+                  [canDelete]="admin.state !== 'Inactivo'"
+                  [canReactivate]="admin.state === 'Inactivo'"
                   (onEdit)="onEdit.emit($event)"
                   (onDelete)="onDelete.emit($event)"
+                  (onReactivate)="onReactivate.emit($event)"
                 />
               </div>
             </td>

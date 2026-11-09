@@ -1,7 +1,13 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { IApiAdmin, ICreateAdmin, IUpdateAdmin } from '@models/user.model';
+import {
+  IApiAdmin,
+  ICreateAdmin,
+  IUpdateAdmin,
+  UserState,
+  UserStateFilter,
+} from '@models/user.model';
 import { IPaginatedResult } from '../../models/pagination.model';
 import { environment } from 'src/environments/environment';
 
@@ -15,8 +21,13 @@ export class ApiAdminService {
   getAllAdmins(
     page: number = 1,
     limit: number = 16,
+    state?: UserStateFilter,
   ): Observable<IPaginatedResult<IApiAdmin>> {
-    const params = new HttpParams().set('page', page).set('limit', limit);
+    let params = new HttpParams().set('page', page).set('limit', limit);
+    // 'Todos' no se envía: el servidor lista activos e inactivos
+    if (state && state !== 'Todos') {
+      params = params.set('state', state);
+    }
     return this.http
       .get<{
         message: string;
@@ -36,11 +47,15 @@ export class ApiAdminService {
     query: string,
     page: number = 1,
     limit: number = 16,
+    state?: UserStateFilter,
   ): Observable<IPaginatedResult<IApiAdmin>> {
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('query', query)
       .set('page', page)
       .set('limit', limit);
+    if (state && state !== 'Todos') {
+      params = params.set('state', state);
+    }
     return this.http
       .get<{
         message: string;
@@ -64,9 +79,18 @@ export class ApiAdminService {
       .pipe(map((response) => response.data));
   }
 
+  // Desde el ID 65 el servidor ya no borra administradores: DELETE los DESACTIVA. Se conserva por
+  // compatibilidad; el panel usa setAdminState, que sirve también para reactivar.
   deleteAdmin(id: number): Observable<void> {
     return this.http
       .delete<{ message: string }>(`${this.apiUrl}/${id}`)
+      .pipe(map(() => void 0));
+  }
+
+  // Desactiva o reactiva un administrador (no se puede desactivar a uno mismo ni al último activo)
+  setAdminState(id: number, state: UserState): Observable<void> {
+    return this.http
+      .patch<{ message: string }>(`${this.apiUrl}/${id}/state`, { state })
       .pipe(map(() => void 0));
   }
 }

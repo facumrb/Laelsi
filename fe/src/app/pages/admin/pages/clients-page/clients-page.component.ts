@@ -8,7 +8,7 @@ import {
   untracked,
 } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { IApiClient } from '@models/user.model';
+import { IApiClient, UserStateFilter } from '@models/user.model';
 import { ApiClientService } from '@services/api-services/api-client.service';
 import { AlertService } from '@services/alert.service';
 import { ClientsToolbarComponent } from './clients-toolbar/clients-toolbar.component';
@@ -40,9 +40,14 @@ export class ClientsPageComponent implements OnInit {
 
   searchQuery = signal<string>('');
   fiscalFilter = signal<FiscalConditionFilter>('Todos');
+  stateFilter = signal<UserStateFilter>('Todos');
 
   filtersActive = computed(() => {
-    return this.searchQuery() !== '' || this.fiscalFilter() !== 'Todos';
+    return (
+      this.searchQuery() !== '' ||
+      this.fiscalFilter() !== 'Todos' ||
+      this.stateFilter() !== 'Todos'
+    );
   });
 
   clientsFiltered = computed(() => {
@@ -51,11 +56,12 @@ export class ClientsPageComponent implements OnInit {
   });
 
   constructor() {
-    // Reacciona cuando el usuario cambia la búsqueda o el filtro fiscal.
-    // Ambos filtros se aplican server-side con paginación correcta.
+    // Reacciona cuando el usuario cambia la búsqueda, el filtro fiscal o el de estado.
+    // Todos los filtros se aplican server-side con paginación correcta.
     effect(() => {
       this.searchQuery();
       this.fiscalFilter();
+      this.stateFilter();
       untracked(() => {
         if (this.initialLoadDone) {
           this.currentPage.set(1);
@@ -77,18 +83,19 @@ export class ClientsPageComponent implements OnInit {
   loadClients() {
     const query = this.searchQuery().trim();
     const fiscal = this.fiscalFilter();
+    const state = this.stateFilter();
 
     // Si hay búsqueda, usamos el endpoint de search
     if (query) {
-      this.apiService.searchClients(query, this.currentPage()).subscribe({
+      this.apiService.searchClients(query, this.currentPage(), 16, state).subscribe({
         next: (data) => {
           this.clientsRaw.set(data.data);
           this.totalPages.set(data.totalPages);
         },
       });
     } else {
-      // Usamos getAll con el filtro fiscal (server-side)
-      this.apiService.getAllClients(this.currentPage(), 16, fiscal).subscribe({
+      // Usamos getAll con el filtro fiscal y el de estado (server-side)
+      this.apiService.getAllClients(this.currentPage(), 16, fiscal, state).subscribe({
         next: (data) => {
           this.clientsRaw.set(data.data);
           this.totalPages.set(data.totalPages);
@@ -119,15 +126,26 @@ export class ClientsPageComponent implements OnInit {
     this.clientToDelete.set(client);
   }
 
-  confirmDeleteClient() {
+  // ID 65 de docs/requerimientos/discusiones.md: no se elimina a ningún cliente, solo se lo desactiva.
+  // Conserva sus datos y su historial de pedidos; no puede ingresar ni hacer pedidos hasta reactivarlo.
+  confirmDeactivateClient() {
     const client = this.clientToDelete();
     if (!client) return;
 
-    this.apiService.deleteClient(client.id).subscribe({
+    this.apiService.setClientState(client.id, 'Inactivo').subscribe({
       next: () => {
-        this.alertService.toast('Cliente eliminado permanentemente', 'success');
+        this.alertService.toast('Cliente desactivado', 'success');
         this.clientToDelete.set(null);
-        // Recargamos desde el servidor para que la paginación se recalcule
+        // Recargamos desde el servidor para que la paginación y el filtro de estado se recalculen
+        this.loadClients();
+      },
+    });
+  }
+
+  reactivateClient(client: IApiClient) {
+    this.apiService.setClientState(client.id, 'Activo').subscribe({
+      next: () => {
+        this.alertService.toast('Cliente reactivado', 'success');
         this.loadClients();
       },
     });

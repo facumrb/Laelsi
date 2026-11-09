@@ -11,8 +11,13 @@
 import { sql, type Db } from './db.ts';
 import { supabaseAdmin, type UserRole } from './auth.ts';
 import { AppError, paginated, pickFields } from './http.ts';
-import { deleteObject } from './r2.ts';
 import { accountHasPassword, assertCurrentPassword } from './contrasenas.ts';
+import {
+  leerFiltroDeEstado,
+  mensajeDeCuentaInactiva,
+  validarCambioDeEstado,
+  type EstadoUsuario,
+} from './estado-usuario.ts';
 
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -99,8 +104,24 @@ export function assertTermsAccepted(body: any): string {
 const userColumns = () => sql`
   id, role, name, last_name, dni, phone, username, email, cuit, fiscal_condition,
   street, street_number, city, province, postal_code, floor, apartment,
-  created_at, updated_at, deleted_at
+  state, created_at, updated_at, deleted_at
 `;
+
+/** Lee el filtro `state` de un listado; un valor inválido es un 400 y no se ignora en silencio. */
+export function readStateFilter(value: string | undefined): EstadoUsuario | undefined {
+  try {
+    return leerFiltroDeEstado(value);
+  } catch (err) {
+    if (err instanceof RangeError) throw new AppError(err.message, 400);
+    throw err;
+  }
+}
+
+/** Fragmento SQL para el WHERE de un listado (alias `u`): vacío si no se filtra por estado. */
+// deno-lint-ignore no-explicit-any
+export function userStateFilter(state: EstadoUsuario | undefined): any {
+  return state ? sql`and u.state = ${state}` : sql``;
+}
 
 /**
  * Deja solo los campos permitidos según el rol (reemplaza a sanitizeAdminInput y
@@ -199,9 +220,12 @@ export async function listUsers(role: UserRole, page: number, limit: number, fil
 /** Datos de sesión que guarda el frontend después de iniciar sesión. */
 export async function getSessionUser(supabaseUid: string) {
   const [row] = await sql`
-    select id, name, last_name, role, terms_accepted_at from "user" where supabase_uid = ${supabaseUid}
+    select id, name, last_name, role, state, terms_accepted_at from "user" where supabase_uid = ${supabaseUid}
   `;
   if (!row) return null;
+
+  // Una cuenta inactiva no inicia sesión en la aplicación (ver estado-usuario.ts)
+  if (row.state === 'Inactivo') throw new AppError(mensajeDeCuentaInactiva(row.role), 403);
 
   const [photo] = await sql`select id, file_name from photo where user_id = ${row.id}`;
   return {
@@ -397,31 +421,45 @@ export async function updateUser(
   return withPhoto;
 }
 
-/** Elimina un usuario: su perfil, su foto de perfil (registro y archivo) y su cuenta de Auth. */
-export async function removeUser(id: number, role: UserRole, notFoundMessage: string) {
-  const [user] = await sql`select id, supabase_uid from "user" where id = ${id} and role = ${role}`;
-  if (!user) throw new AppError(notFoundMessage, 404);
+/**
+ * Activa o desactiva a un cliente o administrador. Por ahora NO se elimina físicamente a nadie
+ * (discusión del ID 65): el borrado físico destruía el historial, porque la base borra en cascada
+ * los Pedidos del cliente. Un usuario inactivo conserva todo y no puede operar (requireUser).
+ *
+ * Las reglas de quién puede desactivar a quién están en estado-usuario.ts. Mientras se cuentan los
+ * administradores activos se los bloquea, para que dos desactivaciones simultáneas no dejen al panel
+ * sin ningún administrador activo.
+ */
+export async function setUserState(
+  id: number,
+  role: UserRole,
+  state: EstadoUsuario,
+  notFoundMessage: string,
+  requesterId: number,
+) {
+  await sql.begin(async (tx: Db) => {
+    const [user] = await tx`select id, state from "user" where id = ${id} and role = ${role} for update`;
+    if (!user) throw new AppError(notFoundMessage, 404);
 
-  const [photo] = await sql`select file_name from photo where user_id = ${id}`;
+    const activeAdmins = await tx`select id from "user" where role = 'Admin' and state = 'Activo' for update`;
 
-  try {
-    // La foto y las órdenes del usuario se borran en cascada (ON DELETE CASCADE)
-    await sql`delete from "user" where id = ${id}`;
-  } catch (err) {
-    // deno-lint-ignore no-explicit-any
-    if ((err as any)?.code === '23503') {
-      throw new AppError(
-        'No se puede eliminar el usuario porque tiene historial asociado (cambios de precios o auditoría)',
-        409,
-      );
-    }
-    throw err;
-  }
+    const reason = validarCambioDeEstado({
+      solicitanteId: requesterId,
+      objetivoId: id,
+      objetivoRol: role,
+      objetivoEstadoActual: user.state,
+      nuevoEstado: state,
+      administradoresActivos: activeAdmins.length,
+    });
+    if (reason) throw new AppError(reason, 409);
 
-  if (photo) await deleteObject('user', photo.fileName);
+    // deleted_at guarda la fecha del último cambio de estado (igual que en productos y categorías)
+    await tx`
+      update "user"
+      set state = ${state}, deleted_at = ${state === 'Inactivo' ? new Date() : null}
+      where id = ${id}
+    `;
+  });
 
-  if (user.supabaseUid) {
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(user.supabaseUid);
-    if (error) console.error('No se pudo eliminar la cuenta de Supabase Auth', error);
-  }
+  return findUser(id, role, notFoundMessage);
 }

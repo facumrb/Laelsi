@@ -9,13 +9,27 @@
     <ng-icon name="bootstrapPencilSquare" class="text-xl"></ng-icon>
   </button>
 
-  <button
-    type="button"
-    (click)="onDelete.emit(item())"
-    aria-label="Eliminar"
-    class="cursor-pointer text-red-600 hover:text-red-900 transition-colors flex items-center justify-center"
-    title="Eliminar"
-  >
-    <ng-icon name="bootstrapTrash" class="text-xl"></ng-icon>
-  </button>
+  @if (canReactivate()) {
+    <button
+      type="button"
+      (click)="onReactivate.emit(item())"
+      aria-label="Reactivar"
+      class="cursor-pointer text-emerald-600 hover:text-emerald-900 transition-colors flex items-center justify-center"
+      title="Reactivar"
+    >
+      <ng-icon name="bootstrapArrowCounterclockwise" class="text-xl"></ng-icon>
+    </button>
+  }
+
+  @if (canDelete()) {
+    <button
+      type="button"
+      (click)="onDelete.emit(item())"
+      aria-label="Eliminar"
+      class="cursor-pointer text-red-600 hover:text-red-900 transition-colors flex items-center justify-center"
+      title="Eliminar"
+    >
+      <ng-icon name="bootstrapTrash" class="text-xl"></ng-icon>
+    </button>
+  }
 </div>

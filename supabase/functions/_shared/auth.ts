@@ -9,6 +9,7 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { sql } from './db.ts';
 import { AppError } from './http.ts';
+import { mensajeDeCuentaInactiva, type EstadoUsuario } from './estado-usuario.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
@@ -29,6 +30,8 @@ export interface AuthUser {
   id: number;
   role: UserRole;
   email: string;
+  /** Una cuenta Inactiva conserva sus datos pero no puede operar (ver estado-usuario.ts) */
+  state: EstadoUsuario;
   /** ID de la cuenta en Supabase Auth (auth.users) */
   supabaseUid: string;
 }
@@ -43,17 +46,21 @@ export async function getAuthUser(req: Request): Promise<AuthUser | null> {
   if (error || !data.user) return null;
 
   const [row] = await sql`
-    select id, role, email from "user" where supabase_uid = ${data.user.id}
+    select id, role, email, state from "user" where supabase_uid = ${data.user.id}
   `;
   if (!row) return null;
 
-  return { id: row.id, role: row.role, email: row.email, supabaseUid: data.user.id };
+  return { id: row.id, role: row.role, email: row.email, state: row.state, supabaseUid: data.user.id };
 }
 
-/** Exige un usuario autenticado (equivale al middleware verifyToken). */
+/**
+ * Exige un usuario autenticado (equivale al middleware verifyToken). Una cuenta INACTIVA se rechaza
+ * con 403 y un mensaje claro: el token es válido, pero la cuenta fue desactivada.
+ */
 export async function requireUser(req: Request): Promise<AuthUser> {
   const user = await getAuthUser(req);
   if (!user) throw new AppError('Token inválido o expirado', 401);
+  if (user.state === 'Inactivo') throw new AppError(mensajeDeCuentaInactiva(user.role), 403);
   return user;
 }
 
@@ -95,7 +102,9 @@ export async function isAdminRequest(req: Request): Promise<boolean> {
     return false;
   }
 
-  return (await getAuthUser(req))?.role === 'Admin';
+  // Un administrador inactivo no ve lo que ve un administrador: para las rutas públicas es un visitante más
+  const user = await getAuthUser(req);
+  return user?.role === 'Admin' && user.state === 'Activo';
 }
 
 /** Exige que el usuario autenticado sea el dueño del recurso o un administrador. */

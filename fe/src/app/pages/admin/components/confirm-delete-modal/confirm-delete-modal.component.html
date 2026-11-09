@@ -30,7 +30,8 @@
             class="text-lg font-bold text-gray-900 leading-tight truncate"
             [title]="entityName()"
           >
-            Eliminar {{ entityType() }}: "{{ entityName() }}"
+            {{ allowPermanentDelete() ? "Eliminar" : "Desactivar" }}
+            {{ entityType() }}: "{{ entityName() }}"
           </h2>
           <p class="text-xs text-gray-500 font-medium mt-0.5">
             Esta acción requiere confirmación
@@ -42,6 +43,7 @@
 
     <!-- Body -->
     <div class="px-6 py-6 space-y-4">
+      @if (allowPermanentDelete()) {
       <!-- Alerta de riesgo de pérdida permanente -->
       <div
         class="p-4 bg-rose-50/80 border border-rose-200/80 rounded-xl text-rose-950 text-xs sm:text-sm leading-relaxed"
@@ -93,6 +95,21 @@
           </p>
         </div>
       }
+      } @else {
+        <!-- Sin borrado permanente: solo se desactiva y se conserva todo -->
+        <div
+          class="p-4 bg-indigo-50/80 border border-indigo-200/80 rounded-xl text-indigo-950 text-xs sm:text-sm leading-relaxed"
+        >
+          <div class="font-bold text-[#3d4494] mb-1.5">
+            No se borra nada
+          </div>
+          <p class="text-indigo-900/90 text-xs sm:text-sm">
+            Desactivar conserva todos los datos y el historial de operaciones
+            de este {{ entityType() }}, pero deja de poder ingresar y hacer
+            pedidos. Podés reactivarlo cuando quieras.
+          </p>
+        </div>
+      }
     </div>
 
     <!-- Footer -->
@@ -107,23 +124,35 @@
         Cancelar
       </button>
 
+      @if (canPause()) {
+        <button
+          type="button"
+          (click)="onConfirmPause()"
+          class="w-full sm:w-auto cursor-pointer rounded-md border border-amber-300 bg-amber-50 px-5 py-2.5 text-sm font-semibold text-amber-900 shadow-sm hover:bg-amber-100 transition-colors focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-amber-600"
+        >
+          Pausar
+        </button>
+      }
+
       @if (canDeactivate() && !isDeactivated()) {
         <button
           type="button"
           (click)="onConfirmDeactivate()"
           class="w-full sm:w-auto cursor-pointer rounded-md bg-[#3d4494] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#2a2f63] transition-colors focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-[#3d4494]"
         >
-          Desactivar (Recomendado)
+          {{ allowPermanentDelete() ? "Desactivar (Recomendado)" : "Desactivar" }}
         </button>
       }
 
-      <button
-        type="button"
-        (click)="onConfirmDelete()"
-        class="w-full sm:w-auto cursor-pointer rounded-md bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-rose-700 transition-colors focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-rose-600"
-      >
-        Eliminar permanentemente
-      </button>
+      @if (allowPermanentDelete()) {
+        <button
+          type="button"
+          (click)="onConfirmDelete()"
+          class="w-full sm:w-auto cursor-pointer rounded-md bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-rose-700 transition-colors focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-rose-600"
+        >
+          Eliminar permanentemente
+        </button>
+      }
     </footer>
   </div>
 </div>

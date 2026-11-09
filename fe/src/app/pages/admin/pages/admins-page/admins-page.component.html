@@ -1,15 +1,17 @@
 <div class="animate-fadeIn container mx-auto">
   <app-admins-toolbar
     [(searchQuery)]="searchQuery"
+    [(stateFilter)]="stateFilter"
     (onAdd)="handleNavigateToCreate()"
   />
 
   <app-admins-list
     class="mt-6 block"
     [admins]="adminsFiltered()"
-    [isFilterActive]="searchQuery().length > 0"
+    [isFilterActive]="filtersActive()"
     (onEdit)="handleNavigateToEdit($event)"
     (onDelete)="handleDelete($event)"
+    (onReactivate)="reactivateAdmin($event)"
   />
 
   <app-pagination
@@ -19,11 +21,14 @@
   />
 
   @if (adminToDelete()) {
+    <!-- Sin borrado permanente: solo se desactiva (ID 65 de discusiones.md) -->
     <app-confirm-delete-modal
       [entityName]="adminToDelete()!.name + ' ' + adminToDelete()!.lastName"
       entityType="administrador"
-      [canDeactivate]="false"
-      (confirmDelete)="confirmDeleteAdmin()"
+      [canDeactivate]="true"
+      [allowPermanentDelete]="false"
+      [isDeactivated]="adminToDelete()!.state === 'Inactivo'"
+      (confirmDeactivate)="confirmDeactivateAdmin()"
       (close)="adminToDelete.set(null)"
     />
   }

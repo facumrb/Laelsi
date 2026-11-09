@@ -48,6 +48,9 @@
                 >
                   {{ client.username }}
                 </div>
+                @if (client.state === "Inactivo") {
+                  <app-entity-state-badge state="Inactivo" />
+                }
               </div>
             </td>
 
@@ -126,8 +129,11 @@
 
                 <app-table-actions
                   [item]="client"
+                  [canDelete]="client.state !== 'Inactivo'"
+                  [canReactivate]="client.state === 'Inactivo'"
                   (onEdit)="onEdit.emit($event)"
                   (onDelete)="onDelete.emit($event)"
+                  (onReactivate)="onReactivate.emit($event)"
                 />
               </div>
             </td>

@@ -21,6 +21,12 @@
           [(selected)]="fiscalFilter"
         ></app-filter-accordion>
 
+        <app-filter-accordion
+          label="Filtrar por Estado"
+          [options]="stateOptions"
+          [(selected)]="stateFilter"
+        ></app-filter-accordion>
+
         <button
           type="button"
           (click)="limpiar()"

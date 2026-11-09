@@ -26,8 +26,18 @@ export class ConfirmDeleteModalComponent {
   entityType = input<string>('registro');
   canDeactivate = input<boolean>(true);
   isDeactivated = input<boolean>(false);
+
+  // Ofrecer también "Pausar" (productos): la ficha se sigue viendo como "no disponible por ahora".
+  canPause = input<boolean>(false);
+
+  // false = no se ofrece el borrado permanente (clientes y administradores: ID 65 de
+  // docs/requerimientos/discusiones.md, por ahora solo desactivación lógica). El modal pasa a ser un
+  // "Desactivar" que explica que no se borra nada.
+  allowPermanentDelete = input<boolean>(true);
+
   confirmDelete = output<void>();
   confirmDeactivate = output<void>();
+  confirmPause = output<void>();
   close = output<void>();
 
   onClose(): void {
@@ -40,6 +50,10 @@ export class ConfirmDeleteModalComponent {
 
   onConfirmDeactivate(): void {
     this.confirmDeactivate.emit();
+  }
+
+  onConfirmPause(): void {
+    this.confirmPause.emit();
   }
 
   @HostListener('document:keydown.escape')

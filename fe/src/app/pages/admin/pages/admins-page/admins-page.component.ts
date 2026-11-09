@@ -8,7 +8,7 @@ import {
   untracked,
 } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { IApiAdmin } from '@models/user.model';
+import { IApiAdmin, UserStateFilter } from '@models/user.model';
 import { ApiAdminService } from '@services/api-services/api-admin.service';
 import { AlertService } from '@services/alert.service';
 import { AdminsListComponent } from './admins-list/admins-list.component';
@@ -39,22 +39,27 @@ export class AdminsPageComponent implements OnInit {
   private adminsRaw = signal<IApiAdmin[]>([]);
   currentPage = signal<number>(1);
   totalPages = signal<number>(1);
-  totalItems = signal<number>(0); // Total real del servidor, para el guard de 'único admin'
   adminToDelete = signal<IApiAdmin | null>(null);
   showSelfDeleteBlockedModal = signal<boolean>(false);
 
   searchQuery = signal<string>('');
+  stateFilter = signal<UserStateFilter>('Todos');
+
+  filtersActive = computed(
+    () => this.searchQuery().length > 0 || this.stateFilter() !== 'Todos',
+  );
 
   adminsFiltered = computed(() => {
-    // El filtrado fuerte (búsqueda) se hace en el server.
+    // El filtrado fuerte (búsqueda y estado) se hace en el server.
     return [...this.adminsRaw()].sort((a, b) => a.id - b.id);
   });
 
   constructor() {
-    // Reacciona SOLO cuando el usuario cambia la búsqueda.
+    // Reacciona SOLO cuando el usuario cambia la búsqueda o el filtro de estado.
     // Resetea a página 1 y recarga, sin crear loops.
     effect(() => {
       this.searchQuery(); // trackea cambios de búsqueda
+      this.stateFilter(); // trackea cambios del filtro de estado
       untracked(() => {
         // Evitamos actuar en la primera ejecución (ngOnInit se encarga)
         if (this.initialLoadDone) {
@@ -77,21 +82,20 @@ export class AdminsPageComponent implements OnInit {
 
   loadAdmins() {
     const query = this.searchQuery().trim();
+    const state = this.stateFilter();
 
     if (query) {
-      this.apiService.searchAdmins(query, this.currentPage()).subscribe({
+      this.apiService.searchAdmins(query, this.currentPage(), 16, state).subscribe({
         next: (data) => {
           this.adminsRaw.set(data.data);
           this.totalPages.set(data.totalPages);
-          this.totalItems.set(data.total);
         },
       });
     } else {
-      this.apiService.getAllAdmins(this.currentPage()).subscribe({
+      this.apiService.getAllAdmins(this.currentPage(), 16, state).subscribe({
         next: (data) => {
           this.adminsRaw.set(data.data);
           this.totalPages.set(data.totalPages);
-          this.totalItems.set(data.total);
         },
       });
     }
@@ -116,36 +120,37 @@ export class AdminsPageComponent implements OnInit {
   }
 
   handleDelete(admin: IApiAdmin) {
-    // Bloquear auto-eliminación
+    // Bloquear la auto-desactivación (el servidor también la rechaza)
     if (admin.id === this.authService.currentUser()?.id) {
       this.showSelfDeleteBlockedModal.set(true);
       return;
     }
 
-    // Usamos totalItems (del servidor) para no depender de los datos de la página actual
-    if (this.totalItems() <= 1) {
-      this.alertService.toast(
-        'No puedes eliminar al único administrador del sistema',
-        'error',
-      );
-      return;
-    }
-
+    // Que no quede el panel sin administradores activos lo controla el servidor: no se puede desactivar
+    // al último administrador activo. Acá no se cuenta, porque con el filtro de estado el total de la
+    // lista ya no es la cantidad de administradores activos.
     this.adminToDelete.set(admin);
   }
 
-  confirmDeleteAdmin() {
+  // ID 65 de docs/requerimientos/discusiones.md: no se elimina a ningún administrador, solo se lo desactiva.
+  confirmDeactivateAdmin() {
     const admin = this.adminToDelete();
     if (!admin) return;
 
-    this.apiService.deleteAdmin(admin.id).subscribe({
+    this.apiService.setAdminState(admin.id, 'Inactivo').subscribe({
       next: () => {
-        this.alertService.toast(
-          'Administrador eliminado permanentemente',
-          'success',
-        );
+        this.alertService.toast('Administrador desactivado', 'success');
         this.adminToDelete.set(null);
-        // Recargamos desde el servidor para que la paginación se recalcule
+        // Recargamos desde el servidor para que la paginación y el filtro de estado se recalculen
+        this.loadAdmins();
+      },
+    });
+  }
+
+  reactivateAdmin(admin: IApiAdmin) {
+    this.apiService.setAdminState(admin.id, 'Activo').subscribe({
+      next: () => {
+        this.alertService.toast('Administrador reactivado', 'success');
         this.loadAdmins();
       },
     });

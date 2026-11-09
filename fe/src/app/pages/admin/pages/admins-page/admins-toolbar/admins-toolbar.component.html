@@ -6,10 +6,18 @@
       <app-search-input [(query)]="searchQuery" placeholder="Buscar administrador..."></app-search-input>
     </div>
 
-    <app-create-entity-button
-      class="w-full lg:w-auto"
-      label="Administrador"
-      (clicked)="onAdd.emit()"
-    ></app-create-entity-button>
+    <div class="grid grid-cols-2 gap-3 w-full lg:flex lg:w-auto">
+      <app-admins-filter-button
+        [(stateFilter)]="stateFilter"
+      ></app-admins-filter-button>
+
+      <div class="col-span-1 lg:w-auto">
+        <app-create-entity-button
+          class="w-full lg:w-auto"
+          label="Administrador"
+          (clicked)="onAdd.emit()"
+        ></app-create-entity-button>
+      </div>
+    </div>
   </div>
 </div>

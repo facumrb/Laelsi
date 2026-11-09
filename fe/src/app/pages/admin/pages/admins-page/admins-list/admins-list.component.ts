@@ -8,11 +8,18 @@ import {
 } from '@ng-icons/bootstrap-icons';
 
 import { TableEmptyStateComponent } from '@admin/components/table-components/table-empty-state/table-empty-state.component';
+import { EntityStateBadgeComponent } from '@admin/components/table-components/entity-state-badge/entity-state-badge.component';
 import { UserAvatarComponent } from '@shared/components/user-avatar/user-avatar.component';
 
 @Component({
   selector: 'app-admins-list',
-  imports: [TableActionsComponent, NgIconComponent, TableEmptyStateComponent, UserAvatarComponent],
+  imports: [
+    TableActionsComponent,
+    NgIconComponent,
+    TableEmptyStateComponent,
+    UserAvatarComponent,
+    EntityStateBadgeComponent,
+  ],
   viewProviders: provideIcons({
     bootstrapEnvelope,
     bootstrapTelephone,
@@ -23,6 +30,7 @@ export class AdminsListComponent {
   admins = input.required<IApiAdmin[]>();
   onEdit = output<IApiAdmin>();
   onDelete = output<IApiAdmin>();
+  onReactivate = output<IApiAdmin>();
 
   // true cuando hay texto en el buscador del toolbar (lo pasa el padre)
   isFilterActive = input<boolean>(false);

@@ -5,7 +5,7 @@ import {
   FilterAccordionComponent,
   FilterOption,
 } from '@shared/components/filter-accordion/filter-accordion.component';
-import { FiscalCondition } from '@models/user.model';
+import { FiscalCondition, UserStateFilter } from '@models/user.model';
 
 export type FiscalConditionFilter = FiscalCondition | 'Todos';
 
@@ -20,8 +20,16 @@ export type FiscalConditionFilter = FiscalCondition | 'Todos';
 })
 export class ClientsFilterButtonComponent {
   fiscalFilter = model.required<FiscalConditionFilter>();
+  // Clientes activos o inactivos (ID 65 de docs/requerimientos/discusiones.md)
+  stateFilter = model.required<UserStateFilter>();
 
   showFilterMenu = signal(false);
+
+  readonly stateOptions: FilterOption[] = [
+    { value: 'Todos', label: 'Todos' },
+    { value: 'Activo', label: 'Activos' },
+    { value: 'Inactivo', label: 'Inactivos' },
+  ];
 
   readonly fiscalOptions: FilterOption[] = [
     { value: 'Todos', label: 'Todos' },
@@ -34,10 +42,13 @@ export class ClientsFilterButtonComponent {
     { value: FiscalCondition.Exento, label: 'Exento' },
   ];
 
-  hayFiltrosActivos = computed(() => this.fiscalFilter() !== 'Todos');
+  hayFiltrosActivos = computed(
+    () => this.fiscalFilter() !== 'Todos' || this.stateFilter() !== 'Todos',
+  );
 
   limpiar(): void {
     this.fiscalFilter.set('Todos');
+    this.stateFilter.set('Todos');
     this.showFilterMenu.set(false);
   }
 }
