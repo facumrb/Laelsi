@@ -65,11 +65,12 @@ export class ProfileDetailsComponent {
   fiscalConditions = Object.values(FiscalCondition);
   isFiscalMenuOpen = signal(false);
 
+  // ID 71 (pregunta 1 de la comparativa): nombre, apellido, DNI y teléfono son opcionales; un cliente creado con
+  // lo mínimo no tiene que completarlos para guardar otro cambio. Si se cargan, se siguen validando.
   formPerfil = this.fb.nonNullable.group({
     name: [
       '',
       [
-        Validators.required,
         FormUtils.minLength(2),
         FormUtils.maxLength(100),
         FormUtils.notOnlyWhiteSpace,
@@ -78,7 +79,6 @@ export class ProfileDetailsComponent {
     lastName: [
       '',
       [
-        Validators.required,
         FormUtils.minLength(2),
         FormUtils.maxLength(100),
         FormUtils.notOnlyWhiteSpace,
@@ -87,7 +87,6 @@ export class ProfileDetailsComponent {
     dni: [
       '',
       [
-        Validators.required,
         FormUtils.minLength(7),
         FormUtils.maxLength(15),
         Validators.pattern(FormUtils.numberPattern),
@@ -104,7 +103,6 @@ export class ProfileDetailsComponent {
     phone: [
       '',
       [
-        Validators.required,
         FormUtils.minLength(7),
         FormUtils.maxLength(20),
         Validators.pattern(FormUtils.phonePattern),
@@ -148,11 +146,12 @@ export class ProfileDetailsComponent {
 
   private patchForm(fullUser: IApiClient) {
     this.formPerfil.patchValue({
-      name: fullUser.name,
-      lastName: fullUser.lastName,
-      dni: fullUser.dni,
+      // La base guarda NULL en lo que el cliente nunca cargó: el formulario lo muestra vacío
+      name: fullUser.name ?? '',
+      lastName: fullUser.lastName ?? '',
+      dni: fullUser.dni ?? '',
       email: fullUser.email,
-      phone: fullUser.phone,
+      phone: fullUser.phone ?? '',
       cuit: fullUser.cuit || '',
       fiscalCondition:
         fullUser.fiscalCondition || FiscalCondition.ConsumidorFinal,
