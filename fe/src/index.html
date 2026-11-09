@@ -31,6 +31,19 @@
          (connect-src e img-src); si cambian, cambiarlos acá también. -->
     <link rel="preconnect" href="https://vwtqkglkenogylkranzz.supabase.co" crossorigin />
     <link rel="preconnect" href="https://productos.laelsi.com.ar" />
+
+    <!-- ID 70 (rendimiento): el logo del cartel de la portada es el elemento que mide el LCP, pero el navegador recién se
+         entera de que existe cuando Angular dibuja la página, después de bajar y ejecutar el JavaScript. Con la precarga
+         se baja al mismo tiempo que el JavaScript. Tiene que elegir el mismo archivo que el <img> de LogoComponent: por
+         eso repite su srcset, y el ancho (sizes) es el del cartel (main-page: width=240). Sin prioridad alta a propósito:
+         en las demás páginas el logo no es lo más grande y no debe competir con el JavaScript por el ancho de banda. -->
+    <link
+      rel="preload"
+      as="image"
+      href="assets/Webp/Logo.webp"
+      imagesrcset="assets/Webp/Logo-500.webp 500w, assets/Webp/Logo.webp 996w"
+      imagesizes="240px"
+    />
   </head>
   <body>
     <app-root></app-root>
