@@ -317,7 +317,9 @@
     box-shadow: -1px 1px 1px -1px rgba(0, 0, 0, 0.1); /* Micro sombra para emparejar con el menú */
   }
 
-  .navbar-subdropdown:has(> div:first-of-type > .navbar-dropdown-item:hover)::after {
+  .navbar-subdropdown:has(
+      > div:first-of-type > .navbar-dropdown-item:hover
+    )::after {
     @apply bg-gray-100;
   }
 
@@ -379,6 +381,10 @@
 
   .breadcrumb-current {
     @apply ml-1 text-sm md:text-base font-semibold text-[#3d4494] wrap-break-word;
+  }
+
+  .breadcrumb-ellipsis {
+    @apply ml-1 text-sm md:text-base text-gray-400 select-none;
   }
 
   /* ── Estructura y secciones ── */

@@ -91,9 +91,6 @@ export class ProductPageComponent implements OnInit {
 
     buildPath(prod.category);
 
-    // Agregamos el producto al final
-    steps.push({ label: prod.name });
-
     return steps;
   });
 
