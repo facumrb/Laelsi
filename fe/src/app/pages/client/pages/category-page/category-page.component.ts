@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductCardComponent } from '@client/components/product-card/product-card.component';
+import { ProductCardSkeletonComponent } from '@client/components/product-card-skeleton/product-card-skeleton.component';
 import {
   ProductsFilterComponent,
   PriceOrder,
@@ -31,6 +32,7 @@ import { injectActiveProductsQuery } from '@services/queries/product-queries';
   selector: 'app-category-page',
   imports: [
     ProductCardComponent,
+    ProductCardSkeletonComponent,
     ProductsFilterComponent,
     BreadcrumbsComponent,
     PaginationComponent,
@@ -123,6 +125,11 @@ export class CategoryPageComponent implements OnInit {
 
   // Los productos ya vienen filtrados y ordenados del server
   productsFiltered = computed(() => [...this.productsRaw()]);
+
+  // Mientras no hay datos (primera carga, o un filtro o página nuevos) se muestran esqueletos en lugar de la grilla:
+  // reservan el lugar y evitan el salto de diseño y el cartel falso de "no hay productos" (ID 70)
+  loadingProducts = computed(() => this.productsQuery.isPending());
+  readonly skeletonCards = [1, 2, 3, 4, 5, 6, 7, 8];
 
   constructor() {
     // Reacciona al resultado de la query de la categoría
