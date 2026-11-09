@@ -46,3 +46,30 @@ describe('TableActionsComponent: íconos', () => {
     expect(iconosDe(fixture)).not.toContain('bootstrapArrowCounterclockwise');
   });
 });
+
+// ID 64 (hallazgo 8): los botones de ícono medían 20×20 px, por debajo de los 24×24 que pide WCAG 2.2 (criterio 2.5.8) y
+// muy lejos de lo cómodo en un celular. Con `p-2` alrededor del ícono de 20 px el botón mide 36×36 px.
+describe('TableActionsComponent: tamaño de los botones', () => {
+  function botones(entradas: Record<string, unknown>) {
+    const fixture = TestBed.createComponent(TableActionsComponent<unknown>);
+    fixture.componentRef.setInput('item', {});
+    for (const [nombre, valor] of Object.entries(entradas)) fixture.componentRef.setInput(nombre, valor);
+    fixture.detectChanges();
+    return Array.from((fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>('button'));
+  }
+
+  it('cada botón tiene relleno alrededor del ícono, para que se pueda tocar', () => {
+    const lista = botones({ canReactivate: true });
+
+    expect(lista.length).toBe(3); // editar, reactivar y eliminar
+    for (const boton of lista) {
+      expect(boton.classList.contains('p-2'), boton.getAttribute('aria-label') ?? '').toBe(true);
+    }
+  });
+
+  it('el relleno no cambia qué botones hay ni sus nombres', () => {
+    const nombres = botones({ canReactivate: true, canDelete: false }).map((b) => b.getAttribute('aria-label'));
+
+    expect(nombres).toEqual(['Editar', 'Reactivar']);
+  });
+});

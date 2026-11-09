@@ -97,7 +97,7 @@
         </div>
         <a
           routerLink="/admin/orders"
-          class="text-sm font-semibold text-[#3d4494] hover:text-[#2a2f63] hover:underline"
+          class="inline-block py-1 text-sm font-semibold text-[#3d4494] hover:text-[#2a2f63] hover:underline"
           >Ver todas</a
         >
       </div>
@@ -147,7 +147,7 @@
                       | currency: "ARS" : "symbol-narrow" : "1.0-0"
                   }}</span>
                   <span
-                    class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border shrink-0"
+                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider border shrink-0"
                     [class]="getOrderStatusColor(order.status)"
                   >
                     {{ order.status }}
@@ -186,7 +186,7 @@
         </div>
         <a
           routerLink="/admin/products"
-          class="text-sm font-semibold text-[#3d4494] hover:text-[#2a2f63] hover:underline"
+          class="inline-block py-1 text-sm font-semibold text-[#3d4494] hover:text-[#2a2f63] hover:underline"
           >Ver catálogo</a
         >
       </div>
@@ -250,7 +250,7 @@
 
                   <div class="flex flex-col items-end gap-1 shrink-0 ml-4">
                     <span
-                      class="text-[10px] font-bold text-gray-500 tracking-wider uppercase"
+                      class="text-xs font-bold text-gray-500 tracking-wider uppercase"
                       >Ventas</span
                     >
                     <span

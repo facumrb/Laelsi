@@ -28,7 +28,7 @@
                 >ID Orden:</span
               >
               <span
-                class="cursor-pointer text-gray-900 hover:underline"
+                class="cursor-pointer inline-block py-1 text-gray-900 hover:underline"
                 appActivable
                 (click)="onViewDetails.emit(order)"
               >
@@ -43,7 +43,7 @@
               >
               <a
                 [routerLink]="['/admin/clients/edit', order.client.id]"
-                class="block text-gray-900 font-semibold line-clamp-2 wrap-break-word lg:line-clamp-none lg:truncate hover:underline"
+                class="block min-h-6 text-gray-900 font-semibold line-clamp-2 wrap-break-word lg:line-clamp-none lg:truncate hover:underline"
               >
                 {{ order.client | nombrePersona: order.client.email }}
               </a>
