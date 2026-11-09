@@ -78,7 +78,7 @@
   }
 
   .admin-table-mobile-label {
-    @apply font-bold uppercase text-gray-500;
+    @apply font-bold uppercase text-gray-600;
   }
   @media (min-width: 1024px) {
     .admin-table-mobile-label {
