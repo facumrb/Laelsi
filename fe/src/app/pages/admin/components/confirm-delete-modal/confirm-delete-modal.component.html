@@ -38,7 +38,7 @@
         <div class="min-w-0">
           <h2
             id="confirm-delete-modal-title"
-            class="text-lg font-bold text-gray-900 leading-tight truncate"
+            class="text-lg font-bold text-gray-900 leading-tight line-clamp-2 wrap-break-word"
             [title]="entityName()"
           >
             {{ allowPermanentDelete() ? "Eliminar" : "Desactivar" }}
@@ -54,6 +54,14 @@
 
     <!-- Body -->
     <div class="px-6 py-6 space-y-4 overflow-y-auto overscroll-contain">
+      <!-- El nombre completo: en un celular el título lo corta (ID 64) -->
+      <p
+        data-testid="nombre-completo"
+        class="text-sm font-semibold text-gray-900 wrap-break-word"
+      >
+        {{ entityName() }}
+      </p>
+
       @if (allowPermanentDelete()) {
       <!-- Alerta de riesgo de pérdida permanente -->
       <div

@@ -130,10 +130,10 @@
               <div
                 appActivable
                 (click)="openOrderModal(order)"
-                class="flex items-center justify-between px-6 h-21 hover:bg-gray-50 transition-colors cursor-pointer"
+                class="flex items-center justify-between px-6 py-3 min-h-21 hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 <div class="flex flex-col gap-1 min-w-0">
-                  <span class="font-bold text-gray-900 truncate"
+                  <span class="font-bold text-gray-900 line-clamp-2 wrap-break-word"
                     >#{{ order.id }} -
                     {{ order.client | nombrePersona: order.client.email }}</span
                   >
@@ -215,7 +215,7 @@
               @if (product.totalSold > 0) {
                 <div
                   [routerLink]="['/admin/products/edit', product.id]"
-                  class="flex items-center gap-4 px-6 h-21 hover:bg-gray-50 transition-colors cursor-pointer group"
+                  class="flex items-center gap-4 px-6 py-3 min-h-21 hover:bg-gray-50 transition-colors cursor-pointer group"
                 >
                   <div
                     class="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold text-xs shrink-0"
@@ -239,7 +239,7 @@
 
                   <div class="flex flex-col gap-0.5 flex-1 min-w-0">
                     <span
-                      class="font-semibold text-gray-900 truncate"
+                      class="font-semibold text-gray-900 line-clamp-2 wrap-break-word"
                       title="{{ product.name }}"
                       >{{ product.name }}</span
                     >
