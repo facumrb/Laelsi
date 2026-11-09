@@ -6,8 +6,9 @@ import {
 } from '@angular/core';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
-  bootstrapArrowCounterclockwise,
   bootstrapPencilSquare,
+  bootstrapPersonCheck,
+  bootstrapPersonSlash,
   bootstrapTrash,
 } from '@ng-icons/bootstrap-icons';
 
@@ -16,8 +17,9 @@ import {
   imports: [NgIconComponent],
   viewProviders: [
     provideIcons({
-      bootstrapArrowCounterclockwise,
       bootstrapPencilSquare,
+      bootstrapPersonCheck,
+      bootstrapPersonSlash,
       bootstrapTrash,
     }),
   ],
@@ -39,6 +41,10 @@ export class TableActionsComponent<T> {
   canDelete = input<boolean>(true);
   // Texto del botón de la baja: en clientes y administradores no se elimina nada, se DESACTIVA (ID 65)
   deleteLabel = input<string>('Eliminar');
+  // Ícono de la baja: el tacho es para BORRAR; en clientes y administradores, que se desactivan, va una persona
+  // tachada. Para reactivar, una persona con tilde (antes era la flecha de "deshacer").
+  deleteIcon = input<string>('bootstrapTrash');
+  reactivateIcon = input<string>('bootstrapPersonCheck');
   canReactivate = input<boolean>(false);
 
   onEdit = output<T>();

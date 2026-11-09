@@ -16,11 +16,22 @@
       class="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-gray-50/50"
     >
       <div class="flex items-center gap-3 min-w-0 pr-2">
+        <!-- Si se borra de verdad: advertencia en rojo. Si no se borra nada (se desactiva): ícono de desactivar, sin
+             el rojo de peligro -->
         <div
-          class="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center border border-red-100/80 shadow-xs shrink-0"
+          class="w-10 h-10 rounded-xl flex items-center justify-center border shadow-xs shrink-0"
+          [class]="
+            allowPermanentDelete()
+              ? 'bg-red-50 text-red-600 border-red-100/80'
+              : 'bg-indigo-50 text-[#3d4494] border-indigo-100'
+          "
         >
           <ng-icon
-            name="bootstrapExclamationTriangle"
+            [name]="
+              allowPermanentDelete()
+                ? 'bootstrapExclamationTriangle'
+                : 'bootstrapPersonSlash'
+            "
             class="text-xl"
           ></ng-icon>
         </div>

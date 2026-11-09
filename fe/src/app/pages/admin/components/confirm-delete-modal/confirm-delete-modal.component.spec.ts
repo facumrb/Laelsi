@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 import { ConfirmDeleteModalComponent } from './confirm-delete-modal.component';
 
@@ -63,6 +64,30 @@ describe('ConfirmDeleteModalComponent', () => {
       boton(fixture, 'Desactivar')!.click();
 
       expect(avisos).toBe(1);
+    });
+  });
+
+  // Un modal donde se borra de verdad lleva el triángulo rojo de advertencia; uno donde NO se borra nada
+  // (clientes y administradores) no puede asustar con ese ícono: lleva el de desactivar, en colores neutros.
+  describe('ícono del encabezado', () => {
+    const iconoDelEncabezado = (fixture: ReturnType<typeof crear>) => {
+      const icono = fixture.debugElement.queryAll(By.css('header ng-icon'))[0];
+      const n = (icono.componentInstance as { name: unknown }).name;
+      return typeof n === 'function' ? (n as () => string)() : (n as string);
+    };
+
+    it('con borrado permanente: triángulo de advertencia, en rojo', () => {
+      const fixture = crear({ entityType: 'producto' });
+
+      expect(iconoDelEncabezado(fixture)).toBe('bootstrapExclamationTriangle');
+      expect((fixture.nativeElement as HTMLElement).querySelector('header .bg-red-50')).toBeTruthy();
+    });
+
+    it('sin borrado permanente: persona tachada, sin rojo de advertencia', () => {
+      const fixture = crear({ entityType: 'cliente', allowPermanentDelete: false });
+
+      expect(iconoDelEncabezado(fixture)).toBe('bootstrapPersonSlash');
+      expect((fixture.nativeElement as HTMLElement).querySelector('header .bg-red-50')).toBeNull();
     });
   });
 

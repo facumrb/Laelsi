@@ -7,7 +7,10 @@ import {
 } from '@angular/core';
 import { A11yModule } from '@angular/cdk/a11y';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { bootstrapExclamationTriangle } from '@ng-icons/bootstrap-icons';
+import {
+  bootstrapExclamationTriangle,
+  bootstrapPersonSlash,
+} from '@ng-icons/bootstrap-icons';
 import { CloseModalButtonComponent } from '@shared/components/buttons/close-modal-button/close-modal-button.component';
 
 @Component({
@@ -16,6 +19,7 @@ import { CloseModalButtonComponent } from '@shared/components/buttons/close-moda
   viewProviders: [
     provideIcons({
       bootstrapExclamationTriangle,
+      bootstrapPersonSlash,
     }),
   ],
   templateUrl: './confirm-delete-modal.component.html',

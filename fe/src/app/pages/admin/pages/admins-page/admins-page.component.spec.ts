@@ -71,7 +71,8 @@ describe('AdminsPageComponent: desactivar y reactivar administradores', () => {
     boton(raiz, 'button[aria-label="Desactivar"]')!.click();
     fixture.detectChanges();
 
-    expect(raiz.textContent).toContain('No es posible eliminar tu propia cuenta');
+    expect(raiz.textContent).toContain('No es posible desactivar tu propia cuenta');
+    expect(raiz.textContent).not.toContain('eliminar');
     expect(api.setAdminState).not.toHaveBeenCalled();
   });
 

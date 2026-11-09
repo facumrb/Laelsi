@@ -114,6 +114,7 @@
                 <app-table-actions
                   [item]="admin"
                   deleteLabel="Desactivar"
+                  deleteIcon="bootstrapPersonSlash"
                   [canDelete]="admin.state !== 'Inactivo'"
                   [canReactivate]="admin.state === 'Inactivo'"
                   (onEdit)="onEdit.emit($event)"
