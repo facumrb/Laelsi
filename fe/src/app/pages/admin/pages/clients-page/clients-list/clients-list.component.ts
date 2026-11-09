@@ -11,10 +11,12 @@ import { TableEmptyStateComponent } from '@admin/components/table-components/tab
 import { EntityStateBadgeComponent } from '@admin/components/table-components/entity-state-badge/entity-state-badge.component';
 import { UserAvatarComponent } from '@shared/components/user-avatar/user-avatar.component';
 import { NombrePersonaPipe } from '@shared/pipes/nombre-persona.pipe';
+import { ActivableDirective } from '@shared/directives/activable.directive';
 
 @Component({
   selector: 'app-clients-list',
   imports: [
+    ActivableDirective,
     TableActionsComponent,
     NgIconComponent,
     TableEmptyStateComponent,

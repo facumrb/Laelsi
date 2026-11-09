@@ -105,6 +105,7 @@
                         >{{ category.order }} -</span
                       >
                       <span
+                        appActivable
                         (click)="onEdit.emit(category)"
                         class="font-semibold text-gray-900 text-base lg:text-sm cursor-pointer hover:underline wrap-break-word lg:truncate min-w-0"
                         title="{{ category.name }}"

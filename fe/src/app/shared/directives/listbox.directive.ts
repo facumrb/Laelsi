@@ -11,7 +11,7 @@ import { AfterViewInit, Directive, ElementRef, OnDestroy, inject, output } from 
  *
  * - Al abrirse, el foco va a la opción elegida (o a la primera).
  * - Flechas arriba y abajo, Inicio y Fin mueven el foco; Enter y Espacio eligen (disparan el clic de la opción).
- * - Escape y Tab piden cerrar la lista (`closed`).
+ * - Escape y Tab piden cerrar la lista (`closed`). Escape no se propaga: cierra la lista y nada más.
  * - Al cerrarse con el foco adentro, el foco vuelve al botón que la abrió; con el foco en otro lado (un clic afuera) no
  *   se lo roba.
  */
@@ -79,8 +79,13 @@ export class ListboxDirective implements AfterViewInit, OnDestroy {
         opciones[actual].click();
         break;
       case 'Escape':
+        // Cierra solo la lista: si llegara al documento, el `clickOutside` le sacaría el foco al elemento activo (el
+        // foco no volvería al botón) y el modal que contiene la lista también se cerraría, con lo que se haya tipeado.
+        evento.preventDefault();
+        evento.stopPropagation();
+        this.closed.emit();
+        break;
       case 'Tab':
-        if (evento.key === 'Escape') evento.preventDefault();
         this.closed.emit();
         break;
     }

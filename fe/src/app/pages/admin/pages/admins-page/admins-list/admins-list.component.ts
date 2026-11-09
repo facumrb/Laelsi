@@ -10,10 +10,12 @@ import {
 import { TableEmptyStateComponent } from '@admin/components/table-components/table-empty-state/table-empty-state.component';
 import { EntityStateBadgeComponent } from '@admin/components/table-components/entity-state-badge/entity-state-badge.component';
 import { UserAvatarComponent } from '@shared/components/user-avatar/user-avatar.component';
+import { ActivableDirective } from '@shared/directives/activable.directive';
 
 @Component({
   selector: 'app-admins-list',
   imports: [
+    ActivableDirective,
     TableActionsComponent,
     NgIconComponent,
     TableEmptyStateComponent,

@@ -7,10 +7,12 @@ import { ProductImageComponent } from '@shared/components/product-image/product-
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { bootstrapCheck } from '@ng-icons/bootstrap-icons';
 import { TableEmptyStateComponent } from '@admin/components/table-components/table-empty-state/table-empty-state.component';
+import { ActivableDirective } from '@shared/directives/activable.directive';
 
 @Component({
   selector: 'app-products-list',
   imports: [
+    ActivableDirective,
     CurrencyPipe,
     TableActionsComponent,
     NgIconComponent,

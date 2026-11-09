@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { ListboxDirective } from './listbox.directive';
 
 // Teclado de los desplegables hechos a mano: foco en la opción elegida, flechas, Enter y Espacio, Escape, y devolver el
@@ -137,6 +137,23 @@ describe('ListboxDirective', () => {
     tecla(opciones(raiz)[0], 'Escape');
 
     expect(anfitrion.cerrada()).toBe(1);
+  });
+
+  // Escape cierra solo la lista: no tiene que llegar al documento, donde otros (el modal que la contiene, o el
+  // `clickOutside` que le saca el foco al elemento activo) lo tomarían como "cerrar todo" y el foco se perdería.
+  it('Escape no se propaga al resto de la página, pero Tab y las demás teclas sí', () => {
+    const { raiz } = abrir();
+    const alDocumento = vi.fn();
+    document.addEventListener('keydown', alDocumento);
+
+    tecla(opciones(raiz)[0], 'Escape');
+    expect(alDocumento).not.toHaveBeenCalled();
+
+    tecla(opciones(raiz)[0], 'Tab');
+    tecla(opciones(raiz)[0], 'a');
+    expect(alDocumento).toHaveBeenCalledTimes(2);
+
+    document.removeEventListener('keydown', alDocumento);
   });
 
   it('Tab también pide cerrar la lista', () => {

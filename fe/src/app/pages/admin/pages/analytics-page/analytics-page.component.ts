@@ -17,10 +17,12 @@ import { OrderState, IApiOrder } from '@models/order.model';
 import { OrderDetailModalComponent } from '@shared/components/modals/order-detail-modal/order-detail-modal.component';
 import { ProductImageComponent } from '@shared/components/product-image/product-image.component';
 import { injectAnalyticsSummaryQuery } from '@services/queries/analytics-queries';
+import { ActivableDirective } from '@shared/directives/activable.directive';
 
 @Component({
   selector: 'app-analytics-page',
   imports: [
+    ActivableDirective,
     RouterModule,
     NgIconComponent,
     CurrencyPipe,

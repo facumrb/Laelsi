@@ -10,6 +10,9 @@
     <div
       cdkTrapFocus
       cdkTrapFocusAutoCapture
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="categories-order-modal-title"
       class="relative bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col font-sans"
       (clickOutside)="close()"
     >
@@ -17,7 +20,10 @@
       <div
         class="flex items-center justify-between px-6 py-4 border-b border-gray-200"
       >
-        <h2 class="text-lg font-semibold text-gray-900">
+        <h2
+          id="categories-order-modal-title"
+          class="text-lg font-semibold text-gray-900"
+        >
           Reordenar Categorías
         </h2>
         <app-close-modal-button (clicked)="close()"></app-close-modal-button>

@@ -15,10 +15,12 @@ import {
 
 import { TableEmptyStateComponent } from '@admin/components/table-components/table-empty-state/table-empty-state.component';
 import { NombrePersonaPipe } from '@shared/pipes/nombre-persona.pipe';
+import { ActivableDirective } from '@shared/directives/activable.directive';
 
 @Component({
   selector: 'app-orders-list',
   imports: [
+    ActivableDirective,
     CurrencyPipe,
     NgIconComponent,
     RouterLink,
