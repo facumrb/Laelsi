@@ -40,6 +40,29 @@ describe('ProductsFilterButtonComponent: ancho del menú', () => {
     expect(menu.classList.contains('max-w-[90vw]')).toBe(true);
   });
 
+  // ID 64 (hallazgo 2): desde sm el menú se pegaba al borde DERECHO de su botón, pero el botón es más angosto que el menú
+  // (384 px) hasta ~820 px de ancho: entre 640 y 768 px el menú quedaba cortado por el borde izquierdo de la ventana
+  // (hasta 70 px fuera) y no se leía. Los filtros de Categorías, Clientes, Administradores y Órdenes ya se pegan a la
+  // derecha recién desde lg, donde el botón queda lejos del borde izquierdo.
+  it('el menú se alinea a la izquierda de su botón hasta lg y a la derecha desde lg, nunca desde sm', () => {
+    const fixture = TestBed.createComponent(ProductsFilterButtonComponent);
+    fixture.componentRef.setInput('statusFilter', 'Todos');
+    fixture.componentRef.setInput('stockFilter', 'Todos');
+    fixture.componentRef.setInput('categoryFilter', 'Todos');
+    fixture.componentRef.setInput('categories', cadenaPlana());
+    fixture.componentInstance.showFilterMenu.set(true);
+    fixture.detectChanges();
+
+    const menu = (fixture.nativeElement as HTMLElement).querySelector('.z-50') as HTMLElement;
+
+    expect(menu.classList.contains('left-0')).toBe(true);
+    expect(menu.classList.contains('lg:left-auto')).toBe(true);
+    expect(menu.classList.contains('lg:right-0')).toBe(true);
+    expect(menu.classList.contains('lg:origin-top-right')).toBe(true);
+    expect(menu.classList.contains('sm:left-auto')).toBe(false);
+    expect(menu.classList.contains('sm:right-0')).toBe(false);
+  });
+
   // En un teléfono el menú no puede ensancharse (tiene tope del 90% de la pantalla): el nombre de un nivel profundo se
   // parte en líneas en vez de cortarse con puntos suspensivos.
   it('un nombre más largo que el menú se parte en líneas, no se corta con puntos suspensivos', () => {
