@@ -37,6 +37,8 @@ export class TableActionsComponent<T> {
 
   // Clientes y administradores inactivos: en vez de "Eliminar" se ofrece "Reactivar" (ID 65 de discusiones.md)
   canDelete = input<boolean>(true);
+  // Texto del botón de la baja: en clientes y administradores no se elimina nada, se DESACTIVA (ID 65)
+  deleteLabel = input<string>('Eliminar');
   canReactivate = input<boolean>(false);
 
   onEdit = output<T>();

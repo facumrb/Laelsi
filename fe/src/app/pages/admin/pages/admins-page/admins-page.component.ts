@@ -61,23 +61,24 @@ export class AdminsPageComponent implements OnInit {
       this.searchQuery(); // trackea cambios de búsqueda
       this.stateFilter(); // trackea cambios del filtro de estado
       untracked(() => {
-        // Evitamos actuar en la primera ejecución (ngOnInit se encarga)
-        if (this.initialLoadDone) {
+        // Evitamos actuar en la primera ejecución (ngOnInit se encarga). Antes la bandera se activaba al final de
+        // ngOnInit, o sea ANTES de que corriera el efecto, y la lista se pedía dos veces al abrir la página.
+        if (this.efectoYaCorrio) {
           this.currentPage.set(1);
           this.loadAdmins();
         }
+        this.efectoYaCorrio = true;
       });
     });
   }
 
-  private initialLoadDone = false;
+  private efectoYaCorrio = false;
 
   ngOnInit() {
     // Leer la página de la URL al entrar
     const pageParam = this.route.snapshot.queryParamMap.get('page');
     this.currentPage.set(Number(pageParam) || 1);
     this.loadAdmins();
-    this.initialLoadDone = true;
   }
 
   loadAdmins() {

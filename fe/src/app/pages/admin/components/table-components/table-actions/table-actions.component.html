@@ -25,9 +25,9 @@
     <button
       type="button"
       (click)="onDelete.emit(item())"
-      aria-label="Eliminar"
+      [attr.aria-label]="deleteLabel()"
       class="cursor-pointer text-red-600 hover:text-red-900 transition-colors flex items-center justify-center"
-      title="Eliminar"
+      [attr.title]="deleteLabel()"
     >
       <ng-icon name="bootstrapTrash" class="text-xl"></ng-icon>
     </button>

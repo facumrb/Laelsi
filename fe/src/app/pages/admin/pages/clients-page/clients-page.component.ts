@@ -63,21 +63,23 @@ export class ClientsPageComponent implements OnInit {
       this.fiscalFilter();
       this.stateFilter();
       untracked(() => {
-        if (this.initialLoadDone) {
+        // La primera ejecución del efecto no es un cambio de filtro: ngOnInit ya carga la lista. Antes se la
+        // pedía dos veces al abrir la página (dos invocaciones por visita).
+        if (this.efectoYaCorrio) {
           this.currentPage.set(1);
           this.loadClients();
         }
+        this.efectoYaCorrio = true;
       });
     });
   }
 
-  private initialLoadDone = false;
+  private efectoYaCorrio = false;
 
   ngOnInit() {
     const pageParam = this.route.snapshot.queryParamMap.get('page');
     this.currentPage.set(Number(pageParam) || 1);
     this.loadClients();
-    this.initialLoadDone = true;
   }
 
   loadClients() {
