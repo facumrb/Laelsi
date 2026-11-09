@@ -105,13 +105,12 @@ Deno.test('ninguna plantilla de la interfaz tiene un problema de diseño adaptab
   );
 });
 
-// El panel, el acceso y lo compartido no usan fuentes de menos de 12 px (ID 64, hallazgo 10). El catálogo público
-// (`pages/client`) queda fuera del alcance de ese ID y no se revisa acá.
-Deno.test('ninguna plantilla del panel, del acceso o compartida usa fuentes de menos de 12 px', async () => {
+// Ninguna plantilla de la aplicación (panel, acceso, catálogo público y lo compartido) usa fuentes de menos de 12 px
+// (ID 64, hallazgo 10; el catálogo público se sumó el mismo día, con el mismo criterio).
+Deno.test('ninguna plantilla de la interfaz usa fuentes de menos de 12 px', async () => {
   const problemas: string[] = [];
   for (const archivo of await plantillas(RAIZ)) {
     const ruta = archivo.href.split('/fe/src/app/')[1];
-    if (ruta.startsWith('pages/client/')) continue;
     for (const h of encontrarFuentesChicas(await Deno.readTextFile(archivo))) {
       problemas.push(`${ruta}:${h.linea}  [${h.regla}]  ${h.detalle}`);
     }
@@ -187,6 +186,17 @@ Deno.test('el encabezado del panel muestra solo el ícono de "Ver Tienda" por de
   // El nombre accesible contiene el texto visible ("Ver Tienda"): si no, quien dicta "clic en Ver Tienda" no lo alcanza
   assert.match(html, /aria-label="Ver Tienda[^"]*"/);
   assert.match(html, /<span class="hidden min-\[400px\]:inline[^"]*">\s*Ver Tienda\s*<\/span>/);
+});
+
+// El contador del carrito era un círculo de 20 px fijos: con texto de 12 px, un número de tres dígitos se salía.
+Deno.test('el contador del carrito crece con el número en vez de tener un ancho fijo', async () => {
+  const html = await leer('app/pages/client/layout/navbar/navbar-top-bar/navbar-top-bar.component.html');
+  const contador = html.match(/<span\s+class="([^"]*)"\s*>\s*\{\{ cartCount\(\) \}\}/)?.[1] ?? '';
+
+  assert.ok(contador.length > 0, 'no se encontró el contador del carrito');
+  assert.ok(/(^|\s)min-w-5(\s|$)/.test(contador), 'el contador tiene un ancho mínimo de 20 px (min-w-5)');
+  assert.ok(/(^|\s)h-5(\s|$)/.test(contador), 'el contador tiene un alto fijo de 20 px (h-5)');
+  assert.ok(!/(^|\s)w-5(\s|$)/.test(contador), 'el contador no tiene un ancho fijo de 20 px (w-5)');
 });
 
 Deno.test('el modal compartido de styles.css (elsi-modal-card) topa su alto y scrollea por dentro', async () => {
