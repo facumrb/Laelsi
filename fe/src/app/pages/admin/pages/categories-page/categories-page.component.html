@@ -10,7 +10,9 @@
   <app-categories-list
     class="mt-6 block"
     [categories]="categoriesFiltered()"
+    [subtreeProducts]="subtreeProducts()"
     [isFilterActive]="filtersActive()"
+    [loading]="loading()"
     (onEdit)="handleNavigateToEdit($event)"
     (onDelete)="handleDelete($event)"
   />

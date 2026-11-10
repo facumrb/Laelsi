@@ -13,8 +13,9 @@
 
     <div
       class="flex-1 overflow-auto px-4 py-4 md:p-6 lg:p-8 bg-gray-50 relative w-full"
+      [style.scrollbar-gutter]="reserveScrollbar() ? 'stable' : null"
     >
-      <router-outlet />
+      <router-outlet (activate)="onPageActivate()" />
     </div>
   </main>
 </div>

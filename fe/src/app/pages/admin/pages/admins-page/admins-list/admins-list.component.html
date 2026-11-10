@@ -25,113 +25,129 @@
         </tr>
       </thead>
 
-      <tbody class="admin-table-body">
-        @for (admin of admins(); track admin.id; let isLast = $last) {
-          <tr
-            class="admin-table-row hover:bg-gray-50 transition-colors"
-          >
-            <td
-              class="admin-table-cell-first"
-              [class.lg:rounded-bl-lg]="isLast"
-              [class.lg:border-b-0]="isLast"
-            >
-              <span class="admin-table-mobile-label mb-2 block">Usuario:</span>
-              <div class="flex items-center gap-3">
-                <app-user-avatar
-                  size="sm"
-                  [photo]="admin.photo"
-                  [name]="admin.name"
-                  [lastName]="admin.lastName"
-                />
-                <div
-                  appActivable
-                  (click)="onEdit.emit(admin)"
-                  class="font-semibold text-gray-900 text-base lg:text-sm cursor-pointer hover:underline"
-                  title="{{ admin.username }}"
-                >
-                  {{ admin.username }}
-                </div>
-                @if (admin.state === "Inactivo") {
-                  <app-entity-state-badge state="Inactivo" />
-                }
-              </div>
-            </td>
-
-            <td class="admin-table-cell max-sm:col-span-2" [class.lg:border-b-0]="isLast">
-              <span class="admin-table-mobile-label block mb-1"
-                >Nombre Completo:</span
+      <tbody class="admin-table-body" [attr.aria-busy]="loading()">
+        @if (loading()) {
+          @for (row of skeletonRows; track row) {
+            <tr app-table-skeleton [columns]="5"></tr>
+          }
+        } @else {
+          @for (admin of admins(); track admin.id; let isLast = $last) {
+            <tr class="admin-table-row hover:bg-gray-50 transition-colors">
+              <td
+                class="admin-table-cell-first"
+                [class.lg:rounded-bl-lg]="isLast"
+                [class.lg:border-b-0]="isLast"
               >
-              <div class="text-gray-900 line-clamp-2 wrap-break-word lg:line-clamp-none lg:truncate font-medium">
-                {{ admin.name }} {{ admin.lastName }}
-              </div>
-            </td>
-
-            <td
-              class="admin-table-cell max-sm:col-span-2 lg:text-center"
-              [class.lg:border-b-0]="isLast"
-            >
-              <span class="admin-table-mobile-label block mb-1">DNI:</span>
-              <span class="text-gray-900 font-medium truncate">
-                {{ admin.dni }}
-              </span>
-            </td>
-
-            <td class="admin-table-cell col-span-2" [class.lg:border-b-0]="isLast">
-              <span class="admin-table-mobile-label block mb-1">Contacto:</span>
-              <div class="flex flex-col text-sm">
-                <div class="flex items-center gap-1.5 text-gray-900 mb-0.5">
-                  <ng-icon
-                    name="bootstrapEnvelope"
-                    class="text-gray-400"
-                  ></ng-icon>
-                  <span
-                    class="line-clamp-2 break-all lg:line-clamp-none lg:break-normal lg:truncate lg:max-w-50 xl:max-w-xs"
-                    title="{{ admin.email }}"
-                    >{{ admin.email }}</span
+                <span class="admin-table-mobile-label mb-2 block"
+                  >Usuario:</span
+                >
+                <div class="flex items-center gap-3">
+                  <app-user-avatar
+                    size="sm"
+                    [photo]="admin.photo"
+                    [name]="admin.name"
+                    [lastName]="admin.lastName"
+                  />
+                  <div
+                    appActivable
+                    (click)="onEdit.emit(admin)"
+                    class="font-semibold text-gray-900 text-base lg:text-sm cursor-pointer hover:underline"
+                    title="{{ admin.username }}"
                   >
+                    {{ admin.username }}
+                  </div>
+                  @if (admin.state === "Inactivo") {
+                    <app-entity-state-badge state="Inactivo" />
+                  }
                 </div>
-                <div
-                  class="flex items-center gap-1.5 truncate text-gray-900 text-xs"
-                >
-                  <ng-icon
-                    name="bootstrapTelephone"
-                    class="text-gray-400"
-                  ></ng-icon>
-                  <span>{{ admin.phone }}</span>
-                </div>
-              </div>
-            </td>
+              </td>
 
-            <td
-              class="admin-table-cell-last"
-              [class.lg:rounded-br-lg]="isLast"
-              [class.lg:border-b-0]="isLast"
-            >
-              <div
-                class="flex items-center justify-start lg:justify-center gap-2"
+              <td
+                class="admin-table-cell max-sm:col-span-2"
+                [class.lg:border-b-0]="isLast"
               >
-                <span class="admin-table-mobile-label"> Acciones: </span>
+                <span class="admin-table-mobile-label block mb-1"
+                  >Nombre Completo:</span
+                >
+                <div
+                  class="text-gray-900 line-clamp-2 wrap-break-word lg:line-clamp-none lg:truncate font-medium"
+                >
+                  {{ admin.name }} {{ admin.lastName }}
+                </div>
+              </td>
 
-                <app-table-actions
-                  [item]="admin"
-                  deleteLabel="Desactivar"
-                  deleteIcon="bootstrapPersonSlash"
-                  [canDelete]="admin.state !== 'Inactivo'"
-                  [canReactivate]="admin.state === 'Inactivo'"
-                  (onEdit)="onEdit.emit($event)"
-                  (onDelete)="onDelete.emit($event)"
-                  (onReactivate)="onReactivate.emit($event)"
-                />
-              </div>
-            </td>
-          </tr>
-        } @empty {
-          <tr
-            app-table-empty-state
-            [colspan]="5"
-            [isFilterActive]="isFilterActive()"
-            emptyMessage="Sin administradores cargados"
-          ></tr>
+              <td
+                class="admin-table-cell max-sm:col-span-2 lg:text-center"
+                [class.lg:border-b-0]="isLast"
+              >
+                <span class="admin-table-mobile-label block mb-1">DNI:</span>
+                <span class="text-gray-900 font-medium truncate">
+                  {{ admin.dni }}
+                </span>
+              </td>
+
+              <td
+                class="admin-table-cell col-span-2"
+                [class.lg:border-b-0]="isLast"
+              >
+                <span class="admin-table-mobile-label block mb-1"
+                  >Contacto:</span
+                >
+                <div class="flex flex-col text-sm">
+                  <div class="flex items-center gap-1.5 text-gray-900 mb-0.5">
+                    <ng-icon
+                      name="bootstrapEnvelope"
+                      class="text-gray-400"
+                    ></ng-icon>
+                    <span
+                      class="line-clamp-2 break-all lg:line-clamp-none lg:break-normal lg:truncate lg:max-w-50 xl:max-w-xs"
+                      title="{{ admin.email }}"
+                      >{{ admin.email }}</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center gap-1.5 truncate text-gray-900 text-xs"
+                  >
+                    <ng-icon
+                      name="bootstrapTelephone"
+                      class="text-gray-400"
+                    ></ng-icon>
+                    <span>{{ admin.phone }}</span>
+                  </div>
+                </div>
+              </td>
+
+              <td
+                class="admin-table-cell-last"
+                [class.lg:rounded-br-lg]="isLast"
+                [class.lg:border-b-0]="isLast"
+              >
+                <div
+                  class="flex items-center justify-start lg:justify-center gap-2"
+                >
+                  <span class="admin-table-mobile-label"> Acciones: </span>
+
+                  <app-table-actions
+                    [item]="admin"
+                    deleteLabel="Desactivar"
+                    deleteIcon="bootstrapPersonSlash"
+                    [canDelete]="admin.state !== 'Inactivo'"
+                    [canReactivate]="admin.state === 'Inactivo'"
+                    (onEdit)="onEdit.emit($event)"
+                    (onDelete)="onDelete.emit($event)"
+                    (onReactivate)="onReactivate.emit($event)"
+                  />
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr
+              app-table-empty-state
+              [colspan]="5"
+              [isFilterActive]="isFilterActive()"
+              emptyMessage="Sin administradores cargados"
+            ></tr>
+          }
         }
       </tbody>
     </table>

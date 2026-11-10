@@ -24,6 +24,7 @@ import { AuditInfoComponent } from '@admin/components/audit-info/audit-info.comp
 import { PhoneInputDirective } from '@shared/directives/phone-input.directive';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
+import { injectInvalidateClients } from '@services/queries/client-queries';
 
 @Component({
   selector: 'app-clients-form',
@@ -56,6 +57,7 @@ export class ClientsFormComponent implements OnInit {
   private clientService = inject(ApiClientService);
   private alertService = inject(AlertService);
   private http = inject(HttpClient);
+  private invalidateClients = injectInvalidateClients();
 
   photoManager = viewChild.required(PhotoManagerComponent);
 
@@ -88,8 +90,6 @@ export class ClientsFormComponent implements OnInit {
   formClient = this.fb.group(
     {
       // --- DATOS PERSONALES ---
-      // ID 71: nombre, apellido, DNI y teléfono son opcionales (la base los guarda como NULL y el registro
-      // propio tampoco los pide). Si se cargan, se siguen validando.
       name: [
         '',
         [
@@ -363,6 +363,7 @@ export class ClientsFormComponent implements OnInit {
       )
       .subscribe({
         next: () => {
+          this.invalidateClients();
           this.alertService.toast('Guardado exitosamente', 'success');
           this.router.navigate(['/admin/clients']); // Redirección al listado de clientes
         },

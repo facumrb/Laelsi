@@ -10,6 +10,7 @@ export const adminRoutes: Routes = [
       { path: '', redirectTo: 'analytics', pathMatch: 'full' },
       {
         path: 'analytics',
+        data: { reserveScrollbar: false },
         loadComponent: () =>
           import('./pages/analytics-page/analytics-page.component').then(
             (m) => m.AnalyticsPageComponent,
@@ -108,6 +109,7 @@ export const adminRoutes: Routes = [
       },
       {
         path: 'view-profile',
+        data: { reserveScrollbar: false },
         loadComponent: () =>
           import('./pages/profile-page/view-profile-page/view-profile-page.component').then(
             (m) => m.ViewProfilePageComponent,
@@ -115,6 +117,7 @@ export const adminRoutes: Routes = [
       },
       {
         path: 'edit-profile',
+        data: { reserveScrollbar: false },
         loadComponent: () =>
           import('./pages/profile-page/edit-profile-page/edit-profile-page.component').then(
             (m) => m.EditProfilePageComponent,

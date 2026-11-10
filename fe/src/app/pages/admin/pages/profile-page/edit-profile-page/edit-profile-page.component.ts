@@ -16,6 +16,7 @@ import { GoBackButtonComponent } from '@shared/components/buttons/go-back-button
 import { NumericInputDirective } from '@shared/directives/numeric-input.directive';
 import { PhoneInputDirective } from '@shared/directives/phone-input.directive';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
+import { injectInvalidateAdmins } from '@services/queries/admin-queries';
 
 @Component({
   selector: 'app-edit-profile-page',
@@ -39,6 +40,7 @@ export class EditProfilePageComponent implements OnInit {
   private alertService = inject(AlertService);
   private currentPasswordService = inject(CurrentPasswordService);
   private http = inject(HttpClient);
+  private invalidateAdmins = injectInvalidateAdmins();
 
   photoManager = viewChild.required(PhotoManagerComponent);
 
@@ -166,7 +168,9 @@ export class EditProfilePageComponent implements OnInit {
   /** Email con el que se cargó el formulario (para saber si la persona lo cambió). */
   private get originalEmail(): string {
     try {
-      return (JSON.parse(this.initialFormValue()) as { email?: string }).email ?? '';
+      return (
+        (JSON.parse(this.initialFormValue()) as { email?: string }).email ?? ''
+      );
     } catch {
       return '';
     }
@@ -185,7 +189,8 @@ export class EditProfilePageComponent implements OnInit {
     const currentPassword = await this.currentPasswordService.requestIfNeeded({
       editingOwnAccount: true,
       changesEmail:
-        (formValue.email ?? '').trim().toLowerCase() !== this.originalEmail.trim().toLowerCase(),
+        (formValue.email ?? '').trim().toLowerCase() !==
+        this.originalEmail.trim().toLowerCase(),
       changesPassword: !!formValue.password,
     });
     if (currentPassword === null) return; // la persona canceló: no se guarda nada
@@ -219,7 +224,10 @@ export class EditProfilePageComponent implements OnInit {
         // recibirían un 401 y mostrarían "Tu sesión ya no es válida" tras un cambio que salió bien.
         switchMap(() =>
           formValue.password
-            ? this.authService.renewSessionAfterPasswordChange(formValue.username!, formValue.password)
+            ? this.authService.renewSessionAfterPasswordChange(
+                formValue.username!,
+                formValue.password,
+              )
             : of(true),
         ),
         switchMap((sesionVigente) => {
@@ -235,6 +243,7 @@ export class EditProfilePageComponent implements OnInit {
       )
       .subscribe({
         next: (photoResponse: any) => {
+          this.invalidateAdmins();
           this.alertService.toast('Perfil actualizado con éxito', 'success');
 
           const sessionUpdates: any = {

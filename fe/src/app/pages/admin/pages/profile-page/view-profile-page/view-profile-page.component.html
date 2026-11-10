@@ -5,20 +5,34 @@
   >
     <!-- Profile Picture -->
     <div class="relative">
-      <app-user-avatar
-        size="lg"
-        [photo]="admin()?.photo"
-        [name]="admin()?.name || ''"
-        [lastName]="admin()?.lastName || ''"
-      />
+      @if (loading()) {
+        <div
+          data-skeleton
+          class="size-32 animate-pulse rounded-full bg-gray-200"
+        ></div>
+      } @else {
+        <app-user-avatar
+          size="lg"
+          [photo]="admin()?.photo"
+          [name]="admin()?.name || ''"
+          [lastName]="admin()?.lastName || ''"
+        />
+      }
     </div>
 
     <div class="grow">
-      <h1
-        class="text-3xl font-black text-gray-900 tracking-tight leading-tight mb-2 capitalize"
-      >
-        {{ admin()?.name }} {{ admin()?.lastName }}
-      </h1>
+      @if (loading()) {
+        <div
+          data-skeleton
+          class="mx-auto md:mx-0 mb-3 h-9 w-56 max-w-full animate-pulse rounded-md bg-gray-200"
+        ></div>
+      } @else {
+        <h1
+          class="text-3xl font-black text-gray-900 tracking-tight leading-tight mb-2 capitalize"
+        >
+          {{ admin()?.name }} {{ admin()?.lastName }}
+        </h1>
+      }
       <div
         class="flex flex-wrap items-center justify-center md:justify-start gap-4"
       >
@@ -80,9 +94,18 @@
               >
                 Nombre Completo
               </p>
-              <p class="text-gray-800 font-bold text-lg capitalize wrap-break-word">
-                {{ admin()?.name }} {{ admin()?.lastName }}
-              </p>
+              @if (loading()) {
+                <div
+                  data-skeleton
+                  class="mt-1 h-6 w-40 max-w-full animate-pulse rounded bg-gray-200"
+                ></div>
+              } @else {
+                <p
+                  class="text-gray-800 font-bold text-lg capitalize wrap-break-word"
+                >
+                  {{ admin()?.name }} {{ admin()?.lastName }}
+                </p>
+              }
             </div>
           </div>
 
@@ -101,9 +124,18 @@
               >
                 DNI
               </p>
-              <p class="text-gray-800 font-bold text-lg tracking-wider wrap-break-word">
-                {{ admin()?.dni }}
-              </p>
+              @if (loading()) {
+                <div
+                  data-skeleton
+                  class="mt-1 h-6 w-28 max-w-full animate-pulse rounded bg-gray-200"
+                ></div>
+              } @else {
+                <p
+                  class="text-gray-800 font-bold text-lg tracking-wider wrap-break-word"
+                >
+                  {{ admin()?.dni }}
+                </p>
+              }
             </div>
           </div>
 
@@ -122,9 +154,18 @@
               >
                 Teléfono Movil
               </p>
-              <p class="text-gray-800 font-bold text-lg tracking-tight wrap-break-word">
-                {{ admin()?.phone }}
-              </p>
+              @if (loading()) {
+                <div
+                  data-skeleton
+                  class="mt-1 h-6 w-32 max-w-full animate-pulse rounded bg-gray-200"
+                ></div>
+              } @else {
+                <p
+                  class="text-gray-800 font-bold text-lg tracking-tight wrap-break-word"
+                >
+                  {{ admin()?.phone }}
+                </p>
+              }
             </div>
           </div>
 
@@ -143,9 +184,18 @@
               >
                 Correo Electrónico
               </p>
-              <p class="text-gray-800 font-bold text-lg break-all wrap-break-word">
-                {{ admin()?.email }}
-              </p>
+              @if (loading()) {
+                <div
+                  data-skeleton
+                  class="mt-1 h-6 w-48 max-w-full animate-pulse rounded bg-gray-200"
+                ></div>
+              } @else {
+                <p
+                  class="text-gray-800 font-bold text-lg break-all wrap-break-word"
+                >
+                  {{ admin()?.email }}
+                </p>
+              }
             </div>
           </div>
         </div>
@@ -179,9 +229,18 @@
               >
                 Nombre de Usuario
               </p>
-              <p class="text-gray-800 font-bold text-lg tracking-wide wrap-break-word">
-                {{ admin()?.username }}
-              </p>
+              @if (loading()) {
+                <div
+                  data-skeleton
+                  class="mt-1 h-6 w-32 max-w-full animate-pulse rounded bg-gray-200"
+                ></div>
+              } @else {
+                <p
+                  class="text-gray-800 font-bold text-lg tracking-wide wrap-break-word"
+                >
+                  {{ admin()?.username }}
+                </p>
+              }
             </div>
           </div>
 
