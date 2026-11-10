@@ -8,6 +8,7 @@ import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   bootstrapPlusLg,
   bootstrapDashLg,
+  bootstrapCart3,
 } from '@ng-icons/bootstrap-icons';
 
 @Component({
@@ -17,6 +18,7 @@ import {
     provideIcons({
       bootstrapPlusLg,
       bootstrapDashLg,
+      bootstrapCart3,
     }),
   ],
   templateUrl: './add-to-cart-control.component.html',
