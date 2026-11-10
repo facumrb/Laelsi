@@ -5,5 +5,5 @@
 >
   <ng-icon name="bootstrapPlusLg" class="text-xl"></ng-icon>
   <span>Agregar</span>
-  <span class="hidden sm:inline">{{ label() }}</span>
+  <span [class]="labelClass()">{{ label() }}</span>
 </button>

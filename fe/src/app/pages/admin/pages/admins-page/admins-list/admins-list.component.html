@@ -1,24 +1,31 @@
-<div class="table-container">
+<div class="table-container @container">
   <div class="w-full">
     <table class="table-base">
       <thead class="table-header">
         <tr>
-          <th class="admin-table-header-cell w-[22%] rounded-tl-lg">Usuario</th>
+          <th
+            class="admin-table-header-cell lg:px-3 @min-[70rem]:px-6 w-[20%] rounded-tl-lg"
+          >
+            Usuario
+          </th>
 
-          <th class="admin-table-header-cell truncate w-[20%]">
-            Nombre Completo
+          <th class="admin-table-header-cell lg:px-3 @min-[70rem]:px-6 w-[20%]">
+            <span class="@min-[60rem]:hidden">Nombre</span>
+            <span class="hidden @min-[60rem]:inline">Nombre Completo</span>
           </th>
 
           <th
-            class="admin-table-header-cell w-[24%] whitespace-nowrap text-center"
+            class="admin-table-header-cell lg:px-3 @min-[70rem]:px-6 w-[15%] whitespace-nowrap text-center"
           >
             DNI
           </th>
 
-          <th class="admin-table-header-cell w-[23%]">Contacto</th>
+          <th class="admin-table-header-cell lg:px-3 @min-[70rem]:px-6 w-[30%]">
+            Contacto
+          </th>
 
           <th
-            class="admin-table-header-cell text-center whitespace-nowrap w-[13%] rounded-tr-lg"
+            class="admin-table-header-cell lg:px-3 text-center whitespace-nowrap w-25 rounded-tr-lg"
           >
             Acciones
           </th>
@@ -34,11 +41,11 @@
           @for (admin of admins(); track admin.id; let isLast = $last) {
             <tr class="admin-table-row hover:bg-gray-50 transition-colors">
               <td
-                class="admin-table-cell-first"
+                class="admin-table-cell-first pt-3.5 pb-2 lg:py-4 lg:px-3 @min-[70rem]:px-6"
                 [class.lg:rounded-bl-lg]="isLast"
                 [class.lg:border-b-0]="isLast"
               >
-                <span class="admin-table-mobile-label mb-2 block"
+                <span class="admin-table-mobile-label mb-1 block"
                   >Usuario:</span
                 >
                 <div class="flex items-center gap-3">
@@ -51,7 +58,7 @@
                   <div
                     appActivable
                     (click)="onEdit.emit(admin)"
-                    class="font-semibold text-gray-900 text-base lg:text-sm cursor-pointer hover:underline"
+                    class="font-semibold text-gray-900 truncate text-base lg:text-sm cursor-pointer hover:underline"
                     title="{{ admin.username }}"
                   >
                     {{ admin.username }}
@@ -63,62 +70,69 @@
               </td>
 
               <td
-                class="admin-table-cell max-sm:col-span-2"
+                class="admin-table-cell py-1.5 lg:py-4 lg:px-3 @min-[70rem]:px-6 max-[420px]:col-span-2"
                 [class.lg:border-b-0]="isLast"
               >
                 <span class="admin-table-mobile-label block mb-1"
                   >Nombre Completo:</span
                 >
                 <div
-                  class="text-gray-900 line-clamp-2 wrap-break-word lg:line-clamp-none lg:truncate font-medium"
+                  class="text-gray-900 line-clamp-2 wrap-break-word font-medium"
+                  title="{{ admin | nombrePersona: 'Sin nombre' }}"
                 >
-                  {{ admin.name }} {{ admin.lastName }}
+                  {{ admin | nombrePersona: "Sin nombre" }}
                 </div>
               </td>
 
               <td
-                class="admin-table-cell max-sm:col-span-2 lg:text-center"
+                class="admin-table-cell py-1.5 lg:py-4 lg:px-3 @min-[70rem]:px-6 max-[420px]:col-span-2 lg:text-center"
                 [class.lg:border-b-0]="isLast"
               >
                 <span class="admin-table-mobile-label block mb-1">DNI:</span>
-                <span class="text-gray-900 font-medium truncate">
-                  {{ admin.dni }}
+                <span class="text-gray-900 font-medium wrap-break-word">
+                  {{ admin.dni || "-" }}
                 </span>
               </td>
 
               <td
-                class="admin-table-cell col-span-2"
+                class="admin-table-cell py-1.5 lg:py-4 lg:px-3 @min-[70rem]:px-6 col-span-2"
                 [class.lg:border-b-0]="isLast"
               >
                 <span class="admin-table-mobile-label block mb-1"
                   >Contacto:</span
                 >
-                <div class="flex flex-col text-sm">
-                  <div class="flex items-center gap-1.5 text-gray-900 mb-0.5">
+                <div class="flex flex-col text-sm min-w-0">
+                  <div
+                    class="flex items-center gap-1.5 text-gray-900 mb-0.5 min-w-0"
+                  >
                     <ng-icon
                       name="bootstrapEnvelope"
                       class="text-gray-400"
                     ></ng-icon>
                     <span
-                      class="line-clamp-2 break-all lg:line-clamp-none lg:break-normal lg:truncate lg:max-w-50 xl:max-w-xs"
+                      class="line-clamp-2 break-all lg:line-clamp-none lg:break-normal lg:truncate max-w-full"
                       title="{{ admin.email }}"
                       >{{ admin.email }}</span
                     >
                   </div>
                   <div
-                    class="flex items-center gap-1.5 truncate text-gray-900 text-xs"
+                    class="flex items-center gap-1.5 text-gray-900 text-xs min-w-0"
                   >
                     <ng-icon
                       name="bootstrapTelephone"
                       class="text-gray-400"
                     ></ng-icon>
-                    <span>{{ admin.phone }}</span>
+                    <span
+                      class="truncate min-w-0"
+                      title="{{ admin.phone || '-' }}"
+                      >{{ admin.phone || "-" }}</span
+                    >
                   </div>
                 </div>
               </td>
 
               <td
-                class="admin-table-cell-last"
+                class="admin-table-cell-last pt-2 pb-3 lg:py-4 lg:px-3"
                 [class.lg:rounded-br-lg]="isLast"
                 [class.lg:border-b-0]="isLast"
               >

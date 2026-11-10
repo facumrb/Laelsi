@@ -30,40 +30,15 @@
           ) {
             <tr class="admin-table-row animate-fadeIn">
               <td
-                class="admin-table-cell-first relative px-5 py-2 border-b border-gray-50 lg:border-b lg:border-gray-100 lg:px-6 lg:py-2 lg:table-cell lg:align-middle"
+                class="admin-table-cell-first relative px-5 pt-3.5 pb-2 border-b border-gray-50 lg:border-b lg:border-gray-100 lg:px-6 lg:py-2 lg:table-cell lg:align-middle"
                 [class.lg:border-b-0]="isLast"
                 [class.lg:rounded-bl-lg]="isLast"
               >
-                <div
-                  class="absolute top-2 right-2 flex items-center gap-1.5 lg:hidden"
-                >
+                <div class="absolute top-3 right-3 flex items-center lg:hidden">
                   <app-entity-state-badge
                     [state]="category.state"
                     mode="card"
                   />
-                  @if (!isFilterActive() && hasChildren(category.id)) {
-                    <button
-                      type="button"
-                      [attr.aria-expanded]="
-                        expandedCategoryIds().has(category.id)
-                      "
-                      [attr.aria-label]="
-                        expandedCategoryIds().has(category.id)
-                          ? 'Colapsar subcategorías de ' + category.name
-                          : 'Expandir subcategorías de ' + category.name
-                      "
-                      (click)="toggleExpand(category.id)"
-                      class="flex items-center justify-center w-7 h-7 rounded-sm bg-gray-50 hover:bg-gray-200 transition-colors text-gray-500 cursor-pointer border border-gray-200"
-                    >
-                      <ng-icon
-                        name="bootstrapChevronRight"
-                        class="text-xs transition-transform duration-200"
-                        [class.rotate-90]="
-                          expandedCategoryIds().has(category.id)
-                        "
-                      ></ng-icon>
-                    </button>
-                  }
                 </div>
                 <span class="font-bold uppercase text-gray-500 mr-2 lg:hidden"
                   >Nombre:</span
@@ -169,7 +144,7 @@
                     type="button"
                     (click)="count > 0 ? openProductsModal(category) : null"
                     [disabled]="count === 0"
-                    class="w-32 justify-center whitespace-nowrap shrink-0 flex items-center gap-1.5 py-1 rounded text-xs font-medium border transition-colors duration-200"
+                    class="w-30 justify-center whitespace-nowrap shrink-0 flex items-center gap-1.5 py-1 rounded text-xs font-medium border transition-colors duration-200"
                     [class]="
                       count > 0
                         ? 'bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100 cursor-pointer'
@@ -206,6 +181,29 @@
                     (onEdit)="onEdit.emit($event)"
                     (onDelete)="onDelete.emit($event)"
                   />
+                  @if (!isFilterActive() && hasChildren(category.id)) {
+                    <button
+                      type="button"
+                      [attr.aria-expanded]="
+                        expandedCategoryIds().has(category.id)
+                      "
+                      [attr.aria-label]="
+                        expandedCategoryIds().has(category.id)
+                          ? 'Colapsar subcategorías de ' + category.name
+                          : 'Expandir subcategorías de ' + category.name
+                      "
+                      (click)="toggleExpand(category.id)"
+                      class="ml-auto lg:hidden flex items-center justify-center w-8 h-8 rounded-sm bg-gray-50 hover:bg-gray-200 transition-colors text-gray-500 cursor-pointer border border-gray-200"
+                    >
+                      <ng-icon
+                        name="bootstrapChevronRight"
+                        class="text-sm transition-transform duration-200"
+                        [class.rotate-90]="
+                          expandedCategoryIds().has(category.id)
+                        "
+                      ></ng-icon>
+                    </button>
+                  }
                 </div>
               </td>
             </tr>
