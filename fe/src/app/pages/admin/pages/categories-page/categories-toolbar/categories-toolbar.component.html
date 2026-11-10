@@ -1,11 +1,13 @@
 <div class="toolbar-container">
   <app-toolbar-title title="Categorías"></app-toolbar-title>
 
-  <div class="flex flex-col lg:flex-row lg:flex-wrap lg:justify-end gap-3 w-full lg:w-auto">
-    <div class="w-full lg:w-48 xl:w-72">
+  <div
+    class="flex flex-col lg:flex-row lg:shrink-0 lg:justify-end gap-3 w-full lg:w-auto"
+  >
+    <div class="w-full lg:w-46 xl:w-72">
       <app-search-input
         [(query)]="searchQuery"
-        placeholder="Buscar categoría..."
+        placeholder="Buscar categoría"
       ></app-search-input>
     </div>
 
@@ -37,6 +39,7 @@
         <app-create-entity-button
           class="w-full block"
           label="Categoría"
+          [compactOnLg]="true"
           (clicked)="onAdd.emit()"
         ></app-create-entity-button>
       </div>

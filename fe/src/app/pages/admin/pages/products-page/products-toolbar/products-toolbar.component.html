@@ -2,12 +2,12 @@
   <app-toolbar-title title="Productos"></app-toolbar-title>
 
   <div
-    class="flex flex-col sm:flex-row sm:flex-wrap lg:justify-end w-full lg:w-auto items-stretch lg:items-center gap-3"
+    class="flex flex-col sm:flex-row sm:flex-wrap lg:flex-nowrap lg:shrink-0 lg:justify-end w-full lg:w-auto items-stretch lg:items-center gap-3"
   >
-    <div class="w-full lg:w-45 xl:w-72 order-1">
+    <div class="w-full lg:w-46 xl:w-72 order-1">
       <app-search-input
         [(query)]="searchQuery"
-        placeholder="Buscar producto..."
+        placeholder="Buscar producto"
       ></app-search-input>
     </div>
 
@@ -24,7 +24,7 @@
         "
       >
         <ng-icon name="bootstrapCurrencyDollar" class="text-lg"></ng-icon>
-        <span>Actualizar Precios</span>
+        <span><span class="lg:hidden xl:inline">Actualizar </span>Precios</span>
       </button>
     </div>
 
@@ -42,6 +42,7 @@
       <div class="col-span-1 sm:w-auto">
         <app-create-entity-button
           label="Producto"
+          [compactOnLg]="true"
           (clicked)="onAdd.emit()"
         ></app-create-entity-button>
       </div>
