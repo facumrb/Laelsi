@@ -2,9 +2,10 @@
   <!-- Header -->
   <div class="mb-5 flex items-center justify-between">
     <div>
-      <h1 class="page-title">Editar Mi Perfil</h1>
+      <h1 class="page-title">Mi Perfil</h1>
     </div>
-    <app-go-back-button />
+
+    <app-go-back-button fallbackUrl="/admin/analytics"></app-go-back-button>
   </div>
 
   <div class="form-card">
@@ -208,7 +209,8 @@
       <div class="form-footer">
         <button
           type="button"
-          routerLink="/admin/view-profile"
+          (click)="discardChanges()"
+          [disabled]="!hasRealChanges"
           class="btn-secondary"
         >
           Cancelar

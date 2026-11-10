@@ -108,19 +108,11 @@ export const adminRoutes: Routes = [
           ),
       },
       {
-        path: 'view-profile',
+        path: 'profile',
         data: { reserveScrollbar: false },
         loadComponent: () =>
-          import('./pages/profile-page/view-profile-page/view-profile-page.component').then(
-            (m) => m.ViewProfilePageComponent,
-          ),
-      },
-      {
-        path: 'edit-profile',
-        data: { reserveScrollbar: false },
-        loadComponent: () =>
-          import('./pages/profile-page/edit-profile-page/edit-profile-page.component').then(
-            (m) => m.EditProfilePageComponent,
+          import('./pages/profile-page/profile-page.component').then(
+            (m) => m.ProfilePageComponent,
           ),
       },
 
