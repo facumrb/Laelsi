@@ -2,7 +2,7 @@ import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { EMPTY, of, switchMap } from 'rxjs';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { ApiAdminService } from '@services/api-services/api-admin.service';
 import { IApiAdmin, ICreateAdmin, UserRole } from '@models/user.model';
 import { IApiUserPhoto } from '@models/photo.model';
@@ -19,10 +19,9 @@ import { TrimInputDirective } from '@shared/directives/trim-input.directive';
 import { injectInvalidateAdmins } from '@services/queries/admin-queries';
 
 @Component({
-  selector: 'app-edit-profile-page',
+  selector: 'app-admin-profile-page',
   imports: [
     ReactiveFormsModule,
-    RouterLink,
     PhotoManagerComponent,
     FieldErrorComponent,
     GoBackButtonComponent,
@@ -30,9 +29,9 @@ import { injectInvalidateAdmins } from '@services/queries/admin-queries';
     PhoneInputDirective,
     TrimInputDirective,
   ],
-  templateUrl: './edit-profile-page.component.html',
+  templateUrl: './profile-page.component.html',
 })
-export class EditProfilePageComponent implements OnInit {
+export class ProfilePageComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private apiService = inject(ApiAdminService);
@@ -148,14 +147,23 @@ export class EditProfilePageComponent implements OnInit {
           FormUtils.uniqueFieldValidator('Admin', 'email', this.http, id),
         );
 
-        this.initialFormValue.set(
-          JSON.stringify(this.formEditProfile.getRawValue()),
-        );
+        this.snapshotInitial();
       },
       error: () => {
-        this.router.navigate(['admin/view-profile']);
+        this.router.navigate(['/admin/analytics']);
       },
     });
+  }
+
+  private snapshotInitial(): void {
+    this.initialFormValue.set(
+      JSON.stringify(this.formEditProfile.getRawValue()),
+    );
+  }
+
+  discardChanges(): void {
+    this.formEditProfile.reset(JSON.parse(this.initialFormValue()));
+    this.photoManager().reset();
   }
 
   get hasRealChanges(): boolean {
@@ -258,7 +266,17 @@ export class EditProfilePageComponent implements OnInit {
           }
 
           this.authService.updateCurrentUser(sessionUpdates);
-          this.router.navigate(['admin/view-profile']);
+
+          if ('photo' in sessionUpdates) {
+            this.currentPhoto.set(sessionUpdates.photo);
+          }
+          this.photoManager().reset();
+          this.formEditProfile.reset({
+            ...formValue,
+            password: '',
+            confirmPassword: '',
+          });
+          this.snapshotInitial();
         },
       });
   }

@@ -29,8 +29,7 @@ export class PhotoManagerComponent {
 
   previewUrl = linkedSignal({
     source: this.currentPhoto,
-    computation: (photo: IApiUserPhoto | null) =>
-      photo ? `${this.imageBaseUrl}${photo.fileName}` : null,
+    computation: (photo: IApiUserPhoto | null) => this.photoUrl(photo),
   });
 
   // Guardamos el archivo aquí hasta que el padre llame a saveChanges()
@@ -104,10 +103,7 @@ export class PhotoManagerComponent {
     if (this.pendingFile()) {
       this.pendingFile.set(null);
       // Restaurar el preview a la foto original
-      const photo = this.currentPhoto();
-      this.previewUrl.set(
-        photo ? `${this.imageBaseUrl}${photo.fileName}` : null,
-      );
+      this.previewUrl.set(this.photoUrl(this.currentPhoto()));
       return;
     }
 
@@ -119,6 +115,17 @@ export class PhotoManagerComponent {
       this.deletePending.set(true);
       this.previewUrl.set(null);
     }
+  }
+
+  /** Descarta el archivo elegido y el borrado pendiente, y vuelve a mostrar `currentPhoto`. */
+  reset(): void {
+    this.pendingFile.set(null);
+    this.deletePending.set(false);
+    this.previewUrl.set(this.photoUrl(this.currentPhoto()));
+  }
+
+  private photoUrl(photo: IApiUserPhoto | null): string | null {
+    return photo ? `${this.imageBaseUrl}${photo.fileName}` : null;
   }
 
   // MÉTODO PÚBLICO (El Padre llamará a esto al final)
