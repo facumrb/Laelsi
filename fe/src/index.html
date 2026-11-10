@@ -25,31 +25,15 @@
 
     <link rel="icon" type="image/x-icon" href="assets/Webp/L.webp" />
 
-    <!-- ID 70 (rendimiento): abre la conexión (DNS + TLS) con la API y con las imágenes mientras se descarga el
-         JavaScript, en vez de esperar a la primera petición. La API se llama con fetch y CORS (lleva crossorigin);
-         las imágenes, con <img> sin CORS (no lleva). Los valores son los de environment.ts y los de vercel.json
-         (connect-src e img-src); si cambian, cambiarlos acá también. -->
-    <link rel="preconnect" href="https://vwtqkglkenogylkranzz.supabase.co" crossorigin />
-    <link rel="preconnect" href="https://productos.laelsi.com.ar" />
-
-    <!-- ID 70 (rendimiento): el logo del cartel de la portada es el elemento que mide el LCP, pero el navegador recién se
-         entera de que existe cuando Angular dibuja la página, después de bajar y ejecutar el JavaScript. Con la precarga
-         se baja al mismo tiempo que el JavaScript. Tiene que elegir el mismo archivo que el <img> de LogoComponent: por
-         eso repite su srcset, y el ancho (sizes) es el del cartel (main-page: width=240). Sin prioridad alta a propósito:
-         en las demás páginas el logo no es lo más grande y no debe competir con el JavaScript por el ancho de banda. -->
     <link
-      rel="preload"
-      as="image"
-      href="assets/Webp/Logo.webp"
-      imagesrcset="assets/Webp/Logo-500.webp 500w, assets/Webp/Logo.webp 996w"
-      imagesizes="240px"
+      rel="preconnect"
+      href="https://vwtqkglkenogylkranzz.supabase.co"
+      crossorigin
     />
+    <link rel="preconnect" href="https://productos.laelsi.com.ar" />
   </head>
   <body>
     <app-root></app-root>
-
-    <!-- Sin JavaScript la tienda no carga, pero los enlaces legales siguen a la vista de
-         quien lee el HTML sin ejecutarlo (por ejemplo, los robots que verifica Google) -->
     <noscript>
       <p>
         Laelsi: librería y papelería en Rosario. Para usar la tienda necesitás
