@@ -458,6 +458,11 @@
   .group:hover .elsi-glass-nav {
     @apply opacity-100;
   }
+  @media (hover: none) {
+    .elsi-glass-nav:not(:disabled) {
+      @apply opacity-100;
+    }
+  }
 
   /* ── Modales ── */
   .elsi-modal-overlay {

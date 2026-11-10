@@ -22,14 +22,11 @@ import { injectHomeQuery } from '@services/queries/product-queries';
   templateUrl: './main-page.component.html',
 })
 export class MainPageComponent {
-  // Capa de queries (TanStack Query): toda la carga de datos queda en caché.
-  //
-  // ID 70 (mejora de rendimiento 2): la portada pide TODO con una sola llamada a /products/home (los más
-  // vendidos y el carrusel de cada una de las primeras categorías con productos). Antes eran 8 llamadas en
-  // dos tandas: las categorías primero y, recién cuando llegaban, los más vendidos de cada una.
   private homeQuery = injectHomeQuery();
 
-  globalBestSellers = computed<IApiProduct[]>(() => this.homeQuery.data()?.bestSellers ?? []);
+  globalBestSellers = computed<IApiProduct[]>(
+    () => this.homeQuery.data()?.bestSellers ?? [],
+  );
 
   // El servidor ya deja afuera las categorías sin más vendidos
   categoriesWithBestSellers = computed<
@@ -42,10 +39,11 @@ export class MainPageComponent {
   scrollCarousel(
     container: HTMLElement,
     direction: 'left' | 'right',
-    tracker: any,
+    tracker: ScrollTrackerDirective,
   ) {
     const width = container.clientWidth;
-    const targetLeft = container.scrollLeft + (direction === 'left' ? -width : width);
+    const targetLeft =
+      container.scrollLeft + (direction === 'left' ? -width : width);
 
     const atStart = targetLeft <= 5;
     const atEnd = targetLeft + width >= container.scrollWidth - 5;
