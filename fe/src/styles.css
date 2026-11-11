@@ -185,7 +185,7 @@
   /* ── Select desplegable ── */
   .select-trigger {
     @apply relative w-full cursor-pointer bg-white rounded-2xl border border-gray-300
-           py-2.5 pl-4 pr-10 text-left shadow-sm transition-all duration-200 sm:text-sm
+           py-2.5 pl-4 pr-10 text-left shadow-sm transition-all duration-200 text-sm
            hover:bg-gray-50 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900;
   }
 
