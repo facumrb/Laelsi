@@ -33,14 +33,16 @@ import { FieldErrorComponent } from '@shared/validators/field-error/field-error.
 export class ProductCategorySelectComponent {
   control = input.required<FormControl<IApiCategory | null>>();
   categories = input.required<IApiCategory[]>();
-  
+
   createCategory = output<void>();
 
   showCategoryMenu = signal(false);
 
   // Categorías en formato árbol plano, de la raíz hasta el último nivel que pueden crear los negocios: un
   // producto se puede cargar en cualquiera de ellas
-  hierarchicalCategories = computed(() => aplanarCategorias(this.categories(), MAX_CATEGORY_DEPTH));
+  hierarchicalCategories = computed(() =>
+    aplanarCategorias(this.categories(), MAX_CATEGORY_DEPTH),
+  );
 
   // Nombre de la categoria seleccionada
   get selectedCategoryName() {
