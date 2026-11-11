@@ -20,6 +20,7 @@ import {
 import { CloseModalButtonComponent } from '@shared/components/buttons/close-modal-button/close-modal-button.component';
 import { SearchInputComponent } from '@admin/components/toolbar-components/search-input/search-input.component';
 import { ProductImageComponent } from '@shared/components/product-image/product-image.component';
+import { ProductoDelSubarbol } from '@shared/utils/category-tree';
 
 @Component({
   selector: 'app-category-products-modal',
@@ -43,6 +44,8 @@ import { ProductImageComponent } from '@shared/components/product-image/product-
 })
 export class CategoryProductsModalComponent {
   category = input.required<IApiCategory>();
+  // Los productos de la categoría y de todas sus subcategorías
+  products = input.required<ProductoDelSubarbol[]>();
   close = output<void>();
   onNavigateToProduct = output<IProductSummary>();
 
@@ -56,7 +59,7 @@ export class CategoryProductsModalComponent {
 
   // Productos filtrados
   filteredProducts = computed(() => {
-    const products = this.category().products || [];
+    const products = this.products();
     const query = this.searchQuery().toLowerCase().trim();
 
     if (!query) return products;

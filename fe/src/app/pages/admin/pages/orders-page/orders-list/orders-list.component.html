@@ -9,206 +9,215 @@
           <th class="admin-table-header-cell w-[16%]">Estado</th>
           <th class="admin-table-header-cell w-[14%]">Pago</th>
           <th class="admin-table-header-cell w-[13%]">Total</th>
-          <th class="admin-table-header-cell w-[15%] text-center rounded-tr-lg">Acciones</th>
+          <th class="admin-table-header-cell w-[15%] text-center rounded-tr-lg">
+            Acciones
+          </th>
         </tr>
       </thead>
 
-      <tbody class="admin-table-body">
-        @for (order of orders(); track order.id; let isLast = $last) {
-          <tr
-            class="admin-table-row"
-          >
-            <!-- ID Column -->
-            <td
-              class="admin-table-cell-first sm:col-span-1 font-bold"
-              [class.lg:rounded-bl-lg]="isLast"
-              [class.lg:border-b-0]="isLast"
-            >
-              <span class="admin-table-mobile-label mb-2 block text-xs"
-                >ID Orden:</span
+      <tbody class="admin-table-body" [attr.aria-busy]="loading()">
+        @if (loading()) {
+          @for (row of skeletonRows; track row) {
+            <tr app-table-skeleton [columns]="7"></tr>
+          }
+        } @else {
+          @for (order of orders(); track order.id; let isLast = $last) {
+            <tr class="admin-table-row">
+              <!-- ID Column -->
+              <td
+                class="admin-table-cell-first sm:col-span-1 font-bold"
+                [class.lg:rounded-bl-lg]="isLast"
+                [class.lg:border-b-0]="isLast"
               >
-              <span
-                class="cursor-pointer inline-block py-1 text-gray-900 hover:underline"
-                appActivable
-                (click)="onViewDetails.emit(order)"
-              >
-                #{{ order.id }}
-              </span>
-            </td>
-
-            <!-- Client Column -->
-            <td class="admin-table-cell max-sm:col-span-2 sm:max-lg:pt-6 group" [class.lg:border-b-0]="isLast">
-              <span class="admin-table-mobile-label block mb-1 text-xs"
-                >Cliente:</span
-              >
-              <a
-                [routerLink]="['/admin/clients/edit', order.client.id]"
-                class="block min-h-6 text-gray-900 font-semibold line-clamp-2 wrap-break-word lg:line-clamp-none lg:truncate hover:underline"
-              >
-                {{ order.client | nombrePersona: order.client.email }}
-              </a>
-              <div
-                class="text-xs text-gray-500 line-clamp-2 break-all lg:line-clamp-none lg:break-normal lg:truncate lg:max-w-50 xl:max-w-xs"
-                title="{{ order.client.email }}"
-              >
-                {{ order.client.email }}
-              </div>
-            </td>
-
-            <!-- Delivery Method Column -->
-            <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
-              <span class="admin-table-mobile-label block mb-1 text-xs"
-                >Método:</span
-              >
-              <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <ng-icon
-                  [name]="
-                    order.deliveryMethod === DeliveryMethod.Envio
-                      ? 'bootstrapTruck'
-                      : 'bootstrapShop'
-                  "
-                  class="text-lg"
-                  [class.text-indigo-600]="
-                    order.deliveryMethod === DeliveryMethod.Envio
-                  "
-                  [class.text-amber-600]="
-                    order.deliveryMethod === DeliveryMethod.RetiroSucursal
-                  "
-                ></ng-icon>
-                <div class="font-medium text-gray-700">
-                  {{
-                    order.deliveryMethod === DeliveryMethod.RetiroSucursal
-                      ? "Sucursal"
-                      : order.deliveryMethod
-                  }}
-                </div>
-
-                @if (canTranslateDelivery(order)) {
-                  <button
-                    (click)="
-                      onUpdateDelivery.emit({
-                        id: order.id,
-                        method:
-                          order.deliveryMethod === DeliveryMethod.Envio
-                            ? DeliveryMethod.RetiroSucursal
-                            : DeliveryMethod.Envio,
-                      })
-                    "
-                    class="flex items-center px-1 py-1 bg-white border border-gray-200 text-gray-600 rounded-md text-xs font-semibold hover:bg-gray-50 hover:text-[#3d4494] hover:border-[#3d4494]/30 transition-all shadow-sm cursor-pointer"
-                    title="Cambiar método de entrega"
-                  >
-                    Cambiar
-                  </button>
-                }
-              </div>
-            </td>
-
-            <!-- Status Column -->
-            <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
-              <span class="admin-table-mobile-label block mb-1 text-xs"
-                >Estado:</span
-              >
-              <div
-                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border"
-                [class]="getStatusColor(order.status)"
-              >
-                <ng-icon [name]="getStatusIcon(order.status)"></ng-icon>
-                {{ order.status }}
-              </div>
-            </td>
-
-            <!-- Payment Method Column -->
-            <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
-              <span class="admin-table-mobile-label block mb-1 text-xs"
-                >Pago:</span
-              >
-              <div class="font-medium text-gray-700">
-                {{ order.paymentMethod }}
-              </div>
-            </td>
-
-            <!-- Total Column -->
-            <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
-              <span class="admin-table-mobile-label block mb-1 text-xs"
-                >Total:</span
-              >
-              <span class="text-gray-900 font-bold text-lg lg:text-sm">
-                {{ order.totalAmount | currency: "ARS" : "symbol-narrow" }}
-              </span>
-            </td>
-
-            <!-- Actions Column -->
-            <td
-              class="admin-table-cell-last"
-              [class.lg:rounded-br-lg]="isLast"
-              [class.lg:border-b-0]="isLast"
-            >
-              <div
-                class="flex flex-wrap items-center justify-start lg:justify-center gap-2"
-              >
-                <span class="admin-table-mobile-label text-xs w-full mb-2"
-                  >Acciones:</span
+                <span class="admin-table-mobile-label mb-2 block text-xs"
+                  >ID Orden:</span
                 >
-
-                <!-- Ver Detalle Button -->
-                <button
+                <span
+                  class="cursor-pointer inline-block py-1 text-gray-900 hover:underline"
+                  appActivable
                   (click)="onViewDetails.emit(order)"
-                  class="cursor-pointer w-32 h-8 flex items-center justify-center border border-gray-300 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors shadow-sm truncate"
-                  title="Ver detalle del pedido"
                 >
-                  Detalle
-                </button>
+                  #{{ order.id }}
+                </span>
+              </td>
 
-                <!-- Next Status Buttons -->
-                @for (nextState of getNextStates(order); track nextState) {
-                  <button
-                    (click)="
-                      onUpdateStatus.emit({ id: order.id, status: nextState })
-                    "
-                    [class]="
-                      getActionColor(nextState) +
-                      ' cursor-pointer w-32 h-8 flex items-center justify-center gap-1 border border-solid rounded-lg text-xs font-semibold transition-colors shadow-sm'
-                    "
-                  >
-                    {{ nextState }}
-                  </button>
-                }
+              <!-- Client Column -->
+              <td
+                class="admin-table-cell max-sm:col-span-2 sm:max-lg:pt-6 group"
+                [class.lg:border-b-0]="isLast"
+              >
+                <span class="admin-table-mobile-label block mb-1 text-xs"
+                  >Cliente:</span
+                >
+                <a
+                  [routerLink]="['/admin/clients/edit', order.client.id]"
+                  class="block min-h-6 text-gray-900 font-semibold line-clamp-2 wrap-break-word lg:line-clamp-none lg:truncate hover:underline"
+                >
+                  {{ order.client | nombrePersona: order.client.email }}
+                </a>
+                <div
+                  class="text-xs text-gray-500 line-clamp-2 break-all lg:line-clamp-none lg:break-normal lg:truncate lg:max-w-50 xl:max-w-xs"
+                  title="{{ order.client.email }}"
+                >
+                  {{ order.client.email }}
+                </div>
+              </td>
 
-                <!-- Cancel Button -->
-                @if (
-                  order.status !== OrderState.Cancelled &&
-                  order.status !== OrderState.Delivered
-                ) {
+              <!-- Delivery Method Column -->
+              <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
+                <span class="admin-table-mobile-label block mb-1 text-xs"
+                  >Método:</span
+                >
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <ng-icon
+                    [name]="
+                      order.deliveryMethod === DeliveryMethod.Envio
+                        ? 'bootstrapTruck'
+                        : 'bootstrapShop'
+                    "
+                    class="text-lg"
+                    [class.text-indigo-600]="
+                      order.deliveryMethod === DeliveryMethod.Envio
+                    "
+                    [class.text-amber-600]="
+                      order.deliveryMethod === DeliveryMethod.RetiroSucursal
+                    "
+                  ></ng-icon>
+                  <div class="font-medium text-gray-700">
+                    {{
+                      order.deliveryMethod === DeliveryMethod.RetiroSucursal
+                        ? "Sucursal"
+                        : order.deliveryMethod
+                    }}
+                  </div>
+
+                  @if (canTranslateDelivery(order)) {
+                    <button
+                      (click)="
+                        onUpdateDelivery.emit({
+                          id: order.id,
+                          method:
+                            order.deliveryMethod === DeliveryMethod.Envio
+                              ? DeliveryMethod.RetiroSucursal
+                              : DeliveryMethod.Envio,
+                        })
+                      "
+                      class="flex items-center px-1 py-1 bg-white border border-gray-200 text-gray-600 rounded-md text-xs font-semibold hover:bg-gray-50 hover:text-[#3d4494] hover:border-[#3d4494]/30 transition-all shadow-sm cursor-pointer"
+                      title="Cambiar método de entrega"
+                    >
+                      Cambiar
+                    </button>
+                  }
+                </div>
+              </td>
+
+              <!-- Status Column -->
+              <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
+                <span class="admin-table-mobile-label block mb-1 text-xs"
+                  >Estado:</span
+                >
+                <div
+                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border"
+                  [class]="getStatusColor(order.status)"
+                >
+                  <ng-icon [name]="getStatusIcon(order.status)"></ng-icon>
+                  {{ order.status }}
+                </div>
+              </td>
+
+              <!-- Payment Method Column -->
+              <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
+                <span class="admin-table-mobile-label block mb-1 text-xs"
+                  >Pago:</span
+                >
+                <div class="font-medium text-gray-700">
+                  {{ order.paymentMethod }}
+                </div>
+              </td>
+
+              <!-- Total Column -->
+              <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
+                <span class="admin-table-mobile-label block mb-1 text-xs"
+                  >Total:</span
+                >
+                <span class="text-gray-900 font-bold text-lg lg:text-sm">
+                  {{ order.totalAmount | currency: "ARS" : "symbol-narrow" }}
+                </span>
+              </td>
+
+              <!-- Actions Column -->
+              <td
+                class="admin-table-cell-last"
+                [class.lg:rounded-br-lg]="isLast"
+                [class.lg:border-b-0]="isLast"
+              >
+                <div
+                  class="flex flex-wrap items-center justify-start lg:justify-center gap-2"
+                >
+                  <span class="admin-table-mobile-label text-xs w-full mb-2"
+                    >Acciones:</span
+                  >
+
+                  <!-- Ver Detalle Button -->
                   <button
-                    (click)="onCancel.emit(order.id)"
-                    class="cursor-pointer w-32 h-8 flex items-center justify-center gap-1 border border-rose-300 text-rose-700 rounded-lg text-xs font-semibold hover:bg-rose-50 transition-colors"
+                    (click)="onViewDetails.emit(order)"
+                    class="cursor-pointer w-32 h-8 flex items-center justify-center border border-gray-300 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors shadow-sm truncate"
+                    title="Ver detalle del pedido"
                   >
-                    Cancelar
+                    Detalle
                   </button>
-                } @else if (order.status === OrderState.Delivered) {
-                  <span
-                    class="w-32 h-8 flex items-center justify-center gap-1 text-xs text-emerald-800 border border-emerald-300 rounded-lg font-semibold bg-emerald-100"
-                  >
-                    Finalizada
-                  </span>
-                } @else {
-                  <span
-                    class="w-32 h-8 flex items-center justify-center gap-1 text-xs text-rose-800 border border-rose-300 rounded-lg font-semibold bg-rose-100"
-                  >
-                    Anulada
-                  </span>
-                }
-              </div>
-            </td>
-          </tr>
-        } @empty {
-          <tr
-            app-table-empty-state
-            [colspan]="7"
-            [isFilterActive]="isFilterActive()"
-            emptyMessage="Todavía no hay órdenes registradas"
-            searchMessage="No se encontraron órdenes para tu búsqueda"
-          ></tr>
+
+                  <!-- Next Status Buttons -->
+                  @for (nextState of getNextStates(order); track nextState) {
+                    <button
+                      (click)="
+                        onUpdateStatus.emit({ id: order.id, status: nextState })
+                      "
+                      [class]="
+                        getActionColor(nextState) +
+                        ' cursor-pointer w-32 h-8 flex items-center justify-center gap-1 border border-solid rounded-lg text-xs font-semibold transition-colors shadow-sm'
+                      "
+                    >
+                      {{ nextState }}
+                    </button>
+                  }
+
+                  <!-- Cancel Button -->
+                  @if (
+                    order.status !== OrderState.Cancelled &&
+                    order.status !== OrderState.Delivered
+                  ) {
+                    <button
+                      (click)="onCancel.emit(order.id)"
+                      class="cursor-pointer w-32 h-8 flex items-center justify-center gap-1 border border-rose-300 text-rose-700 rounded-lg text-xs font-semibold hover:bg-rose-50 transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                  } @else if (order.status === OrderState.Delivered) {
+                    <span
+                      class="w-32 h-8 flex items-center justify-center gap-1 text-xs text-emerald-800 border border-emerald-300 rounded-lg font-semibold bg-emerald-100"
+                    >
+                      Finalizada
+                    </span>
+                  } @else {
+                    <span
+                      class="w-32 h-8 flex items-center justify-center gap-1 text-xs text-rose-800 border border-rose-300 rounded-lg font-semibold bg-rose-100"
+                    >
+                      Anulada
+                    </span>
+                  }
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr
+              app-table-empty-state
+              [colspan]="7"
+              [isFilterActive]="isFilterActive()"
+              emptyMessage="Todavía no hay órdenes registradas"
+              searchMessage="No se encontraron órdenes para tu búsqueda"
+            ></tr>
+          }
         }
       </tbody>
     </table>

@@ -68,6 +68,14 @@
                     >
                       {{ product.name }}
                     </div>
+                    @if (product.categoryId !== category().id) {
+                      <div
+                        class="text-xs text-gray-500 line-clamp-1"
+                        title="{{ product.categoryName }}"
+                      >
+                        En {{ product.categoryName }}
+                      </div>
+                    }
                   </div>
                 </div>
 

@@ -8,6 +8,10 @@ import {
 } from '@ng-icons/bootstrap-icons';
 
 import { TableEmptyStateComponent } from '@admin/components/table-components/table-empty-state/table-empty-state.component';
+import {
+  SKELETON_ROWS,
+  TableSkeletonComponent,
+} from '@admin/components/table-components/table-skeleton/table-skeleton.component';
 import { EntityStateBadgeComponent } from '@admin/components/table-components/entity-state-badge/entity-state-badge.component';
 import { UserAvatarComponent } from '@shared/components/user-avatar/user-avatar.component';
 import { NombrePersonaPipe } from '@shared/pipes/nombre-persona.pipe';
@@ -20,6 +24,7 @@ import { ActivableDirective } from '@shared/directives/activable.directive';
     TableActionsComponent,
     NgIconComponent,
     TableEmptyStateComponent,
+    TableSkeletonComponent,
     UserAvatarComponent,
     EntityStateBadgeComponent,
     NombrePersonaPipe,
@@ -37,6 +42,10 @@ export class ClientsListComponent {
   onReactivate = output<IApiClient>();
 
   isFilterActive = input<boolean>(false);
+
+  // true mientras la página todavía no tiene datos que mostrar
+  loading = input<boolean>(false);
+  protected skeletonRows = SKELETON_ROWS;
 
   // Función para determinar el color segun la condición fiscal
   getFiscalConditionClass(condition?: string): string {

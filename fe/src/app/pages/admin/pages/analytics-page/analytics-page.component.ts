@@ -52,7 +52,10 @@ export class AnalyticsPageComponent {
   // Estados de la pantalla. Si la carga falla, el errorInterceptor ya avisó con un toast;
   // el error solo se muestra cuando no hay ningún dato anterior que seguir mostrando.
   loading = computed(() => this.summaryQuery.isPending());
-  failed = computed(() => this.summaryQuery.isError() && !this.summaryQuery.data());
+  failed = computed(
+    () => this.summaryQuery.isError() && !this.summaryQuery.data(),
+  );
+  protected readonly skeletonRows = [0, 1, 2, 3, 4];
 
   private summary = computed(() => this.summaryQuery.data());
 
@@ -62,7 +65,9 @@ export class AnalyticsPageComponent {
   totalClients = computed(() => this.summary()?.totalClients ?? 0);
 
   recentOrders = computed(() => this.summary()?.recentOrders ?? []);
-  bestSellingProducts = computed(() => this.summary()?.bestSellingProducts ?? []);
+  bestSellingProducts = computed(
+    () => this.summary()?.bestSellingProducts ?? [],
+  );
 
   selectedOrder = signal<IApiOrder | null>(null);
 
@@ -78,7 +83,6 @@ export class AnalyticsPageComponent {
     this.selectedOrder.set(null);
   }
 
-  // Utils
   getOrderStatusColor(status: OrderState): string {
     switch (status) {
       case OrderState.Pending:

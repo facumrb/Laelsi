@@ -5,8 +5,8 @@
   @if (product(); as prod) {
     <div class="flex flex-col md:grid md:grid-cols-2 gap-6 md:gap-12">
       <div class="contents md:flex md:flex-col md:gap-8">
-        <div class="order-3 md:order-0 flex flex-col md:flex-row gap-4 w-full">
-          <div class="order-2 md:order-1">
+        <div class="order-3 md:order-0 flex flex-col lg:flex-row gap-4 w-full">
+          <div class="order-2 lg:order-1">
             <app-carousel-nav
               variant="ghost-wrapper"
               [showControls]="productPhotos().length > 5"
@@ -15,7 +15,7 @@
               (prev)="prevThumbnails()"
               (next)="nextThumbnails()"
             >
-              <div class="flex md:flex-col gap-3 overflow-hidden">
+              <div class="flex lg:flex-col gap-3 overflow-hidden">
                 @for (
                   photo of productPhotos().slice(
                     thumbnailIndex(),
@@ -59,15 +59,19 @@
           </div>
 
           <div
-            class="group flex-1 order-1 md:order-2 rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-white relative flex items-center justify-center aspect-4/3"
+            class="group flex-1 order-1 lg:order-2 lg:self-start rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-white relative flex items-center justify-center aspect-4/3 max-h-[40svh] md:max-h-none xl:max-h-104 p-3 md:p-4"
             aria-live="polite"
           >
-            <app-product-image
-              [imageUrl]="selectedPhotoFileName()"
-              [altText]="prod.name"
-              containerClass="w-full h-full"
-              imageClass="p-4 md:p-8 drop-shadow-sm"
-            />
+            <div
+              data-testid="foto-recuadro-interno"
+              class="aspect-square h-full max-w-full rounded-xl overflow-hidden"
+            >
+              <app-product-image
+                [imageUrl]="selectedPhotoFileName()"
+                [altText]="prod.name"
+                containerClass="w-full h-full"
+              />
+            </div>
 
             <app-carousel-nav
               variant="glass"
@@ -79,7 +83,7 @@
         </div>
 
         <div
-          class="order-4 md:order-0 pt-4 md:pt-0 border-t md:border-none border-gray-100"
+          class="order-6 md:order-0 pt-4 md:pt-0 border-t md:border-none border-gray-100"
         >
           <h3
             class="text-lg font-bold text-gray-900 mb-3 uppercase tracking-tight"
@@ -123,6 +127,22 @@
               >
             </span>
           }
+          @if (
+            prod.state === "Activo" &&
+            prod.category.state === "Activo" &&
+            prod.stock > 0
+          ) {
+            <span
+              data-testid="insignia-stock"
+              class="text-xs font-bold text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full flex items-center gap-1.5"
+            >
+              <span class="size-1.5 rounded-full bg-green-500"></span>
+              {{ prod.stock }}
+              {{
+                prod.stock === 1 ? "unidad disponible" : "unidades disponibles"
+              }}
+            </span>
+          }
         </div>
 
         <div
@@ -137,21 +157,12 @@
             </span>
           </div>
 
-          <div
-            [class.mb-6]="
-              prod.state === 'Activo' &&
-              prod.category.state === 'Activo' &&
-              prod.stock > 0
-            "
-          >
-            <app-product-status-badge
-              [productState]="prod.state"
-              [categoryState]="prod.category.state"
-              [productStock]="prod.stock"
-              [showStock]="true"
-              mode="banner"
-            />
-          </div>
+          <app-product-status-badge
+            [productState]="prod.state"
+            [categoryState]="prod.category.state"
+            [productStock]="prod.stock"
+            mode="banner"
+          />
 
           @if (
             prod.state === "Activo" &&
@@ -190,8 +201,6 @@
       </div>
     </div>
   } @else if (loading()) {
-    <!-- Esqueleto de la ficha (ID 70): misma estructura que la ficha real, para que la página no se corra cuando
-         llegan los datos (Lighthouse medía un salto de diseño de 0,578). Es decorativo: el aviso lo da el estado. -->
     <p role="status" class="sr-only">Cargando producto…</p>
     <div
       data-testid="ficha-esqueleto"
@@ -200,15 +209,19 @@
       class="flex flex-col gap-6 md:grid md:grid-cols-2 md:gap-12"
     >
       <div class="flex flex-col gap-8">
-        <div class="flex w-full flex-col gap-4 md:flex-row">
-          <div class="hidden flex-col gap-3 md:flex">
+        <div class="flex w-full flex-col gap-4 lg:flex-row">
+          <div class="hidden flex-col gap-3 lg:flex">
             @for (n of [1, 2, 3]; track n) {
               <div class="size-16 animate-pulse rounded-xl bg-gray-100"></div>
             }
           </div>
           <div
-            class="aspect-4/3 flex-1 animate-pulse rounded-2xl border border-gray-100 bg-gray-100"
-          ></div>
+            class="aspect-4/3 max-h-[40svh] md:max-h-none xl:max-h-104 flex-1 lg:self-start flex items-center justify-center rounded-2xl border border-gray-100 bg-gray-100 p-3 md:p-4"
+          >
+            <div
+              class="aspect-square h-full max-w-full animate-pulse rounded-xl bg-gray-200"
+            ></div>
+          </div>
         </div>
         <div class="border-t border-gray-100 pt-4 md:border-none md:pt-0">
           <div class="mb-3 h-6 w-32 animate-pulse rounded bg-gray-200"></div>
@@ -224,7 +237,6 @@
         <div class="mb-2 h-10 w-4/5 animate-pulse rounded-md bg-gray-200"></div>
         <div class="mb-6 h-8 w-44 animate-pulse rounded-full bg-gray-100"></div>
         <div class="mb-8 h-10 w-40 animate-pulse rounded-md bg-gray-200"></div>
-        <div class="mb-6 h-12 w-full animate-pulse rounded-xl bg-gray-100"></div>
         <div class="h-12 w-full animate-pulse rounded-xl bg-gray-200"></div>
       </div>
     </div>

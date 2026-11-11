@@ -16,7 +16,7 @@ export const clientGuard: CanActivateFn = (route, state) => {
 
   // Si es Administrador, lo enviamos a su perfil de administrador
   if (authService.isAdmin()) {
-    router.navigate(['/admin/view-profile']);
+    router.navigate(['/admin/profile']);
     return false;
   }
 

@@ -18,6 +18,7 @@ import { PhoneInputDirective } from '@shared/directives/phone-input.directive';
 import { GoBackButtonComponent } from '@shared/components/buttons/go-back-button/go-back-button.component';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
+import { injectInvalidateAdmins } from '@services/queries/admin-queries';
 
 @Component({
   selector: 'app-admins-form',
@@ -44,6 +45,7 @@ export class AdminsFormComponent implements OnInit {
   private alertService = inject(AlertService);
   private currentPasswordService = inject(CurrentPasswordService);
   private http = inject(HttpClient);
+  private invalidateAdmins = injectInvalidateAdmins();
 
   photoManager = viewChild.required(PhotoManagerComponent);
 
@@ -221,7 +223,9 @@ export class AdminsFormComponent implements OnInit {
   /** Email con el que se cargó el formulario (para saber si se lo cambió). */
   private get originalEmail(): string {
     try {
-      return (JSON.parse(this.initialFormValue()) as { email?: string }).email ?? '';
+      return (
+        (JSON.parse(this.initialFormValue()) as { email?: string }).email ?? ''
+      );
     } catch {
       return '';
     }
@@ -238,11 +242,13 @@ export class AdminsFormComponent implements OnInit {
     // Si el administrador se edita A SÍ MISMO, cambiar el email o la contraseña exige confirmar con la
     // contraseña actual (el servidor lo pide). Editar a otro administrador no la necesita.
     const editingOwnAccount =
-      this.isEditMode() && this.adminId() === this.authService.currentUser()?.id;
+      this.isEditMode() &&
+      this.adminId() === this.authService.currentUser()?.id;
     const currentPassword = await this.currentPasswordService.requestIfNeeded({
       editingOwnAccount,
       changesEmail:
-        (formValue.email ?? '').trim().toLowerCase() !== this.originalEmail.trim().toLowerCase(),
+        (formValue.email ?? '').trim().toLowerCase() !==
+        this.originalEmail.trim().toLowerCase(),
       changesPassword: !!formValue.password,
     });
     if (currentPassword === null) return; // la persona canceló: no se guarda nada
@@ -287,18 +293,23 @@ export class AdminsFormComponent implements OnInit {
         // un 401 y mostrarían "Tu sesión ya no es válida" tras un cambio que salió bien.
         switchMap((res: any) => {
           if (!(editingOwnAccount && formValue.password)) return of(res);
-          return this.authService.renewSessionAfterPasswordChange(formValue.username!, formValue.password).pipe(
-            switchMap((sesionVigente) => {
-              if (sesionVigente) return of(res);
-              // No se pudo renovar: el servicio ya cerró la sesión y llevó al login
-              this.alertService.toast(
-                'Cambiaste tu contraseña',
-                'info',
-                'Por seguridad, ingresá de nuevo con la contraseña nueva.',
-              );
-              return EMPTY;
-            }),
-          );
+          return this.authService
+            .renewSessionAfterPasswordChange(
+              formValue.username!,
+              formValue.password,
+            )
+            .pipe(
+              switchMap((sesionVigente) => {
+                if (sesionVigente) return of(res);
+                // No se pudo renovar: el servicio ya cerró la sesión y llevó al login
+                this.alertService.toast(
+                  'Cambiaste tu contraseña',
+                  'info',
+                  'Por seguridad, ingresá de nuevo con la contraseña nueva.',
+                );
+                return EMPTY;
+              }),
+            );
         }),
         switchMap((res: any) => {
           const userId = this.isEditMode()
@@ -321,6 +332,7 @@ export class AdminsFormComponent implements OnInit {
       )
       .subscribe({
         next: (photoResponse: any) => {
+          this.invalidateAdmins();
           this.alertService.toast('Guardado exitosamente', 'success');
           // --- Logica para actualizar el token en caso de que sea un edit del mismo usuario que esta logeado
           const currentUserId = this.authService.currentUser()?.id;

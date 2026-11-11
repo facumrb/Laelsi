@@ -2,14 +2,11 @@ import {
   Component,
   computed,
   inject,
-  OnInit,
+  linkedSignal,
   signal,
-  effect,
-  untracked,
 } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { IApiAdmin, UserStateFilter } from '@models/user.model';
-import { ApiAdminService } from '@services/api-services/api-admin.service';
 import { AlertService } from '@services/alert.service';
 import { AdminsListComponent } from './admins-list/admins-list.component';
 import { AdminsToolbarComponent } from './admins-toolbar/admins-toolbar.component';
@@ -17,6 +14,10 @@ import { PaginationComponent } from '@shared/components/pagination/pagination.co
 import { ConfirmDeleteModalComponent } from '@admin/components/confirm-delete-modal/confirm-delete-modal.component';
 import { AdminSelfDeleteBlockedModalComponent } from './admins-list/components/admin-self-delete-blocked-modal/admin-self-delete-blocked-modal.component';
 import { AuthService } from '@services/auth.service';
+import {
+  injectAllAdminsQuery,
+  injectSetAdminStateMutation,
+} from '@services/queries/admin-queries';
 
 @Component({
   selector: 'app-admins-page',
@@ -29,78 +30,47 @@ import { AuthService } from '@services/auth.service';
   ],
   templateUrl: './admins-page.component.html',
 })
-export class AdminsPageComponent implements OnInit {
+export class AdminsPageComponent {
   private alertService = inject(AlertService);
-  private apiService = inject(ApiAdminService);
   private authService = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
-  private adminsRaw = signal<IApiAdmin[]>([]);
-  currentPage = signal<number>(1);
-  totalPages = signal<number>(1);
   adminToDelete = signal<IApiAdmin | null>(null);
   showSelfDeleteBlockedModal = signal<boolean>(false);
 
   searchQuery = signal<string>('');
   stateFilter = signal<UserStateFilter>('Todos');
 
+  // Al cambiar un filtro se vuelve a la página 1; la primera vez se toma la página de la URL.
+  // La página forma parte de la queryKey, así que TanStack Query pide los datos solo.
+  currentPage = linkedSignal<unknown, number>({
+    source: () => [this.searchQuery(), this.stateFilter()],
+    computation: (_filters, previous) =>
+      previous ? 1 : Number(this.route.snapshot.queryParamMap.get('page')) || 1,
+  });
+
+  private activeFilters = computed(() => ({
+    query: this.searchQuery(),
+    state: this.stateFilter(),
+    page: this.currentPage(),
+    limit: 16,
+  }));
+
+  private adminsQuery = injectAllAdminsQuery(this.activeFilters);
+  private setStateMutation = injectSetAdminStateMutation();
+
+  // Solo es true cuando no hay ningún dato que mostrar: con datos anteriores en caché se siguen viendo
+  loading = computed(() => this.adminsQuery.isPending());
+  totalPages = computed(() => this.adminsQuery.data()?.totalPages ?? 1);
+
   filtersActive = computed(
     () => this.searchQuery().length > 0 || this.stateFilter() !== 'Todos',
   );
 
-  adminsFiltered = computed(() => {
-    // El filtrado fuerte (búsqueda y estado) se hace en el server.
-    return [...this.adminsRaw()].sort((a, b) => a.id - b.id);
-  });
-
-  constructor() {
-    // Reacciona SOLO cuando el usuario cambia la búsqueda o el filtro de estado.
-    // Resetea a página 1 y recarga, sin crear loops.
-    effect(() => {
-      this.searchQuery(); // trackea cambios de búsqueda
-      this.stateFilter(); // trackea cambios del filtro de estado
-      untracked(() => {
-        // Evitamos actuar en la primera ejecución (ngOnInit se encarga). Antes la bandera se activaba al final de
-        // ngOnInit, o sea ANTES de que corriera el efecto, y la lista se pedía dos veces al abrir la página.
-        if (this.efectoYaCorrio) {
-          this.currentPage.set(1);
-          this.loadAdmins();
-        }
-        this.efectoYaCorrio = true;
-      });
-    });
-  }
-
-  private efectoYaCorrio = false;
-
-  ngOnInit() {
-    // Leer la página de la URL al entrar
-    const pageParam = this.route.snapshot.queryParamMap.get('page');
-    this.currentPage.set(Number(pageParam) || 1);
-    this.loadAdmins();
-  }
-
-  loadAdmins() {
-    const query = this.searchQuery().trim();
-    const state = this.stateFilter();
-
-    if (query) {
-      this.apiService.searchAdmins(query, this.currentPage(), 16, state).subscribe({
-        next: (data) => {
-          this.adminsRaw.set(data.data);
-          this.totalPages.set(data.totalPages);
-        },
-      });
-    } else {
-      this.apiService.getAllAdmins(this.currentPage(), 16, state).subscribe({
-        next: (data) => {
-          this.adminsRaw.set(data.data);
-          this.totalPages.set(data.totalPages);
-        },
-      });
-    }
-  }
+  adminsFiltered = computed(() =>
+    [...(this.adminsQuery.data()?.data ?? [])].sort((a, b) => a.id - b.id),
+  );
 
   onPageChange(page: number) {
     this.currentPage.set(page);
@@ -109,7 +79,6 @@ export class AdminsPageComponent implements OnInit {
       queryParams: { page },
       queryParamsHandling: 'merge',
     });
-    this.loadAdmins();
   }
 
   handleNavigateToCreate() {
@@ -133,27 +102,30 @@ export class AdminsPageComponent implements OnInit {
     this.adminToDelete.set(admin);
   }
 
-  // ID 65 de docs/requerimientos/discusiones.md: no se elimina a ningún administrador, solo se lo desactiva.
+  // La mutación invalida la caché: la lista se vuelve a pedir y la paginación se recalcula.
   confirmDeactivateAdmin() {
     const admin = this.adminToDelete();
     if (!admin) return;
 
-    this.apiService.setAdminState(admin.id, 'Inactivo').subscribe({
-      next: () => {
-        this.alertService.toast('Administrador desactivado', 'success');
-        this.adminToDelete.set(null);
-        // Recargamos desde el servidor para que la paginación y el filtro de estado se recalculen
-        this.loadAdmins();
+    this.setStateMutation.mutate(
+      { id: admin.id, state: 'Inactivo' },
+      {
+        onSuccess: () => {
+          this.alertService.toast('Administrador desactivado', 'success');
+          this.adminToDelete.set(null);
+        },
       },
-    });
+    );
   }
 
   reactivateAdmin(admin: IApiAdmin) {
-    this.apiService.setAdminState(admin.id, 'Activo').subscribe({
-      next: () => {
-        this.alertService.toast('Administrador reactivado', 'success');
-        this.loadAdmins();
+    this.setStateMutation.mutate(
+      { id: admin.id, state: 'Activo' },
+      {
+        onSuccess: () => {
+          this.alertService.toast('Administrador reactivado', 'success');
+        },
       },
-    });
+    );
   }
 }

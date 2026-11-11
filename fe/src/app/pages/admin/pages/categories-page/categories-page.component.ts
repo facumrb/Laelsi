@@ -15,6 +15,7 @@ import {
   injectDeleteCategoryMutation,
 } from '@services/queries/category-queries';
 import { injectInvalidateCatalog } from '@services/queries/catalog-cache';
+import { productosDelSubarbol } from '@shared/utils/category-tree';
 import { ConfirmDeleteModalComponent } from '@admin/components/confirm-delete-modal/confirm-delete-modal.component';
 import { CategoryDeleteBlockedModalComponent } from './categories-list/category-delete-blocked-modal/category-delete-blocked-modal.component';
 
@@ -47,6 +48,11 @@ export class CategoriesPageComponent {
 
   // Listado plano de todas las categorías (cada una con su padre y sus productos asociados)
   private categoriesRaw = computed(() => this.categoriesQuery.data() ?? []);
+  loading = computed(() => this.categoriesQuery.isPending());
+
+  // Productos de cada categoría sumando los de sus descendientes. Se calcula sobre la lista sin
+  // filtrar: con una búsqueda activa, una madre sigue contando a las hijas que no coinciden.
+  subtreeProducts = computed(() => productosDelSubarbol(this.categoriesRaw()));
 
   filtersActive = computed(() => {
     return (
@@ -62,6 +68,8 @@ export class CategoriesPageComponent {
     const query = this.searchQuery().toLowerCase().trim();
     const status = this.statusFilter();
     const stockType = this.stockFilter();
+    const subtree = this.subtreeProducts();
+    const productCount = (c: IApiCategory) => subtree.get(c.id)?.length ?? 0;
 
     // Helper para obtener parentId de forma consistente
     const getParentId = (c: IApiCategory): number | null =>
@@ -77,8 +85,8 @@ export class CategoriesPageComponent {
       // Filtro de Estado
       const matchesStatus = status === 'Todos' || cat.state === status;
 
-      // Filtro de Cantidad de Productos asociados
-      const cant = cat.products?.length || 0;
+      // Filtro de Cantidad de Productos asociados (propios y de sus subcategorías)
+      const cant = productCount(cat);
       let matchesStock = true;
       if (stockType === 'ConProductos') matchesStock = cant > 0;
       if (stockType === 'SinProductos') matchesStock = cant === 0;
@@ -89,14 +97,10 @@ export class CategoriesPageComponent {
     // Ordenamiento
     if (stockType === 'MasProductos') {
       // Ordenar de Mayor a Menor
-      filtered = filtered.sort(
-        (a, b) => (b.products?.length || 0) - (a.products?.length || 0),
-      );
+      filtered = filtered.sort((a, b) => productCount(b) - productCount(a));
     } else if (stockType === 'MenosProductos') {
       // Ordenar de Menor a Mayor
-      filtered = filtered.sort(
-        (a, b) => (a.products?.length || 0) - (b.products?.length || 0),
-      );
+      filtered = filtered.sort((a, b) => productCount(a) - productCount(b));
     } else {
       // ORDENAMIENTO JERÁRQUICO (POR DEFECTO)
       // Si hay filtros activos (búsqueda), no podemos mantener la jerarquía estricta,

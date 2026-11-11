@@ -86,6 +86,7 @@ export class ProductsPageComponent {
 
   private productsRaw = computed(() => this.productsQuery.data()?.data ?? []);
   totalPages = computed(() => this.productsQuery.data()?.totalPages ?? 1);
+  loading = computed(() => this.productsQuery.isPending());
 
   availableCategories = computed<IApiCategory[]>(
     () => this.categoriesQuery.data() ?? [],
@@ -158,7 +159,6 @@ export class ProductsPageComponent {
     );
   }
 
-  // Pausar: la ficha se sigue viendo en la tienda como "no disponible por ahora" (ID 54)
   confirmPauseProduct() {
     const product = this.productToDelete();
     if (!product) return;

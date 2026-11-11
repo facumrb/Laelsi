@@ -21,14 +21,10 @@
       <meta itemprop="position" content="1" />
     </li>
 
-    @for (
-      step of steps();
-      track $index;
-      let i = $index;
-      let isLast = $last
-    ) {
+    @for (step of steps(); track $index; let i = $index) {
       <li
         class="breadcrumb-item"
+        [class.hidden]="isHidden(i)"
         itemprop="itemListElement"
         itemscope
         itemtype="https://schema.org/ListItem"
@@ -39,8 +35,12 @@
             class="breadcrumb-separator"
             aria-hidden="true"
           ></ng-icon>
-          @if (step.url && !isLast) {
-            <a [routerLink]="step.url" class="breadcrumb-link ml-1" itemprop="item">
+          @if (step.url) {
+            <a
+              [routerLink]="step.url"
+              class="breadcrumb-link ml-1"
+              itemprop="item"
+            >
               <span itemprop="name">{{ step.label }}</span>
             </a>
           } @else {
@@ -55,6 +55,18 @@
           <meta itemprop="position" [content]="i + 2" />
         </div>
       </li>
+
+      @if (i === 0 && isCollapsed()) {
+        <li class="breadcrumb-item" aria-hidden="true">
+          <div class="flex items-center">
+            <ng-icon
+              name="bootstrapChevronRight"
+              class="breadcrumb-separator"
+            ></ng-icon>
+            <span class="breadcrumb-ellipsis">…</span>
+          </div>
+        </li>
+      }
     }
   </ol>
 </nav>

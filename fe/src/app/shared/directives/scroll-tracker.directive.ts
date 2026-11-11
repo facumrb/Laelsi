@@ -5,9 +5,12 @@ import {
   signal,
   inject,
   AfterViewInit,
+  DestroyRef,
 } from '@angular/core';
 
 // Directiva utilizada para los botones < y > de los carruseles
+
+const RESPALDO_FIN_DESPLAZAMIENTO_MS = 1000;
 
 @Directive({
   selector: '[appScrollTracker]',
@@ -20,24 +23,27 @@ export class ScrollTrackerDirective implements AfterViewInit {
   atEnd = signal(false);
 
   private suspendTracking = false;
+  private respaldo?: ReturnType<typeof setTimeout>;
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => clearTimeout(this.respaldo));
+  }
 
   ngAfterViewInit() {
     // Timeout para asegurar que el contenido dentro del carrusel ya ha sido pintado
     setTimeout(() => this.checkScroll(), 0);
   }
 
-  // Método para forzar estado desde botones (prediccción instantánea)
+  // Los botones fijan el estado al momento del clic (predicción del destino). Mientras dura el desplazamiento
+  // suave se ignoran los eventos 'scroll' intermedios, que reactivarían la flecha a mitad de camino; la posición
+  // real se vuelve a leer en 'scrollend', o con el respaldo si el navegador no lo emite o no hubo desplazamiento.
   forceState(isAtStart: boolean, isAtEnd: boolean) {
     this.atStart.set(isAtStart);
     this.atEnd.set(isAtEnd);
 
-    // Suspendemos la re-evaluación por 600ms para evitar que los eventos 'scroll'
-    // intermedios del native smooth scrolling nos pisen el estado final esperado.
     this.suspendTracking = true;
-    setTimeout(() => {
-      this.suspendTracking = false;
-      this.checkScroll(); // Chequeamos posición real final
-    }, 200);
+    clearTimeout(this.respaldo);
+    this.respaldo = setTimeout(() => this.finishForced(), RESPALDO_FIN_DESPLAZAMIENTO_MS);
   }
 
   @HostListener('scroll')
@@ -45,8 +51,19 @@ export class ScrollTrackerDirective implements AfterViewInit {
     this.checkScroll();
   }
 
+  @HostListener('scrollend')
+  onScrollEnd() {
+    this.finishForced();
+  }
+
   @HostListener('window:resize')
   onResize() {
+    this.checkScroll();
+  }
+
+  private finishForced() {
+    clearTimeout(this.respaldo);
+    this.suspendTracking = false;
     this.checkScroll();
   }
 

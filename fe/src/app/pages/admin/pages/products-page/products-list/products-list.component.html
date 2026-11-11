@@ -43,7 +43,7 @@
         </tr>
       </thead>
 
-      <tbody class="admin-table-body">
+      <tbody class="admin-table-body" [attr.aria-busy]="loading()">
         <!-- Este checkbox en el global para la CARD -->
         <tr
           class="flex items-center bg-white border border-gray-200 shadow-sm rounded-lg mb-4 px-4 py-3 lg:hidden"
@@ -66,47 +66,24 @@
           </span>
         </tr>
 
-        @for (product of products(); track product.id; let isLast = $last) {
-          <!-- Este checkbox es para la version de Listado -->
-          <tr
-            class="admin-table-row"
-            [class.bg-indigo-50]="isSelected(product.id)"
-            [class.lg:bg-indigo-50]="isSelected(product.id)"
-          >
-            <td
-              class="hidden lg:table-cell lg:px-6 lg:py-4 lg:border-b lg:border-gray-100 lg:align-middle"
-              [class.lg:rounded-bl-lg]="isLast"
-              [class.lg:border-b-0]="isLast"
+        @if (loading()) {
+          @for (row of skeletonRows; track row) {
+            <tr app-table-skeleton [columns]="7"></tr>
+          }
+        } @else {
+          @for (product of products(); track product.id; let isLast = $last) {
+            <!-- Este checkbox es para la version de Listado -->
+            <tr
+              class="admin-table-row"
+              [class.bg-indigo-50]="isSelected(product.id)"
+              [class.lg:bg-indigo-50]="isSelected(product.id)"
             >
-              <div class="relative flex items-center justify-center shrink-0">
-                <input
-                  type="checkbox"
-                  [attr.aria-label]="'Seleccionar ' + product.name"
-                  class="peer appearance-none w-5 h-5 shrink-0 border-2 border-gray-300 rounded cursor-pointer transition-all checked:border-black checked:bg-transparent"
-                  [checked]="isSelected(product.id)"
-                  (change)="toggleSelect(product.id)"
-                />
-                <ng-icon
-                  name="bootstrapCheck"
-                  class="absolute text-black text-base pointer-events-none opacity-0 peer-checked:opacity-100"
-                ></ng-icon>
-              </div>
-            </td>
-
-            <!-- Este Estado es para la version CARD -->
-            <td
-              class="col-span-2 lg:col-span-1 min-w-0 flex flex-col p-0 border-b border-gray-50 lg:border-b lg:border-gray-100 lg:pl-1 lg:pr-6 lg:py-4 lg:table-cell lg:align-middle"
-              [class.lg:border-b-0]="isLast"
-            >
-              <div class="flex justify-end w-full px-2 pt-2 pb-0 lg:hidden">
-                <app-entity-state-badge [state]="product.state" mode="card" />
-              </div>
-
-              <!-- Este Checkbox es para la version CARD -->
-              <div class="flex items-center gap-4 px-4 pb-4 pt-0 lg:p-0">
-                <div
-                  class="relative flex items-center justify-center shrink-0 lg:hidden"
-                >
+              <td
+                class="hidden lg:table-cell lg:px-6 lg:py-4 lg:border-b lg:border-gray-100 lg:align-middle"
+                [class.lg:rounded-bl-lg]="isLast"
+                [class.lg:border-b-0]="isLast"
+              >
+                <div class="relative flex items-center justify-center shrink-0">
                   <input
                     type="checkbox"
                     [attr.aria-label]="'Seleccionar ' + product.name"
@@ -116,126 +93,166 @@
                   />
                   <ng-icon
                     name="bootstrapCheck"
-                    class="absolute text-black text-sm pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity duration-200"
+                    class="absolute text-black text-base pointer-events-none opacity-0 peer-checked:opacity-100"
                   ></ng-icon>
                 </div>
-                <div class="lg:pl-1">
-                  <div class="relative h-12 w-12 shrink-0">
-                    <app-product-image
-                      [imageUrl]="
-                        product.photos && product.photos.length > 0
-                          ? product.photos[0].fileName
-                          : null
-                      "
-                      altText=""
-                      [containerClass]="
-                        'h-full w-full ' +
-                        (isSelected(product.id) ? 'bg-indigo-50' : 'bg-gray-50')
-                      "
-                      imageClass="rounded-lg border border-gray-200"
-                    />
+              </td>
+
+              <!-- En la card, esta celda también lleva el checkbox y el estado -->
+              <td
+                class="col-span-2 lg:col-span-1 min-w-0 flex flex-col gap-2 px-5 pt-3.5 pb-2 border-b border-gray-50 lg:border-b lg:border-gray-100 lg:pl-1 lg:pr-6 lg:py-4 lg:table-cell lg:align-middle"
+                [class.lg:border-b-0]="isLast"
+              >
+                <div class="flex items-center justify-between gap-3 lg:hidden">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <span
+                      class="relative flex items-center justify-center shrink-0"
+                    >
+                      <input
+                        type="checkbox"
+                        [attr.aria-label]="'Seleccionar ' + product.name"
+                        class="peer appearance-none w-5 h-5 shrink-0 border-2 border-gray-300 rounded cursor-pointer transition-all checked:border-black checked:bg-transparent"
+                        [checked]="isSelected(product.id)"
+                        (change)="toggleSelect(product.id)"
+                      />
+                      <ng-icon
+                        name="bootstrapCheck"
+                        class="absolute text-black text-sm pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity duration-200"
+                      ></ng-icon>
+                    </span>
+                    <span class="admin-table-mobile-label">Producto</span>
+                  </label>
+                  <app-entity-state-badge [state]="product.state" mode="card" />
+                </div>
+
+                <div class="flex items-center gap-4">
+                  <div class="lg:pl-1">
+                    <div class="relative h-12 w-12 shrink-0">
+                      <app-product-image
+                        [imageUrl]="
+                          product.photos && product.photos.length > 0
+                            ? product.photos[0].fileName
+                            : null
+                        "
+                        altText=""
+                        [containerClass]="
+                          'h-full w-full ' +
+                          (isSelected(product.id)
+                            ? 'bg-indigo-50'
+                            : 'bg-gray-50')
+                        "
+                        imageClass="rounded-lg border border-gray-200"
+                      />
+                    </div>
+                  </div>
+
+                  <div
+                    appActivable
+                    (click)="onEdit.emit(product)"
+                    class="font-semibold text-gray-900 text-base lg:text-sm cursor-pointer hover:underline line-clamp-2 wrap-break-word lg:line-clamp-none lg:truncate"
+                    title="{{ product.name }}"
+                  >
+                    {{ product.name }}
                   </div>
                 </div>
+              </td>
 
-                <div
-                  appActivable
-                  (click)="onEdit.emit(product)"
-                  class="font-semibold text-gray-900 text-base lg:text-sm cursor-pointer hover:underline line-clamp-2 wrap-break-word lg:line-clamp-none lg:truncate"
-                  title="{{ product.name }}"
+              <td
+                class="admin-table-cell py-1.5 lg:py-4 max-sm:col-span-2"
+                [class.lg:border-b-0]="isLast"
+              >
+                <span class="admin-table-mobile-label block mb-1"
+                  >Categoría:</span
                 >
-                  {{ product.name }}
+                <div class="text-gray-600 line-clamp-2 text-sm">
+                  {{ product.category.name }}
                 </div>
-              </div>
-            </td>
+              </td>
 
-            <td class="admin-table-cell max-sm:col-span-2" [class.lg:border-b-0]="isLast">
-              <span class="admin-table-mobile-label block mb-1"
-                >Categoría:</span
+              <td
+                class="col-span-1 min-w-0 px-5 py-1.5 border-b border-gray-50 lg:border-b lg:border-gray-100 lg:pl-10 lg:pr-6 lg:py-4 lg:table-cell lg:align-middle lg:text-left"
+                [class.lg:border-b-0]="isLast"
               >
-              <div class="text-gray-600 line-clamp-2 text-sm">
-                {{ product.category.name }}
-              </div>
-            </td>
-
-            <td
-              class="col-span-1 min-w-0 px-5 py-2 border-b border-gray-50 lg:border-b lg:border-gray-100 lg:pl-10 lg:pr-6 lg:py-4 lg:table-cell lg:align-middle lg:text-left"
-              [class.lg:border-b-0]="isLast"
-            >
-              <div class="flex flex-col items-start gap-1 lg:flex-row lg:items-center lg:gap-2">
-                <span class="admin-table-mobile-label">Precio:</span>
-                <span class="text-gray-900 font-semibold">
-                  {{
-                    getProductPrice(product)
-                      | currency
-                        : getProductCurrency(product)
-                        : "symbol"
-                        : "1.0-0"
-                  }}
-                </span>
-              </div>
-            </td>
-
-            <td
-              class="admin-table-cell lg:text-center"
-              [class.lg:border-b-0]="isLast"
-            >
-              <div
-                class="flex flex-col items-start gap-1 lg:flex-row lg:items-center lg:justify-center lg:gap-2"
-              >
-                <span class="admin-table-mobile-label">Stock:</span>
-                <span
-                  class="px-2.5 lg:px-0 lg:w-28 shrink-0 h-7 inline-flex items-center justify-center rounded-md text-xs font-medium border whitespace-nowrap"
-                  [class.bg-red-50]="product.stock === 0"
-                  [class.text-red-700]="product.stock === 0"
-                  [class.border-red-200]="product.stock === 0"
-                  [class.bg-amber-50]="product.stock > 0 && product.stock <= 10"
-                  [class.text-amber-700]="
-                    product.stock > 0 && product.stock <= 10
-                  "
-                  [class.border-amber-200]="
-                    product.stock > 0 && product.stock <= 10
-                  "
-                  [class.bg-gray-50]="product.stock > 10"
-                  [class.text-gray-600]="product.stock > 10"
-                  [class.border-gray-200]="product.stock > 10"
+                <div
+                  class="flex flex-col items-start gap-1 lg:flex-row lg:items-center lg:gap-2"
                 >
-                  {{ product.stock }} unidades
-                </span>
-              </div>
-            </td>
+                  <span class="admin-table-mobile-label">Precio:</span>
+                  <span class="text-gray-900 font-semibold">
+                    {{
+                      getProductPrice(product)
+                        | currency
+                          : getProductCurrency(product)
+                          : "symbol"
+                          : "1.0-0"
+                    }}
+                  </span>
+                </div>
+              </td>
 
-            <!-- Este Estado es para la version de Listado -->
-            <td
-              class="hidden lg:table-cell px-6 py-4 border-b border-gray-100 align-middle text-center"
-              [class.lg:border-b-0]="isLast"
-            >
-              <app-entity-state-badge [state]="product.state" mode="table" />
-            </td>
-
-            <td
-              class="admin-table-cell-last sm:col-span-1"
-              [class.lg:rounded-br-lg]="isLast"
-              [class.lg:border-b-0]="isLast"
-            >
-              <div
-                class="flex items-center justify-start lg:justify-center gap-2 sm:max-lg:flex-col sm:max-lg:items-start sm:max-lg:gap-1"
+              <td
+                class="admin-table-cell py-1.5 lg:py-4 lg:text-center"
+                [class.lg:border-b-0]="isLast"
               >
-                <span class="admin-table-mobile-label">Acciones:</span>
-                <app-table-actions
-                  [item]="product"
-                  (onEdit)="onEdit.emit($event)"
-                  (onDelete)="onDelete.emit($event)"
-                />
-              </div>
-            </td>
-          </tr>
-        } @empty {
-          <tr
-            app-table-empty-state
-            [colspan]="7"
-            [isFilterActive]="isFilterActive()"
-            emptyMessage="Sin productos cargados"
-          ></tr>
+                <div
+                  class="flex flex-col items-start gap-1 lg:flex-row lg:items-center lg:justify-center lg:gap-2"
+                >
+                  <span class="admin-table-mobile-label">Stock:</span>
+                  <span
+                    class="px-2.5 lg:px-0 lg:w-26 shrink-0 h-7 inline-flex items-center justify-center rounded-md text-xs font-medium border whitespace-nowrap"
+                    [class.bg-red-50]="product.stock === 0"
+                    [class.text-red-700]="product.stock === 0"
+                    [class.border-red-200]="product.stock === 0"
+                    [class.bg-amber-50]="
+                      product.stock > 0 && product.stock <= 10
+                    "
+                    [class.text-amber-700]="
+                      product.stock > 0 && product.stock <= 10
+                    "
+                    [class.border-amber-200]="
+                      product.stock > 0 && product.stock <= 10
+                    "
+                    [class.bg-gray-50]="product.stock > 10"
+                    [class.text-gray-600]="product.stock > 10"
+                    [class.border-gray-200]="product.stock > 10"
+                  >
+                    {{ product.stock }} unidades
+                  </span>
+                </div>
+              </td>
+
+              <!-- Este Estado es para la version de Listado -->
+              <td
+                class="hidden lg:table-cell px-6 py-4 border-b border-gray-100 align-middle text-center"
+                [class.lg:border-b-0]="isLast"
+              >
+                <app-entity-state-badge [state]="product.state" mode="table" />
+              </td>
+
+              <td
+                class="admin-table-cell-last pt-2 pb-3 lg:py-4 sm:col-span-1"
+                [class.lg:rounded-br-lg]="isLast"
+                [class.lg:border-b-0]="isLast"
+              >
+                <div
+                  class="flex items-center justify-start lg:justify-center gap-2 sm:max-lg:flex-col sm:max-lg:items-start sm:max-lg:gap-1"
+                >
+                  <span class="admin-table-mobile-label">Acciones:</span>
+                  <app-table-actions
+                    [item]="product"
+                    (onEdit)="onEdit.emit($event)"
+                    (onDelete)="onDelete.emit($event)"
+                  />
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr
+              app-table-empty-state
+              [colspan]="7"
+              [isFilterActive]="isFilterActive()"
+              emptyMessage="Sin productos cargados"
+            ></tr>
+          }
         }
       </tbody>
     </table>

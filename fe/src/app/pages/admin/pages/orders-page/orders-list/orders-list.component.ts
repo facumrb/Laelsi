@@ -14,6 +14,10 @@ import {
 } from '@ng-icons/bootstrap-icons';
 
 import { TableEmptyStateComponent } from '@admin/components/table-components/table-empty-state/table-empty-state.component';
+import {
+  SKELETON_ROWS,
+  TableSkeletonComponent,
+} from '@admin/components/table-components/table-skeleton/table-skeleton.component';
 import { NombrePersonaPipe } from '@shared/pipes/nombre-persona.pipe';
 import { ActivableDirective } from '@shared/directives/activable.directive';
 
@@ -25,6 +29,7 @@ import { ActivableDirective } from '@shared/directives/activable.directive';
     NgIconComponent,
     RouterLink,
     TableEmptyStateComponent,
+    TableSkeletonComponent,
     NombrePersonaPipe,
   ],
   viewProviders: provideIcons({
@@ -41,6 +46,10 @@ import { ActivableDirective } from '@shared/directives/activable.directive';
 export class OrdersListComponent {
   orders = input.required<IApiOrder[]>();
   isFilterActive = input<boolean>(false);
+
+  // true mientras la página todavía no tiene datos que mostrar
+  loading = input<boolean>(false);
+  protected skeletonRows = SKELETON_ROWS;
 
   onUpdateStatus = output<{ id: number; status: OrderState }>();
   onUpdateDelivery = output<{ id: number; method: DeliveryMethod }>();

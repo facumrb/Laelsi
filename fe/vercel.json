@@ -22,6 +22,15 @@
       ]
     },
     {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Link",
+          "value": "<assets/Webp/Logo.webp>; rel=preload; as=image; imagesrcset=\"assets/Webp/Logo-500.webp 500w, assets/Webp/Logo.webp 996w\"; imagesizes=240px"
+        }
+      ]
+    },
+    {
       "source": "/(index.csr.html|ngsw.json|ngsw-worker.js)",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache" }

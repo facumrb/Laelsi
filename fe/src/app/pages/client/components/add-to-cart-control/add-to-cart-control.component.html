@@ -1,22 +1,30 @@
-<div
-  class="elsi-add-to-cart-container"
-  [class.full-width]="layout() === 'full'"
->
+<div class="elsi-add-to-cart-container">
   @if (currentQuantity() === 0) {
     <!-- Boton de agregar inicial -->
     <button
       (click)="addInitial($event)"
       [disabled]="product().stock <= 0 || !canBuy()"
-      [attr.aria-label]="canBuy() ? 'Añadir al carrito' : 'No disponible por ahora'"
+      [attr.aria-label]="
+        canBuy() ? 'Sumar al carrito' : 'No disponible por ahora'
+      "
       class="elsi-add-initial-btn"
       [class.btn-full]="layout() === 'full'"
+      [class.@container]="layout() === 'compact'"
     >
       @if (layout() === "compact") {
-        <ng-icon name="bootstrapPlusLg" class="text-base sm:text-xl"></ng-icon>
+        @if (canBuy()) {
+          <span class="hidden @min-[8.5rem]:inline">Sumar al carrito</span>
+          <span class="flex items-center gap-1.5 @min-[8.5rem]:hidden">
+            <ng-icon name="bootstrapCart3" class="text-sm"></ng-icon>
+            Sumar
+          </span>
+        } @else {
+          No disponible
+        }
       } @else {
         <span class="flex items-center gap-2">
           <ng-icon name="bootstrapPlusLg" class="text-lg"></ng-icon>
-          {{ canBuy() ? "AÑADIR AL CARRITO" : "NO DISPONIBLE POR AHORA" }}
+          {{ canBuy() ? "SUMAR AL CARRITO" : "NO DISPONIBLE POR AHORA" }}
         </span>
       }
     </button>

@@ -10,6 +10,7 @@
     class="mt-6 block"
     [orders]="ordersFiltered()"
     [isFilterActive]="filtersActive()"
+    [loading]="loading()"
     (onUpdateStatus)="handleUpdateStatus($event)"
     (onUpdateDelivery)="handleUpdateDelivery($event)"
     (onCancel)="handleCancel($event)"

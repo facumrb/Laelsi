@@ -97,6 +97,9 @@ export class CategoryPageComponent implements OnInit {
     };
 
     buildPath(cat);
+
+    // La categoría actual es la página en la que estamos: va sin link
+    steps[steps.length - 1] = { label: cat.name };
     return steps;
   });
 

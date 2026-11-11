@@ -7,8 +7,6 @@ import {
 } from '@shared/components/filter-accordion/filter-accordion.component';
 import { UserStateFilter } from '@models/user.model';
 
-// Botón "Filtros" de la pestaña de Administradores: filtra entre activos e inactivos
-// (ID 65 de docs/requerimientos/discusiones.md)
 @Component({
   selector: 'app-admins-filter-button',
   imports: [

@@ -7,6 +7,10 @@ import { ProductImageComponent } from '@shared/components/product-image/product-
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { bootstrapCheck } from '@ng-icons/bootstrap-icons';
 import { TableEmptyStateComponent } from '@admin/components/table-components/table-empty-state/table-empty-state.component';
+import {
+  SKELETON_ROWS,
+  TableSkeletonComponent,
+} from '@admin/components/table-components/table-skeleton/table-skeleton.component';
 import { ActivableDirective } from '@shared/directives/activable.directive';
 
 @Component({
@@ -17,6 +21,7 @@ import { ActivableDirective } from '@shared/directives/activable.directive';
     TableActionsComponent,
     NgIconComponent,
     TableEmptyStateComponent,
+    TableSkeletonComponent,
     EntityStateBadgeComponent,
     ProductImageComponent,
   ],
@@ -30,6 +35,10 @@ export class ProductsListComponent {
   onEdit = output<IApiProduct>();
   onDelete = output<IApiProduct>();
   isFilterActive = input<boolean>(false);
+
+  // true mientras la página todavía no tiene datos que mostrar
+  loading = input<boolean>(false);
+  protected skeletonRows = SKELETON_ROWS;
 
   selectedIds = model<number[]>([]);
 
