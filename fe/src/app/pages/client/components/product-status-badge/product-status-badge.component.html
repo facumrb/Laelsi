@@ -82,34 +82,3 @@
     }
   }
 }
-
-<!-- 3. STOCK DISPONIBLE -->
-@else if (showStock() && productStock() > 0) {
-  @switch (mode()) {
-    @case ("banner") {
-      <div
-        class="flex items-center justify-center transition-all duration-300 w-full py-3 px-4 rounded-xl border border-green-200 bg-green-50 text-sm font-bold text-green-700"
-      >
-        <span class="font-bold">Stock Disponible:&nbsp;</span>
-        {{ productStock() }} unidades.
-      </div>
-    }
-    @case ("overlay") {
-      <div
-        class="flex items-center justify-center transition-all duration-300 px-4 py-1.5 rounded-md shadow-sm border border-green-200 bg-green-50 text-xs font-bold tracking-widest text-green-700"
-      >
-        <span class="font-bold">Stock Disponible:&nbsp;</span>
-        {{ productStock() }} unidades.
-      </div>
-    }
-    @default {
-      <!-- badge -->
-      <div
-        class="flex items-center justify-center transition-all duration-300 px-2.5 py-1 rounded-lg border border-green-200 bg-green-50 text-xs font-black text-green-700"
-      >
-        <span class="font-bold">Stock Disponible:&nbsp;</span>
-        {{ productStock() }} unidades.
-      </div>
-    }
-  }
-}

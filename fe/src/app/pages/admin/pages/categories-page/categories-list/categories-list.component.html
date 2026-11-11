@@ -17,189 +17,204 @@
         </tr>
       </thead>
 
-      <tbody class="admin-table-body">
-        @for (
-          category of visibleCategories();
-          track category.id;
-          let isLast = $last
-        ) {
-          <tr class="admin-table-row animate-fadeIn">
-            <td
-              class="admin-table-cell-first relative px-5 py-2 border-b border-gray-50 lg:border-b lg:border-gray-100 lg:px-6 lg:py-2 lg:table-cell lg:align-middle"
-              [class.lg:border-b-0]="isLast"
-              [class.lg:rounded-bl-lg]="isLast"
-            >
-              <div
-                class="absolute top-2 right-2 flex items-center gap-1.5 lg:hidden"
+      <tbody class="admin-table-body" [attr.aria-busy]="loading()">
+        @if (loading()) {
+          @for (row of skeletonRows; track row) {
+            <tr app-table-skeleton [columns]="6"></tr>
+          }
+        } @else {
+          @for (
+            category of visibleCategories();
+            track category.id;
+            let isLast = $last
+          ) {
+            <tr class="admin-table-row animate-fadeIn">
+              <td
+                class="admin-table-cell-first relative px-5 pt-3.5 pb-2 border-b border-gray-50 lg:border-b lg:border-gray-100 lg:px-6 lg:py-2 lg:table-cell lg:align-middle"
+                [class.lg:border-b-0]="isLast"
+                [class.lg:rounded-bl-lg]="isLast"
               >
-                <app-entity-state-badge [state]="category.state" mode="card" />
-                @if (!isFilterActive() && hasChildren(category.id)) {
-                  <button
-                    type="button"
-                    [attr.aria-expanded]="
-                      expandedCategoryIds().has(category.id)
-                    "
-                    [attr.aria-label]="
-                      expandedCategoryIds().has(category.id)
-                        ? 'Colapsar subcategorías de ' + category.name
-                        : 'Expandir subcategorías de ' + category.name
-                    "
-                    (click)="toggleExpand(category.id)"
-                    class="flex items-center justify-center w-7 h-7 rounded-sm bg-gray-50 hover:bg-gray-200 transition-colors text-gray-500 cursor-pointer border border-gray-200"
-                  >
-                    <ng-icon
-                      name="bootstrapChevronRight"
-                      class="text-xs transition-transform duration-200"
-                      [class.rotate-90]="expandedCategoryIds().has(category.id)"
-                    ></ng-icon>
-                  </button>
-                }
-              </div>
-              <span class="font-bold uppercase text-gray-500 mr-2 lg:hidden"
-                >Nombre:</span
-              >
-              <div
-                class="table-cell-indented pr-24 lg:pr-0"
-                [class.pl-0]="!isFilterActive()"
-                [class.lg:pl-6]="!isFilterActive() && category.depth === 1"
-                [class.lg:pl-12]="!isFilterActive() && category.depth === 2"
-                [class.lg:pl-20]="
-                  !isFilterActive() && (category.depth || 0) >= 3
-                "
-              >
-                <div class="flex items-start gap-2">
-                  <div class="mt-0.5 hidden lg:block">
-                    @if (!isFilterActive() && hasChildren(category.id)) {
-                      <button
-                        type="button"
-                        [attr.aria-expanded]="
-                          expandedCategoryIds().has(category.id)
-                        "
-                        [attr.aria-label]="
-                          expandedCategoryIds().has(category.id)
-                            ? 'Colapsar subcategorías de ' + category.name
-                            : 'Expandir subcategorías de ' + category.name
-                        "
-                        (click)="toggleExpand(category.id)"
-                        class="flex items-center justify-center w-5 h-5 rounded hover:bg-gray-200 transition-colors text-gray-500 cursor-pointer"
-                      >
-                        <ng-icon
-                          name="bootstrapChevronRight"
-                          class="text-xs transition-transform duration-200"
-                          [class.rotate-90]="
-                            expandedCategoryIds().has(category.id)
-                          "
-                        ></ng-icon>
-                      </button>
-                    } @else if (!isFilterActive()) {
-                      <div class="w-5 h-5 shrink-0"></div>
-                    }
-                  </div>
-
-                  <div class="flex flex-col min-w-0">
-                    <div
-                      class="flex items-center gap-1 flex-wrap lg:flex-nowrap min-w-0"
-                    >
-                      <span
-                        class="text-gray-500 font-medium text-xs w-4 shrink-0"
-                        >{{ category.order }} -</span
-                      >
-                      <span
-                        appActivable
-                        (click)="onEdit.emit(category)"
-                        class="font-semibold text-gray-900 text-base lg:text-sm cursor-pointer hover:underline wrap-break-word lg:truncate min-w-0"
-                        title="{{ category.name }}"
-                      >
-                        {{ category.name }}
-                      </span>
-                      <span
-                        class="text-xs bg-gray-100 text-indigo-600 px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap ml-1 shrink-0"
-                      >
-                        Nivel {{ (category.depth || 0) + 1 }}
-                      </span>
-                    </div>
-
-                    @if (category.parent) {
-                      <span class="table-parent-info block mt-0.5 ml-5">
-                        Sub de: {{ category.parent.name }}
-                      </span>
-                    }
-                  </div>
+                <div class="absolute top-3 right-3 flex items-center lg:hidden">
+                  <app-entity-state-badge
+                    [state]="category.state"
+                    mode="card"
+                  />
                 </div>
-              </div>
-            </td>
-
-            <td class="admin-table-cell max-sm:col-span-2" [class.lg:border-b-0]="isLast">
-              <span class="admin-table-mobile-label block mb-1"
-                >Descripción:</span
-              >
-              <div
-                class="text-gray-600 line-clamp-2 text-sm"
-                title="{{ category.description }}"
-              >
-                {{ category.description || "Sin descripción" }}
-              </div>
-            </td>
-
-            <td class="admin-table-cell max-sm:col-span-2" [class.lg:border-b-0]="isLast">
-              <div
-                class="flex items-center gap-2 sm:max-lg:flex-col sm:max-lg:items-start sm:max-lg:gap-1 lg:justify-center"
-              >
-                <span class="admin-table-mobile-label whitespace-nowrap"
-                  >Productos:</span
+                <span class="font-bold uppercase text-gray-500 mr-2 lg:hidden"
+                  >Nombre:</span
                 >
-                @let count = category.products?.length || 0;
-                <button
-                  type="button"
-                  (click)="count > 0 ? openProductsModal(category) : null"
-                  [disabled]="count === 0"
-                  class="w-32 justify-center whitespace-nowrap shrink-0 flex items-center gap-1.5 py-1 rounded text-xs font-medium border transition-colors duration-200"
-                  [class]="
-                    count > 0
-                      ? 'bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100 cursor-pointer'
-                      : 'bg-gray-50 text-gray-400 border-gray-100 cursor-default'
+                <div
+                  class="table-cell-indented pr-24 lg:pr-0"
+                  [class.pl-0]="!isFilterActive()"
+                  [class.lg:pl-6]="!isFilterActive() && category.depth === 1"
+                  [class.lg:pl-12]="!isFilterActive() && category.depth === 2"
+                  [class.lg:pl-20]="
+                    !isFilterActive() && (category.depth || 0) >= 3
                   "
                 >
-                  <ng-icon name="bootstrapBoxSeam" class="text-sm"></ng-icon>
-                  <span
-                    >{{ count }}
-                    {{ count === 1 ? "Producto" : "Productos" }}</span
-                  >
-                </button>
-              </div>
-            </td>
+                  <div class="flex items-start gap-2">
+                    <div class="mt-0.5 hidden lg:block">
+                      @if (!isFilterActive() && hasChildren(category.id)) {
+                        <button
+                          type="button"
+                          [attr.aria-expanded]="
+                            expandedCategoryIds().has(category.id)
+                          "
+                          [attr.aria-label]="
+                            expandedCategoryIds().has(category.id)
+                              ? 'Colapsar subcategorías de ' + category.name
+                              : 'Expandir subcategorías de ' + category.name
+                          "
+                          (click)="toggleExpand(category.id)"
+                          class="flex items-center justify-center w-5 h-5 rounded hover:bg-gray-200 transition-colors text-gray-500 cursor-pointer"
+                        >
+                          <ng-icon
+                            name="bootstrapChevronRight"
+                            class="text-xs transition-transform duration-200"
+                            [class.rotate-90]="
+                              expandedCategoryIds().has(category.id)
+                            "
+                          ></ng-icon>
+                        </button>
+                      } @else if (!isFilterActive()) {
+                        <div class="w-5 h-5 shrink-0"></div>
+                      }
+                    </div>
 
-            <td
-              class="hidden lg:table-cell px-6 py-4 border-b border-gray-100 align-middle text-center"
-              [class.lg:border-b-0]="isLast"
-            >
-              <app-entity-state-badge [state]="category.state" mode="table" />
-            </td>
+                    <div class="flex flex-col min-w-0">
+                      <div
+                        class="flex items-center gap-1 flex-wrap lg:flex-nowrap min-w-0"
+                      >
+                        <span
+                          class="text-gray-500 font-medium text-xs w-4 shrink-0"
+                          >{{ category.order }} -</span
+                        >
+                        <span
+                          appActivable
+                          (click)="onEdit.emit(category)"
+                          class="font-semibold text-gray-900 text-base lg:text-sm cursor-pointer hover:underline wrap-break-word lg:truncate min-w-0"
+                          title="{{ category.name }}"
+                        >
+                          {{ category.name }}
+                        </span>
+                        <span
+                          class="text-xs bg-gray-100 text-indigo-600 px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap ml-1 shrink-0"
+                        >
+                          Nivel {{ (category.depth || 0) + 1 }}
+                        </span>
+                      </div>
 
-            <td
-              class="admin-table-cell-last"
-              [class.lg:rounded-br-lg]="isLast"
-              [class.lg:border-b-0]="isLast"
-            >
-              <div
-                class="flex items-center justify-start lg:justify-center gap-2"
+                      @if (category.parent) {
+                        <span class="table-parent-info block mt-0.5 ml-5">
+                          Sub de: {{ category.parent.name }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <td
+                class="admin-table-cell max-sm:col-span-2"
+                [class.lg:border-b-0]="isLast"
               >
-                <span class="admin-table-mobile-label"> Acciones: </span>
-                <app-table-actions
-                  [item]="category"
-                  (onEdit)="onEdit.emit($event)"
-                  (onDelete)="onDelete.emit($event)"
-                />
-              </div>
-            </td>
-          </tr>
-        } @empty {
-          <tr
-            app-table-empty-state
-            [colspan]="6"
-            [isFilterActive]="isFilterActive()"
-            emptyMessage="Sin categorías cargadas"
-          ></tr>
+                <span class="admin-table-mobile-label block mb-1"
+                  >Descripción:</span
+                >
+                <div
+                  class="text-gray-600 line-clamp-2 text-sm"
+                  title="{{ category.description }}"
+                >
+                  {{ category.description || "Sin descripción" }}
+                </div>
+              </td>
+
+              <td
+                class="admin-table-cell max-sm:col-span-2"
+                [class.lg:border-b-0]="isLast"
+              >
+                <div
+                  class="flex items-center gap-2 sm:max-lg:flex-col sm:max-lg:items-start sm:max-lg:gap-1 lg:justify-center"
+                >
+                  <span class="admin-table-mobile-label whitespace-nowrap"
+                    >Productos:</span
+                  >
+                  @let count = subtreeProducts().get(category.id)?.length ?? 0;
+                  <button
+                    type="button"
+                    (click)="count > 0 ? openProductsModal(category) : null"
+                    [disabled]="count === 0"
+                    class="w-30 justify-center whitespace-nowrap shrink-0 flex items-center gap-1.5 py-1 rounded text-xs font-medium border transition-colors duration-200"
+                    [class]="
+                      count > 0
+                        ? 'bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100 cursor-pointer'
+                        : 'bg-gray-50 text-gray-400 border-gray-100 cursor-default'
+                    "
+                  >
+                    <ng-icon name="bootstrapBoxSeam" class="text-sm"></ng-icon>
+                    <span
+                      >{{ count }}
+                      {{ count === 1 ? "Producto" : "Productos" }}</span
+                    >
+                  </button>
+                </div>
+              </td>
+
+              <td
+                class="hidden lg:table-cell px-6 py-4 border-b border-gray-100 align-middle text-center"
+                [class.lg:border-b-0]="isLast"
+              >
+                <app-entity-state-badge [state]="category.state" mode="table" />
+              </td>
+
+              <td
+                class="admin-table-cell-last"
+                [class.lg:rounded-br-lg]="isLast"
+                [class.lg:border-b-0]="isLast"
+              >
+                <div
+                  class="flex items-center justify-start lg:justify-center gap-2"
+                >
+                  <span class="admin-table-mobile-label"> Acciones: </span>
+                  <app-table-actions
+                    [item]="category"
+                    (onEdit)="onEdit.emit($event)"
+                    (onDelete)="onDelete.emit($event)"
+                  />
+                  @if (!isFilterActive() && hasChildren(category.id)) {
+                    <button
+                      type="button"
+                      [attr.aria-expanded]="
+                        expandedCategoryIds().has(category.id)
+                      "
+                      [attr.aria-label]="
+                        expandedCategoryIds().has(category.id)
+                          ? 'Colapsar subcategorías de ' + category.name
+                          : 'Expandir subcategorías de ' + category.name
+                      "
+                      (click)="toggleExpand(category.id)"
+                      class="ml-auto lg:hidden flex items-center justify-center w-8 h-8 rounded-sm bg-gray-50 hover:bg-gray-200 transition-colors text-gray-500 cursor-pointer border border-gray-200"
+                    >
+                      <ng-icon
+                        name="bootstrapChevronRight"
+                        class="text-sm transition-transform duration-200"
+                        [class.rotate-90]="
+                          expandedCategoryIds().has(category.id)
+                        "
+                      ></ng-icon>
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr
+              app-table-empty-state
+              [colspan]="6"
+              [isFilterActive]="isFilterActive()"
+              emptyMessage="Sin categorías cargadas"
+            ></tr>
+          }
         }
       </tbody>
     </table>
@@ -209,6 +224,7 @@
 @if (selectedCategory()) {
   <app-category-products-modal
     [category]="selectedCategory()!"
+    [products]="subtreeProducts().get(selectedCategory()!.id) ?? []"
     (close)="closeProductsModal()"
     (onNavigateToProduct)="navigateToProductEdit($event)"
   ></app-category-products-modal>

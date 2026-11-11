@@ -1,159 +1,200 @@
-<div class="table-container">
+<div class="table-container @container">
   <div class="w-full">
     <table class="table-base">
       <thead class="table-header">
         <tr>
-          <th class="admin-table-header-cell w-[18%] rounded-tl-lg">Usuario</th>
-
-          <th class="admin-table-header-cell uppercase truncate w-[17%]">
-            Nombre Completo
+          <th
+            class="admin-table-header-cell lg:px-3 @min-[70rem]:px-6 w-[16%] rounded-tl-lg"
+          >
+            Usuario
           </th>
 
-          <th class="admin-table-header-cell w-[18%] whitespace-nowrap">
+          <th class="admin-table-header-cell lg:px-3 @min-[70rem]:px-6 w-[13%]">
+            <span class="@min-[88rem]:hidden">Nombre</span>
+            <span class="hidden @min-[88rem]:inline">Nombre Completo</span>
+          </th>
+
+          <th
+            class="admin-table-header-cell lg:px-3 @min-[70rem]:px-6 w-[18%] whitespace-nowrap"
+          >
             DNI / CUIT
           </th>
 
-          <th class="admin-table-header-cell truncate w-[18%]">
-            Condición Fiscal
+          <th class="admin-table-header-cell lg:px-3 @min-[70rem]:px-6 w-[18%]">
+            <span class="@min-[70rem]:hidden">Condición</span>
+            <span class="hidden @min-[70rem]:inline">Condición Fiscal</span>
           </th>
 
-          <th class="admin-table-header-cell w-[18%]">Contacto</th>
+          <th class="admin-table-header-cell lg:px-3 @min-[70rem]:px-6 w-[20%]">
+            Contacto
+          </th>
 
-          <th class="admin-table-header-cell text-center w-[13%] rounded-tr-lg">
+          <th
+            class="admin-table-header-cell lg:px-3 text-center w-25 rounded-tr-lg"
+          >
             Acciones
           </th>
         </tr>
       </thead>
 
-      <tbody class="admin-table-body">
-        @for (client of clients(); track client.id; let isLast = $last) {
-          <tr class="admin-table-row">
-            <td
-              class="admin-table-cell-first"
-              [class.lg:rounded-bl-lg]="isLast"
-              [class.lg:border-b-0]="isLast"
-            >
-              <span class="admin-table-mobile-label mb-2 block">Usuario:</span>
-              <div class="flex items-center gap-3">
-                <app-user-avatar
-                  size="sm"
-                  [photo]="client.photo"
-                  [name]="client.name"
-                  [lastName]="client.lastName"
-                />
-                <div
-                  appActivable
-                  (click)="onEdit.emit(client)"
-                  class="font-semibold text-gray-900 truncate text-base lg:text-sm cursor-pointer hover:underline"
-                  title="{{ client.username }}"
+      <tbody class="admin-table-body" [attr.aria-busy]="loading()">
+        @if (loading()) {
+          @for (row of skeletonRows; track row) {
+            <tr app-table-skeleton [columns]="6"></tr>
+          }
+        } @else {
+          @for (client of clients(); track client.id; let isLast = $last) {
+            <tr class="admin-table-row">
+              <td
+                class="admin-table-cell-first pt-3.5 pb-2 lg:py-4 lg:px-3 @min-[70rem]:px-6"
+                [class.lg:rounded-bl-lg]="isLast"
+                [class.lg:border-b-0]="isLast"
+              >
+                <span class="admin-table-mobile-label mb-1 block"
+                  >Usuario:</span
                 >
-                  {{ client.username }}
-                </div>
-                @if (client.state === "Inactivo") {
-                  <app-entity-state-badge state="Inactivo" />
-                }
-              </div>
-            </td>
-
-            <td class="admin-table-cell max-sm:col-span-2" [class.lg:border-b-0]="isLast">
-              <span class="admin-table-mobile-label block mb-1"
-                >Nombre Completo:</span
-              >
-              <div class="text-gray-900 line-clamp-2 wrap-break-word lg:line-clamp-none lg:truncate font-medium">
-                {{ client | nombrePersona: "Sin nombre" }}
-              </div>
-            </td>
-
-            <td
-              class="admin-table-cell max-[359px]:col-span-2"
-              [class.lg:border-b-0]="isLast"
-            >
-              <div class="flex flex-col items-start justify-center">
-                <span class="admin-table-mobile-label mb-1">DNI / CUIT:</span>
-                <div class="text-gray-900 font-medium">
-                  DNI: {{ client.dni || "-" }}
-                </div>
-                @if (client.cuit) {
-                  <div class="text-indigo-600 truncate font-medium mt-0.5">
-                    CUIT: {{ client.cuit }}
-                  </div>
-                }
-              </div>
-            </td>
-
-            <td
-              class="admin-table-cell max-[359px]:col-span-2"
-              [class.lg:border-b-0]="isLast"
-            >
-              <span class="admin-table-mobile-label block mb-2"
-                >Condición Fiscal:</span
-              >
-              <span
-                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs truncate font-medium border"
-                [class]="getFiscalConditionClass(client.fiscalCondition)"
-              >
-                {{ client.fiscalCondition }}
-              </span>
-            </td>
-
-            <td class="admin-table-cell max-sm:col-span-2" [class.lg:border-b-0]="isLast">
-              <span class="admin-table-mobile-label block mb-1">Contacto:</span>
-              <div class="flex flex-col text-sm min-w-0">
-                <div
-                  class="flex items-center gap-1.5 text-gray-900 mb-0.5 min-w-0"
-                >
-                  <ng-icon
-                    name="bootstrapEnvelope"
-                    class="text-gray-400"
-                  ></ng-icon>
-                  <span
-                    class="line-clamp-2 break-all lg:line-clamp-none lg:break-normal lg:truncate max-w-full"
-                    title="{{ client.email }}"
-                    >{{ client.email }}</span
+                <div class="flex items-center gap-3">
+                  <app-user-avatar
+                    size="sm"
+                    [photo]="client.photo"
+                    [name]="client.name"
+                    [lastName]="client.lastName"
+                  />
+                  <div
+                    appActivable
+                    (click)="onEdit.emit(client)"
+                    class="font-semibold text-gray-900 truncate text-base lg:text-sm cursor-pointer hover:underline"
+                    title="{{ client.username }}"
                   >
+                    {{ client.username }}
+                  </div>
+                  @if (client.state === "Inactivo") {
+                    <app-entity-state-badge state="Inactivo" />
+                  }
                 </div>
-                <div
-                  class="flex items-center gap-1.5 text-gray-900 text-xs min-w-0"
-                >
-                  <ng-icon
-                    name="bootstrapTelephone"
-                    class="text-gray-400"
-                  ></ng-icon>
-                  <span class="truncate">{{ client.phone || "-" }}</span>
-                </div>
-              </div>
-            </td>
+              </td>
 
-            <td
-              class="admin-table-cell-last"
-              [class.lg:rounded-br-lg]="isLast"
-              [class.lg:border-b-0]="isLast"
-            >
-              <div
-                class="flex items-center justify-start lg:justify-center gap-2"
+              <td
+                class="admin-table-cell py-1.5 lg:py-4 lg:px-3 @min-[70rem]:px-6 max-[529px]:col-span-2"
+                [class.lg:border-b-0]="isLast"
               >
-                <span class="admin-table-mobile-label"> Acciones: </span>
+                <span class="admin-table-mobile-label block mb-1"
+                  >Nombre Completo:</span
+                >
+                <div
+                  class="text-gray-900 line-clamp-2 wrap-break-word font-medium"
+                  title="{{ client | nombrePersona: 'Sin nombre' }}"
+                >
+                  {{ client | nombrePersona: "Sin nombre" }}
+                </div>
+              </td>
 
-                <app-table-actions
-                  [item]="client"
-                  deleteLabel="Desactivar"
-                  deleteIcon="bootstrapPersonSlash"
-                  [canDelete]="client.state !== 'Inactivo'"
-                  [canReactivate]="client.state === 'Inactivo'"
-                  (onEdit)="onEdit.emit($event)"
-                  (onDelete)="onDelete.emit($event)"
-                  (onReactivate)="onReactivate.emit($event)"
-                />
-              </div>
-            </td>
-          </tr>
-        } @empty {
-          <tr
-            app-table-empty-state
-            [colspan]="6"
-            [isFilterActive]="isFilterActive()"
-            emptyMessage="Sin clientes cargados"
-          ></tr>
+              <td
+                class="admin-table-cell py-1.5 lg:py-4 lg:px-3 @min-[70rem]:px-6 max-[396px]:col-span-2"
+                [class.lg:border-b-0]="isLast"
+              >
+                <div
+                  class="flex flex-col items-start justify-center min-w-0 w-full"
+                >
+                  <span class="admin-table-mobile-label mb-1">DNI / CUIT:</span>
+                  <div
+                    class="text-gray-900 font-medium max-w-full wrap-break-word"
+                  >
+                    DNI: {{ client.dni || "-" }}
+                  </div>
+                  @if (client.cuit) {
+                    <div
+                      class="text-indigo-600 max-w-full wrap-break-word font-medium mt-0.5"
+                    >
+                      CUIT: {{ client.cuit }}
+                    </div>
+                  }
+                </div>
+              </td>
+
+              <td
+                class="admin-table-cell py-1.5 lg:py-4 lg:px-3 @min-[70rem]:px-6 max-[396px]:col-span-2"
+                [class.lg:border-b-0]="isLast"
+              >
+                <span class="admin-table-mobile-label block mb-1"
+                  >Condición Fiscal:</span
+                >
+                <span
+                  class="inline-block max-w-full px-2.5 py-0.5 rounded-xl text-xs font-medium border whitespace-normal wrap-break-word leading-tight text-center"
+                  [class]="getFiscalConditionClass(client.fiscalCondition)"
+                >
+                  {{ client.fiscalCondition }}
+                </span>
+              </td>
+
+              <td
+                class="admin-table-cell py-1.5 lg:py-4 lg:px-3 @min-[70rem]:px-6 max-[529px]:col-span-2"
+                [class.lg:border-b-0]="isLast"
+              >
+                <span class="admin-table-mobile-label block mb-1"
+                  >Contacto:</span
+                >
+                <div class="flex flex-col text-sm min-w-0">
+                  <div
+                    class="flex items-center gap-1.5 text-gray-900 mb-0.5 min-w-0"
+                  >
+                    <ng-icon
+                      name="bootstrapEnvelope"
+                      class="text-gray-400"
+                    ></ng-icon>
+                    <span
+                      class="line-clamp-2 break-all lg:line-clamp-none lg:break-normal lg:truncate max-w-full"
+                      title="{{ client.email }}"
+                      >{{ client.email }}</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center gap-1.5 text-gray-900 text-xs min-w-0"
+                  >
+                    <ng-icon
+                      name="bootstrapTelephone"
+                      class="text-gray-400"
+                    ></ng-icon>
+                    <span
+                      class="truncate min-w-0"
+                      title="{{ client.phone || '-' }}"
+                      >{{ client.phone || "-" }}</span
+                    >
+                  </div>
+                </div>
+              </td>
+
+              <td
+                class="admin-table-cell-last pt-2 pb-3 lg:py-4 lg:px-3"
+                [class.lg:rounded-br-lg]="isLast"
+                [class.lg:border-b-0]="isLast"
+              >
+                <div
+                  class="flex items-center justify-start lg:justify-center gap-2"
+                >
+                  <span class="admin-table-mobile-label"> Acciones: </span>
+
+                  <app-table-actions
+                    [item]="client"
+                    deleteLabel="Desactivar"
+                    deleteIcon="bootstrapPersonSlash"
+                    [canDelete]="client.state !== 'Inactivo'"
+                    [canReactivate]="client.state === 'Inactivo'"
+                    (onEdit)="onEdit.emit($event)"
+                    (onDelete)="onDelete.emit($event)"
+                    (onReactivate)="onReactivate.emit($event)"
+                  />
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr
+              app-table-empty-state
+              [colspan]="6"
+              [isFilterActive]="isFilterActive()"
+              emptyMessage="Sin clientes cargados"
+            ></tr>
+          }
         }
       </tbody>
     </table>

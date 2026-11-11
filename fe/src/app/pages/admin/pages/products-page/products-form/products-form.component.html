@@ -11,8 +11,8 @@
 
   <div class="form-card">
     <form [formGroup]="formProduct" (ngSubmit)="onSubmit()" class="form-body">
-      <div class="grid grid-cols-1 md:grid-cols-6 gap-x-6 gap-y-4">
-        <div class="md:col-span-6">
+      <div class="grid grid-cols-1 sm:grid-cols-6 gap-x-6 gap-y-2">
+        <div class="sm:col-span-6">
           <label for="name" class="form-label">
             Nombre del Producto <span class="text-red-500">*</span>
           </label>
@@ -32,7 +32,7 @@
           />
         </div>
 
-        <div class="md:col-span-6">
+        <div class="sm:col-span-6">
           <label for="description" class="form-label">
             Descripción <span class="text-red-500">*</span>
           </label>
@@ -51,7 +51,7 @@
           />
         </div>
 
-        <div class="md:col-span-2">
+        <div class="sm:col-span-3 lg:col-span-2">
           <label for="brand" class="form-label">
             Marca <span class="text-red-500">*</span>
           </label>
@@ -66,16 +66,8 @@
           <app-field-error [control]="formProduct.controls.brand" />
         </div>
 
-        <div class="md:col-span-2">
-          <app-product-category-select
-            [control]="formProduct.controls.category"
-            [categories]="categories()"
-            (createCategory)="goToCreateCategory()"
-          ></app-product-category-select>
-        </div>
-
         <div
-          class="md:col-span-2 relative"
+          class="sm:col-span-3 lg:col-span-2 relative"
           (clickOutside)="showStateMenu.set(false)"
         >
           <label for="state" class="form-label">
@@ -123,7 +115,9 @@
                 <li
                   role="option"
                   tabindex="-1"
-                  [attr.aria-selected]="formProduct.get('state')?.value === option"
+                  [attr.aria-selected]="
+                    formProduct.get('state')?.value === option
+                  "
                   (click)="selectState(option)"
                   class="select-option"
                 >
@@ -163,15 +157,23 @@
           <app-field-error [control]="formProduct.controls.state" />
         </div>
 
-        <div class="md:col-span-2">
+        <div class="sm:col-span-6 lg:col-span-2">
+          <app-product-category-select
+            [control]="formProduct.controls.category"
+            [categories]="categories()"
+            (createCategory)="goToCreateCategory()"
+          ></app-product-category-select>
+        </div>
+
+        <div class="sm:col-span-2">
           <label for="price" class="form-label">
-            Precio ($) <span class="text-red-500">*</span>
+            Precio <span class="text-red-500">*</span>
           </label>
           <div class="relative rounded-md shadow-sm">
             <div
               class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"
             >
-              <span class="text-gray-500 sm:text-sm">$</span>
+              <span class="text-gray-500 text-sm">$</span>
             </div>
             <input
               type="number"
@@ -188,7 +190,7 @@
           <app-field-error [control]="formProduct.controls.price" />
         </div>
 
-        <div class="md:col-span-2">
+        <div class="sm:col-span-2">
           <label for="stock" class="form-label">
             Stock <span class="text-red-500">*</span>
           </label>
@@ -206,7 +208,7 @@
           <app-field-error [control]="formProduct.controls.stock" />
         </div>
 
-        <div class="md:col-span-2">
+        <div class="sm:col-span-2">
           <label for="totalSold" class="form-label">
             Cantidad Vendida <span class="text-red-500">*</span>
           </label>
@@ -224,7 +226,7 @@
           <app-field-error [control]="formProduct.controls.totalSold" />
         </div>
 
-        <div class="md:col-span-6 pt-4 border-t border-gray-100">
+        <div class="sm:col-span-6 pt-4 border-t border-gray-100">
           <app-photo-manager [initialPhotos]="initialPhotos()" />
         </div>
       </div>

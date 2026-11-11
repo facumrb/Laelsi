@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
+import { provideTanStackQuery, QueryClient } from '@tanstack/angular-query-experimental';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { environment } from 'src/environments/environment';
 import { UserSession } from '@models/auth.model';
@@ -361,5 +362,26 @@ describe('AuthService: sesión después de cambiar la propia contraseña', () =>
     expect(await resultado).toBe(false);
     expect(servicio.isLoggedIn()).toBe(false);
     expect(navegar).toHaveBeenCalledWith('/auth/login');
+  });
+});
+
+// Los listados del panel (administradores, clientes) quedan en la caché de TanStack Query, en memoria.
+// El logout navega sin recargar la página: si no la vaciara, la próxima persona que ingrese en la
+// misma pestaña podría ver datos de la sesión anterior.
+describe('AuthService: cerrar sesión vacía la caché de datos', () => {
+  it('después del logout no queda ninguna consulta en la caché', () => {
+    localStorage.clear();
+    const queryClient = new QueryClient();
+    TestBed.configureTestingModule({
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting(), provideTanStackQuery(queryClient)],
+    });
+    vi.spyOn(supabase.auth, 'signOut').mockResolvedValue({ error: null } as never);
+    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    queryClient.setQueryData(['clients', 'list', {}], { data: [{ id: 1 }] });
+    queryClient.setQueryData(['admins', 'list', {}], { data: [{ id: 2 }] });
+
+    TestBed.inject(AuthService).logout();
+
+    expect(queryClient.getQueryCache().getAll()).toHaveLength(0);
   });
 });

@@ -9,6 +9,7 @@
     class="mt-6 block"
     [admins]="adminsFiltered()"
     [isFilterActive]="filtersActive()"
+    [loading]="loading()"
     (onEdit)="handleNavigateToEdit($event)"
     (onDelete)="handleDelete($event)"
     (onReactivate)="reactivateAdmin($event)"

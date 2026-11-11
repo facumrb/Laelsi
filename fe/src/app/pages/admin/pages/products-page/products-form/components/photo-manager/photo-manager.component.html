@@ -42,13 +42,11 @@
         reordenar la secuencia de imágenes.
       </h2>
 
-      <div
-        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
-      >
+      <div class="flex flex-wrap gap-4">
         @for (photo of gallery(); track photo.uiId; let i = $index) {
           <div
             [style.view-transition-name]="'photo-' + photo.uiId"
-            class="relative group aspect-square rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-white"
+            class="relative group size-32 shrink-0 rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-white"
           >
             <app-product-image
               [imageUrl]="photo.src"
@@ -76,9 +74,7 @@
                 </button>
               </div>
 
-              <div
-                class="flex justify-center gap-4 md:justify-between items-center px-1"
-              >
+              <div class="flex justify-between items-center px-1">
                 <button
                   type="button"
                   (click)="movePhoto(i, 'left')"

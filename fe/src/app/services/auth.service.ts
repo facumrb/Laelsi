@@ -11,6 +11,7 @@ import {
   UserSession,
 } from '@models/auth.model';
 import { UserRole } from '@models/user.model';
+import { QueryClient } from '@tanstack/angular-query-experimental';
 import { supabase } from './supabase.client';
 
 // Lo único que se guarda del usuario en el navegador (localStorage)
@@ -43,6 +44,8 @@ function pickSessionFields(source: Partial<UserSession>): Partial<UserSession> {
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
+  // Opcional porque hay contextos de prueba que crean el servicio sin TanStack Query
+  private queryClient = inject(QueryClient, { optional: true });
   private readonly apiUrl = `${environment.apiUrl}/auth`;
   private readonly USER_KEY = 'auth_user';
 
@@ -249,6 +252,9 @@ export class AuthService {
     // No hace falta esperar la respuesta: la sesión local se borra de inmediato
     void supabase.auth.signOut();
     this.clearSession();
+    // El logout navega sin recargar: sin esto, los datos en caché (clientes, administradores)
+    // quedarían en memoria para la próxima persona que ingrese en la misma pestaña
+    this.queryClient?.clear();
     this.router.navigateByUrl(redirectUrl);
   }
 

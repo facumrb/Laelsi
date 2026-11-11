@@ -10,6 +10,7 @@
     class="mt-6 block"
     [clients]="clientsFiltered()"
     [isFilterActive]="filtersActive()"
+    [loading]="loading()"
     (onEdit)="handleNavigateToEdit($event)"
     (onDelete)="handleDelete($event)"
     (onReactivate)="reactivateClient($event)"
@@ -22,7 +23,6 @@
   />
 
   @if (clientToDelete()) {
-    <!-- Sin borrado permanente: solo se desactiva (ID 65 de discusiones.md) -->
     <app-confirm-delete-modal
       [entityName]="clientToDelete()!.name + ' ' + clientToDelete()!.lastName"
       entityType="cliente"

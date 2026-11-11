@@ -185,7 +185,7 @@
   /* ── Select desplegable ── */
   .select-trigger {
     @apply relative w-full cursor-pointer bg-white rounded-2xl border border-gray-300
-           py-2.5 pl-4 pr-10 text-left shadow-sm transition-all duration-200 sm:text-sm
+           py-2.5 pl-4 pr-10 text-left shadow-sm transition-all duration-200 text-sm
            hover:bg-gray-50 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900;
   }
 
@@ -319,7 +319,9 @@
     box-shadow: -1px 1px 1px -1px rgba(0, 0, 0, 0.1); /* Micro sombra para emparejar con el menú */
   }
 
-  .navbar-subdropdown:has(> div:first-of-type > .navbar-dropdown-item:hover)::after {
+  .navbar-subdropdown:has(
+      > div:first-of-type > .navbar-dropdown-item:hover
+    )::after {
     @apply bg-gray-100;
   }
 
@@ -381,6 +383,10 @@
 
   .breadcrumb-current {
     @apply ml-1 text-sm md:text-base font-semibold text-[#3d4494] wrap-break-word;
+  }
+
+  .breadcrumb-ellipsis {
+    @apply ml-1 text-sm md:text-base text-gray-400 select-none;
   }
 
   /* ── Estructura y secciones ── */
@@ -452,6 +458,11 @@
   .group:hover .elsi-glass-nav {
     @apply opacity-100;
   }
+  @media (hover: none) {
+    .elsi-glass-nav:not(:disabled) {
+      @apply opacity-100;
+    }
+  }
 
   /* ── Modales ── */
   .elsi-modal-overlay {
@@ -482,16 +493,13 @@
 
   /* ── Estilos compartidos del control de agregar al carrito ── */
   .elsi-add-to-cart-container {
-    @apply flex justify-center items-center;
-  }
-
-  .elsi-add-to-cart-container.full-width {
-    @apply w-full;
+    @apply flex justify-center items-center w-full;
   }
 
   .elsi-add-initial-btn {
-    @apply h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center rounded-full bg-gray-900 text-white
-           hover:bg-[#f4abac] transition-all duration-300 shadow-md cursor-pointer
+    @apply w-full h-10 px-2 flex items-center justify-center rounded-xl bg-[#3d4494] text-white
+           text-sm font-bold whitespace-nowrap
+           hover:bg-[#2a2f63] transition-all duration-300 shadow-md cursor-pointer
            disabled:bg-gray-300 disabled:cursor-not-allowed;
     animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
@@ -502,7 +510,7 @@
 
   .elsi-quantity-pill {
     @apply flex items-center bg-gray-100 rounded-full p-1 shadow-inner border border-gray-200/50
-           transition-all duration-300 h-8 sm:h-10 min-w-20 sm:min-w-25;
+           transition-all duration-300 w-full h-9 sm:h-10;
     animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 

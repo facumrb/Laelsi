@@ -33,38 +33,38 @@
         aria-labelledby="category-label"
         (closed)="showCategoryMenu.set(false)"
       >
-      @for (cat of hierarchicalCategories(); track cat.id) {
-        <div
-          role="option"
-          tabindex="-1"
-          [attr.aria-selected]="control().value?.id === cat.id"
-          (click)="selectCategory(cat)"
-          class="relative cursor-pointer select-none py-2 pr-9 text-gray-900 hover:bg-gray-100 transition-colors"
-          [style.padding-left.rem]="0.75 + cat.depth * 1"
-          [class.font-bold]="cat.depth === 0"
-          [class.font-normal]="cat.depth > 0"
-        >
-          <div class="flex items-center gap-2">
-            @if (cat.depth > 0) {
-              <span class="text-gray-300">↳</span>
-            }
-            <span
-              class="block wrap-break-word"
-              [class.text-[#3d4494]]="control().value?.id === cat.id"
-            >
-              {{ cat.name }}
-            </span>
-          </div>
+        @for (cat of hierarchicalCategories(); track cat.id) {
+          <div
+            role="option"
+            tabindex="-1"
+            [attr.aria-selected]="control().value?.id === cat.id"
+            (click)="selectCategory(cat)"
+            class="relative cursor-pointer select-none py-2 pr-9 text-gray-900 hover:bg-gray-100 transition-colors"
+            [style.padding-left.rem]="0.75 + cat.depth * 1"
+            [class.font-bold]="cat.depth === 0"
+            [class.font-normal]="cat.depth > 0"
+          >
+            <div class="flex items-center gap-2">
+              @if (cat.depth > 0) {
+                <span class="text-gray-300">↳</span>
+              }
+              <span
+                class="block wrap-break-word"
+                [class.text-[#3d4494]]="control().value?.id === cat.id"
+              >
+                {{ cat.name }}
+              </span>
+            </div>
 
-          @if (control().value?.id === cat.id) {
-            <span
-              class="absolute inset-y-0 right-0 flex items-center pr-4 text-[#3d4494]"
-            >
-              <ng-icon name="bootstrapCheckLg" class="text-lg"></ng-icon>
-            </span>
-          }
-        </div>
-      }
+            @if (control().value?.id === cat.id) {
+              <span
+                class="absolute inset-y-0 right-0 flex items-center pr-4 text-[#3d4494]"
+              >
+                <ng-icon name="bootstrapCheckLg" class="text-lg"></ng-icon>
+              </span>
+            }
+          </div>
+        }
       </div>
 
       @if (hierarchicalCategories().length === 0) {
@@ -88,10 +88,5 @@
     </div>
   }
 
-  <!-- Errores -->
-  @if (!control().valid && (control().dirty || control().touched)) {
-    <div class="mt-1">
-      <app-field-error [control]="control()"></app-field-error>
-    </div>
-  }
+  <app-field-error [control]="control()" />
 </div>

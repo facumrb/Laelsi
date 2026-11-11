@@ -22,6 +22,7 @@ import { OrderDetailModalComponent } from '@shared/components/modals/order-detai
 import { Router, ActivatedRoute } from '@angular/router';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { injectInvalidateCatalog } from '@services/queries/catalog-cache';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-orders-page',
@@ -44,6 +45,8 @@ export class OrdersPageComponent implements OnInit {
   private ordersRaw = signal<IApiOrder[]>([]);
   currentPage = signal(1);
   totalPages = signal(1);
+  // Solo cubre la primera carga: al cambiar de página o de filtro se siguen viendo las órdenes anteriores
+  loading = signal(true);
 
   searchQuery = signal<string>('');
   statusFilter = signal<OrderStatusFilter>('Todos');
@@ -97,12 +100,17 @@ export class OrdersPageComponent implements OnInit {
       paymentMethod: this.paymentMethodFilter(),
     };
 
-    this.orderService.getAllOrders(this.currentPage(), 10, filters).subscribe({
-      next: (data) => {
-        this.ordersRaw.set(data.data);
-        this.totalPages.set(data.totalPages);
-      },
-    });
+    this.orderService
+      .getAllOrders(this.currentPage(), 10, filters)
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: (data) => {
+          this.ordersRaw.set(data.data);
+          this.totalPages.set(data.totalPages);
+        },
+        // El errorInterceptor ya avisó con un toast
+        error: () => undefined,
+      });
   }
 
   onPageChange(page: number) {

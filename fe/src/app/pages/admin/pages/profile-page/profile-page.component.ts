@@ -2,7 +2,7 @@ import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { EMPTY, of, switchMap } from 'rxjs';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { ApiAdminService } from '@services/api-services/api-admin.service';
 import { IApiAdmin, ICreateAdmin, UserRole } from '@models/user.model';
 import { IApiUserPhoto } from '@models/photo.model';
@@ -16,12 +16,12 @@ import { GoBackButtonComponent } from '@shared/components/buttons/go-back-button
 import { NumericInputDirective } from '@shared/directives/numeric-input.directive';
 import { PhoneInputDirective } from '@shared/directives/phone-input.directive';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
+import { injectInvalidateAdmins } from '@services/queries/admin-queries';
 
 @Component({
-  selector: 'app-edit-profile-page',
+  selector: 'app-admin-profile-page',
   imports: [
     ReactiveFormsModule,
-    RouterLink,
     PhotoManagerComponent,
     FieldErrorComponent,
     GoBackButtonComponent,
@@ -29,9 +29,9 @@ import { TrimInputDirective } from '@shared/directives/trim-input.directive';
     PhoneInputDirective,
     TrimInputDirective,
   ],
-  templateUrl: './edit-profile-page.component.html',
+  templateUrl: './profile-page.component.html',
 })
-export class EditProfilePageComponent implements OnInit {
+export class ProfilePageComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private apiService = inject(ApiAdminService);
@@ -39,6 +39,7 @@ export class EditProfilePageComponent implements OnInit {
   private alertService = inject(AlertService);
   private currentPasswordService = inject(CurrentPasswordService);
   private http = inject(HttpClient);
+  private invalidateAdmins = injectInvalidateAdmins();
 
   photoManager = viewChild.required(PhotoManagerComponent);
 
@@ -146,14 +147,23 @@ export class EditProfilePageComponent implements OnInit {
           FormUtils.uniqueFieldValidator('Admin', 'email', this.http, id),
         );
 
-        this.initialFormValue.set(
-          JSON.stringify(this.formEditProfile.getRawValue()),
-        );
+        this.snapshotInitial();
       },
       error: () => {
-        this.router.navigate(['admin/view-profile']);
+        this.router.navigate(['/admin/analytics']);
       },
     });
+  }
+
+  private snapshotInitial(): void {
+    this.initialFormValue.set(
+      JSON.stringify(this.formEditProfile.getRawValue()),
+    );
+  }
+
+  discardChanges(): void {
+    this.formEditProfile.reset(JSON.parse(this.initialFormValue()));
+    this.photoManager().reset();
   }
 
   get hasRealChanges(): boolean {
@@ -166,7 +176,9 @@ export class EditProfilePageComponent implements OnInit {
   /** Email con el que se cargó el formulario (para saber si la persona lo cambió). */
   private get originalEmail(): string {
     try {
-      return (JSON.parse(this.initialFormValue()) as { email?: string }).email ?? '';
+      return (
+        (JSON.parse(this.initialFormValue()) as { email?: string }).email ?? ''
+      );
     } catch {
       return '';
     }
@@ -185,7 +197,8 @@ export class EditProfilePageComponent implements OnInit {
     const currentPassword = await this.currentPasswordService.requestIfNeeded({
       editingOwnAccount: true,
       changesEmail:
-        (formValue.email ?? '').trim().toLowerCase() !== this.originalEmail.trim().toLowerCase(),
+        (formValue.email ?? '').trim().toLowerCase() !==
+        this.originalEmail.trim().toLowerCase(),
       changesPassword: !!formValue.password,
     });
     if (currentPassword === null) return; // la persona canceló: no se guarda nada
@@ -219,7 +232,10 @@ export class EditProfilePageComponent implements OnInit {
         // recibirían un 401 y mostrarían "Tu sesión ya no es válida" tras un cambio que salió bien.
         switchMap(() =>
           formValue.password
-            ? this.authService.renewSessionAfterPasswordChange(formValue.username!, formValue.password)
+            ? this.authService.renewSessionAfterPasswordChange(
+                formValue.username!,
+                formValue.password,
+              )
             : of(true),
         ),
         switchMap((sesionVigente) => {
@@ -235,6 +251,7 @@ export class EditProfilePageComponent implements OnInit {
       )
       .subscribe({
         next: (photoResponse: any) => {
+          this.invalidateAdmins();
           this.alertService.toast('Perfil actualizado con éxito', 'success');
 
           const sessionUpdates: any = {
@@ -249,7 +266,17 @@ export class EditProfilePageComponent implements OnInit {
           }
 
           this.authService.updateCurrentUser(sessionUpdates);
-          this.router.navigate(['admin/view-profile']);
+
+          if ('photo' in sessionUpdates) {
+            this.currentPhoto.set(sessionUpdates.photo);
+          }
+          this.photoManager().reset();
+          this.formEditProfile.reset({
+            ...formValue,
+            password: '',
+            confirmPassword: '',
+          });
+          this.snapshotInitial();
         },
       });
   }
