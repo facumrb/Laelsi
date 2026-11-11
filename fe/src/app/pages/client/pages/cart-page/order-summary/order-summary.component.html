@@ -194,11 +194,6 @@
   </fieldset>
 
   <div class="space-y-3">
-    @if (turnstileEnabled) {
-      <!-- Verificación anti-bots de Cloudflare Turnstile -->
-      <app-turnstile (tokenChange)="turnstileToken.set($event)" />
-    }
-
     @if (hasUnavailable()) {
       <p
         role="status"
@@ -207,6 +202,11 @@
         Hay productos no disponibles en tu carrito. Quitalos para poder
         confirmar el pedido.
       </p>
+    }
+
+    @if (turnstileEnabled) {
+      <!-- Verificación anti-bots de Cloudflare Turnstile -->
+      <app-turnstile (tokenChange)="turnstileToken.set($event)" />
     }
 
     <button

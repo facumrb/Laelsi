@@ -1,11 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   bootstrapTrash,
   bootstrapPlus,
   bootstrapDash,
   bootstrapCartX,
+  bootstrapExclamationTriangleFill,
 } from '@ng-icons/bootstrap-icons';
 import { IApiProduct } from '@models/product.model';
 import { CartService } from '@services/cart.service';
@@ -16,13 +18,14 @@ import { LEGAL_INFO } from '@client/pages/footer-pages/legal-info';
 
 @Component({
   selector: 'app-cart-items',
-  imports: [CurrencyPipe, NgIconComponent, ProductImageComponent],
+  imports: [CurrencyPipe, RouterLink, NgIconComponent, ProductImageComponent],
   viewProviders: [
     provideIcons({
       bootstrapTrash,
       bootstrapPlus,
       bootstrapDash,
       bootstrapCartX,
+      bootstrapExclamationTriangleFill,
     }),
   ],
   templateUrl: './cart-items.component.html',
@@ -37,7 +40,7 @@ export class CartItemsComponent {
     return product.prices?.find((p) => p.isCurrent)?.amount || 0;
   }
 
-  // Aviso de un producto pausado o inactivo (ID 54 de docs/requerimientos/discusiones.md)
+  // Aviso de un producto pausado o inactivo
   availability(productId: number) {
     return this.cartService.availabilityOf(productId);
   }
