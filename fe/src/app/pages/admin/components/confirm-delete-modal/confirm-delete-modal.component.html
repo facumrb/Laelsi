@@ -1,6 +1,6 @@
 <div
   class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-110 flex items-center justify-center p-4 animate-fadeIn duration-200"
-  (click)="onClose()"
+  (backdropClose)="onClose()"
 >
   <div
     cdkTrapFocus
@@ -63,68 +63,67 @@
       </p>
 
       @if (allowPermanentDelete()) {
-      <!-- Alerta de riesgo de pérdida permanente -->
-      <div
-        class="p-4 bg-rose-50/80 border border-rose-200/80 rounded-xl text-rose-950 text-xs sm:text-sm leading-relaxed"
-      >
-        <div class="font-bold text-rose-900 mb-1.5">
-          Riesgo de pérdida permanente de datos
-        </div>
-        <p class="text-rose-900/90 text-xs sm:text-sm">
-          La eliminación definitiva borrará el registro de la base de datos de
-          manera permanente. Si este {{ entityType() }} está vinculado a otros
-          procesos (como ventas, facturas, historial de pedidos o estadísticas),
-          su eliminación física podría generar errores o inconsistencias en los
-          datos históricos.
-        </p>
-      </div>
-
-      <!-- Alternativa recomendada o nota informativa -->
-      @if (canDeactivate()) {
+        <!-- Alerta de riesgo de pérdida permanente -->
         <div
-          class="p-4 bg-indigo-50/80 border border-indigo-200/80 rounded-xl text-indigo-950 text-xs sm:text-sm leading-relaxed"
+          class="p-4 bg-rose-50/80 border border-rose-200/80 rounded-xl text-rose-950 text-xs sm:text-sm leading-relaxed"
         >
-          <div class="font-bold text-[#3d4494] mb-1.5">
-            Recomendación del sistema
+          <div class="font-bold text-rose-900 mb-1.5">
+            Riesgo de pérdida permanente de datos
           </div>
-          @if (isDeactivated()) {
-            <p class="text-indigo-900/90 text-xs sm:text-sm">
-              Este {{ entityType() }} ya se encuentra desactivada. Se recomienda
-              mantenerla desactivada como está actualmente, en lugar de
-              eliminarla, para preservar la integridad del historial de
-              operaciones y evitar fallos imprevistos en el sistema.
-            </p>
-          } @else {
-            <p class="text-indigo-900/90 text-xs sm:text-sm">
-              En lugar de eliminarlo definitivamente, se recomienda realizar una
-              <strong>desactivación</strong> (marcarlo como inactivo). Esto
-              preservará la integridad del historial de operaciones y evitará
-              fallos imprevistos en el sistema.
-            </p>
-          }
-        </div>
-      } @else {
-        <div
-          class="p-3.5 bg-amber-50/80 border border-amber-200 rounded-xl text-amber-900 text-xs sm:text-sm leading-relaxed"
-        >
-          <p class="text-amber-900/90 text-xs sm:text-sm">
-            <strong>Nota:</strong> Este {{ entityType() }} no soporta la
-            desactivación directa desde esta sección. Si decides eliminarlo,
-            asegúrate de que no tenga operaciones asociadas.
+          <p class="text-rose-900/90 text-xs sm:text-sm">
+            La eliminación definitiva borrará el registro de la base de datos de
+            manera permanente. Si este {{ entityType() }} está vinculado a otros
+            procesos (como ventas, facturas, historial de pedidos o
+            estadísticas), su eliminación física podría generar errores o
+            inconsistencias en los datos históricos.
           </p>
         </div>
-      }
+
+        <!-- Alternativa recomendada o nota informativa -->
+        @if (canDeactivate()) {
+          <div
+            class="p-4 bg-indigo-50/80 border border-indigo-200/80 rounded-xl text-indigo-950 text-xs sm:text-sm leading-relaxed"
+          >
+            <div class="font-bold text-[#3d4494] mb-1.5">
+              Recomendación del sistema
+            </div>
+            @if (isDeactivated()) {
+              <p class="text-indigo-900/90 text-xs sm:text-sm">
+                Este {{ entityType() }} ya se encuentra desactivada. Se
+                recomienda mantenerla desactivada como está actualmente, en
+                lugar de eliminarla, para preservar la integridad del historial
+                de operaciones y evitar fallos imprevistos en el sistema.
+              </p>
+            } @else {
+              <p class="text-indigo-900/90 text-xs sm:text-sm">
+                En lugar de eliminarlo definitivamente, se recomienda realizar
+                una
+                <strong>desactivación</strong> (marcarlo como inactivo). Esto
+                preservará la integridad del historial de operaciones y evitará
+                fallos imprevistos en el sistema.
+              </p>
+            }
+          </div>
+        } @else {
+          <div
+            class="p-3.5 bg-amber-50/80 border border-amber-200 rounded-xl text-amber-900 text-xs sm:text-sm leading-relaxed"
+          >
+            <p class="text-amber-900/90 text-xs sm:text-sm">
+              <strong>Nota:</strong> Este {{ entityType() }} no soporta la
+              desactivación directa desde esta sección. Si decides eliminarlo,
+              asegúrate de que no tenga operaciones asociadas.
+            </p>
+          </div>
+        }
       } @else {
         <!-- Sin borrado permanente: solo se desactiva y se conserva todo -->
         <div
           class="p-4 bg-indigo-50/80 border border-indigo-200/80 rounded-xl text-indigo-950 text-xs sm:text-sm leading-relaxed"
         >
-          <div class="font-bold text-[#3d4494] mb-1.5">
-            No se borra nada
-          </div>
+          <div class="font-bold text-[#3d4494] mb-1.5">No se borra nada</div>
           <p class="text-indigo-900/90 text-xs sm:text-sm">
-            Desactivar conserva todos los datos y el historial de operaciones
-            de este {{ entityType() }}, pero deja de poder ingresar y hacer
+            Desactivar conserva todos los datos y el historial de operaciones de
+            este {{ entityType() }}, pero deja de poder ingresar y hacer
             pedidos. Podés reactivarlo cuando quieras.
           </p>
         </div>
@@ -159,7 +158,9 @@
           (click)="onConfirmDeactivate()"
           class="w-full sm:w-auto cursor-pointer rounded-md bg-[#3d4494] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#2a2f63] transition-colors focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-[#3d4494]"
         >
-          {{ allowPermanentDelete() ? "Desactivar (Recomendado)" : "Desactivar" }}
+          {{
+            allowPermanentDelete() ? "Desactivar (Recomendado)" : "Desactivar"
+          }}
         </button>
       }
 

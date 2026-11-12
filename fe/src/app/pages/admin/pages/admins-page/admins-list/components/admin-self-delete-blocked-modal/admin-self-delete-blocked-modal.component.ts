@@ -9,9 +9,16 @@ import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { bootstrapExclamationTriangle } from '@ng-icons/bootstrap-icons';
 import { CloseModalButtonComponent } from '@shared/components/buttons/close-modal-button/close-modal-button.component';
 
+import { BackdropCloseDirective } from '@shared/directives/backdrop-close.directive';
+
 @Component({
   selector: 'app-admin-self-delete-blocked-modal',
-  imports: [A11yModule, NgIconComponent, CloseModalButtonComponent],
+  imports: [
+    BackdropCloseDirective,
+    A11yModule,
+    NgIconComponent,
+    CloseModalButtonComponent,
+  ],
   viewProviders: [
     provideIcons({
       bootstrapExclamationTriangle,

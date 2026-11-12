@@ -13,12 +13,14 @@ import { A11yModule } from '@angular/cdk/a11y';
 import { AuthService } from '@services/auth.service';
 import { CloseModalButtonComponent } from '@shared/components/buttons/close-modal-button/close-modal-button.component';
 import { PasswordToggleButtonComponent } from '@shared/components/buttons/password-toggle-button/password-toggle-button.component';
+import { BackdropCloseDirective } from '@shared/directives/backdrop-close.directive';
 
 @Component({
   selector: 'app-verify-password-modal',
   imports: [
     ReactiveFormsModule,
     A11yModule,
+    BackdropCloseDirective,
     CloseModalButtonComponent,
     PasswordToggleButtonComponent,
   ],
@@ -70,21 +72,6 @@ export class VerifyPasswordModalComponent {
         );
       },
     });
-  }
-
-  // Solo cierra si el clic empezó y terminó en el fondo: al seleccionar texto del campo y soltar
-  // el mouse afuera, el navegador dispara el click en el fondo y el modal se cerraba.
-  private pressStartedOnBackdrop = false;
-
-  onBackdropMouseDown(event: MouseEvent) {
-    this.pressStartedOnBackdrop = event.target === event.currentTarget;
-  }
-
-  onBackdropClick(event: MouseEvent) {
-    const isBackdropClick =
-      this.pressStartedOnBackdrop && event.target === event.currentTarget;
-    this.pressStartedOnBackdrop = false;
-    if (isBackdropClick) this.onClose();
   }
 
   onClose() {
