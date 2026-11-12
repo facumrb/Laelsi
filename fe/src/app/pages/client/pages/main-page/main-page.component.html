@@ -78,9 +78,9 @@
         @if (globalBestSellers().length > 0) {
           <section class="mb-10">
             <div
-              class="bg-white rounded-2xl shadow-sm border border-neutral-200 p-4 md:p-8 relative overflow-hidden group"
+              class="bg-white rounded-2xl shadow-sm border border-neutral-200 px-4 py-3 md:px-8 md:py-5 relative overflow-hidden group"
             >
-              <div class="flex items-center justify-between mb-4 relative z-10">
+              <div class="flex items-center justify-between mb-2 relative z-10">
                 <h2
                   class="text-3xl font-bold text-neutral-800 border-l-4 border-blue-600 pl-2"
                 >
@@ -101,7 +101,7 @@
                   #globalScroll
                   #globalTracker="scrollTracker"
                   appScrollTracker
-                  class="flex overflow-x-auto gap-4 md:gap-6 pt-4 pb-4 scroll-smooth scrollbar-hide snap-x snap-mandatory"
+                  class="flex overflow-x-auto gap-4 md:gap-6 pt-3 pb-4 scroll-smooth scrollbar-hide snap-x snap-mandatory"
                 >
                   @for (product of globalBestSellers(); track $index) {
                     <div
@@ -123,9 +123,9 @@
         @for (item of categoriesWithBestSellers(); track $index) {
           <section class="mb-10">
             <div
-              class="bg-white rounded-2xl shadow-sm border border-neutral-200 p-4 md:p-8 relative overflow-hidden group"
+              class="bg-white rounded-2xl shadow-sm border border-neutral-200 px-4 py-3 md:px-8 md:py-5 relative overflow-hidden group"
             >
-              <div class="flex items-center justify-between mb-4 relative z-10">
+              <div class="flex items-center justify-between mb-2 relative z-10">
                 <h2
                   class="text-2xl font-bold text-neutral-800 border-l-4 border-blue-600 pl-4"
                 >
@@ -147,7 +147,7 @@
                   #catScroll
                   #catTracker="scrollTracker"
                   appScrollTracker
-                  class="flex overflow-x-auto gap-4 md:gap-6 pt-4 pb-4 scroll-smooth scrollbar-hide snap-x snap-mandatory"
+                  class="flex overflow-x-auto gap-4 md:gap-6 pt-3 pb-4 scroll-smooth scrollbar-hide snap-x snap-mandatory"
                 >
                   @for (product of item.products; track $index) {
                     <div

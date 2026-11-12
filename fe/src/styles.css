@@ -497,7 +497,7 @@
   }
 
   .elsi-add-initial-btn {
-    @apply w-full h-10 px-2 flex items-center justify-center rounded-xl bg-[#3d4494] text-white
+    @apply w-full h-9 sm:h-10 px-2 flex items-center justify-center rounded-xl bg-[#3d4494] text-white
            text-sm font-bold whitespace-nowrap
            hover:bg-[#2a2f63] transition-all duration-300 shadow-md cursor-pointer
            disabled:bg-gray-300 disabled:cursor-not-allowed;
