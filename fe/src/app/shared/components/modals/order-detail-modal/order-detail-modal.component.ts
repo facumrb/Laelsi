@@ -24,9 +24,12 @@ import { AuthService } from 'src/app/services/auth.service';
 import { CloseModalButtonComponent } from '@shared/components/buttons/close-modal-button/close-modal-button.component';
 import { ProductImageComponent } from '@shared/components/product-image/product-image.component';
 
+import { BackdropCloseDirective } from '@shared/directives/backdrop-close.directive';
+
 @Component({
   selector: 'app-order-detail-modal',
   imports: [
+    BackdropCloseDirective,
     NgIconComponent,
     CurrencyPipe,
     FormatDatePipe,
