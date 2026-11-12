@@ -143,19 +143,29 @@
                 <span class="text-red-500">*</span>
               }
             </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              formControlName="password"
-              maxlength="100"
-              class="form-input"
-              placeholder="{{
-                isEditMode()
-                  ? 'Dejar vacío para mantener la actual'
-                  : 'Mínimo 8 caracteres, 1 letra, 1 número.'
-              }}"
-            />
+            <div
+              class="password-field rounded-lg border border-gray-300 shadow-sm focus-within:[outline:auto]"
+            >
+              <input
+                [type]="passwordVisible() ? 'text' : 'password'"
+                id="password"
+                name="password"
+                formControlName="password"
+                maxlength="100"
+                autocomplete="new-password"
+                class="password-field-input p-2.5 text-sm text-gray-900"
+                placeholder="{{
+                  isEditMode()
+                    ? 'Dejar vacío para mantener la actual'
+                    : 'Mínimo 8 caracteres, 1 letra, 1 número.'
+                }}"
+              />
+
+              <app-password-toggle-button
+                [(visible)]="passwordVisible"
+                [show]="showEyeIcon()"
+              />
+            </div>
             <div class="min-h-8">
               <app-field-error [control]="formAdmin.controls.password" />
             </div>
@@ -168,19 +178,29 @@
                 <span class="text-red-500">*</span>
               }
             </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              formControlName="confirmPassword"
-              maxlength="100"
-              class="form-input"
-              placeholder="{{
-                isEditMode()
-                  ? 'Repetir nueva contraseña'
-                  : 'Repetir la contraseña ingresada'
-              }}"
-            />
+            <div
+              class="password-field rounded-lg border border-gray-300 shadow-sm focus-within:[outline:auto]"
+            >
+              <input
+                [type]="confirmPasswordVisible() ? 'text' : 'password'"
+                id="confirmPassword"
+                name="confirmPassword"
+                formControlName="confirmPassword"
+                maxlength="100"
+                autocomplete="new-password"
+                class="password-field-input p-2.5 text-sm text-gray-900"
+                placeholder="{{
+                  isEditMode()
+                    ? 'Repetir nueva contraseña'
+                    : 'Repetir la contraseña ingresada'
+                }}"
+              />
+
+              <app-password-toggle-button
+                [(visible)]="confirmPasswordVisible"
+                [show]="showConfirmEyeIcon()"
+              />
+            </div>
             <app-field-error [control]="formAdmin.controls.confirmPassword" />
           </div>
 

@@ -1,5 +1,6 @@
 import {
   Component,
+  computed,
   effect,
   inject,
   input,
@@ -7,6 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -20,6 +22,7 @@ import { switchMap, of, catchError, EMPTY } from 'rxjs';
 import { AuthService } from '@services/auth.service';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
+import { PasswordToggleButtonComponent } from '@shared/components/buttons/password-toggle-button/password-toggle-button.component';
 
 @Component({
   selector: 'app-profile-user',
@@ -29,6 +32,7 @@ import { TrimInputDirective } from '@shared/directives/trim-input.directive';
     PhotoManagerComponent,
     FieldErrorComponent,
     TrimInputDirective,
+    PasswordToggleButtonComponent,
   ],
   viewProviders: [provideIcons({ bootstrapShieldLock })],
   templateUrl: './profile-userData.component.html',
@@ -52,28 +56,52 @@ export class ProfileUserComponent {
   // el servidor la vuelve a exigir, porque con solo la sesión iniciada no alcanza para cambiarla.
   private verifiedCurrentPassword: string | null = null;
 
-  formUsuario = this.fb.nonNullable.group({
-    username: [
-      '',
-      [
-        Validators.required,
-        FormUtils.minLength(4),
-        FormUtils.maxLength(30),
-        Validators.pattern(FormUtils.usernamePattern),
-        FormUtils.notOnlyWhiteSpace,
+  formUsuario = this.fb.nonNullable.group(
+    {
+      username: [
+        '',
+        [
+          Validators.required,
+          FormUtils.minLength(4),
+          FormUtils.maxLength(30),
+          Validators.pattern(FormUtils.usernamePattern),
+          FormUtils.notOnlyWhiteSpace,
+        ],
       ],
-    ],
-    password: [
-      '',
-      [FormUtils.maxLength(100), Validators.pattern(FormUtils.passwordPattern)],
-    ],
-    confirmPassword: [
-      '',
-      [FormUtils.maxLength(100), Validators.pattern(FormUtils.passwordPattern)],
-    ],
-  }, {
-    validators: [FormUtils.isFieldOneEqualFieldTwo('password', 'confirmPassword')]
-  });
+      password: [
+        '',
+        [
+          FormUtils.maxLength(100),
+          Validators.pattern(FormUtils.passwordPattern),
+        ],
+      ],
+      confirmPassword: [
+        '',
+        [
+          FormUtils.maxLength(100),
+          Validators.pattern(FormUtils.passwordPattern),
+        ],
+      ],
+    },
+    {
+      validators: [
+        FormUtils.isFieldOneEqualFieldTwo('password', 'confirmPassword'),
+      ],
+    },
+  );
+
+  passwordVisible = signal(false);
+  confirmPasswordVisible = signal(false);
+
+  private passwordValue = toSignal(
+    this.formUsuario.controls.password.valueChanges,
+  );
+  private confirmPasswordValue = toSignal(
+    this.formUsuario.controls.confirmPassword.valueChanges,
+  );
+
+  showEyeIcon = computed(() => !!this.passwordValue());
+  showConfirmEyeIcon = computed(() => !!this.confirmPasswordValue());
 
   constructor() {
     effect(() => {
@@ -129,10 +157,16 @@ export class ProfileUserComponent {
         next: () => {
           this.verifiedCurrentPassword = password;
           this.isChangePasswordMode.set(true);
-          this.alertService.toast('Contraseña verificada correctamente', 'success');
+          this.alertService.toast(
+            'Contraseña verificada correctamente',
+            'success',
+          );
         },
         error: (err) => {
-          this.alertService.error('Error de verificación', err.error?.message || 'Contraseña incorrecta');
+          this.alertService.error(
+            'Error de verificación',
+            err.error?.message || 'Contraseña incorrecta',
+          );
         },
       });
     }
@@ -168,7 +202,10 @@ export class ProfileUserComponent {
         // recibirían un 401 y mostrarían "Tu sesión ya no es válida" tras un cambio que salió bien.
         switchMap(() =>
           nuevaContrasena
-            ? this.authService.renewSessionAfterPasswordChange(clientData.username, nuevaContrasena)
+            ? this.authService.renewSessionAfterPasswordChange(
+                clientData.username,
+                nuevaContrasena,
+              )
             : of(true),
         ),
         switchMap((sesionVigente) => {

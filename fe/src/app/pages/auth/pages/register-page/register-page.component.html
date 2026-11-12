@@ -83,7 +83,9 @@
               Contraseña <span class="text-red-500">*</span>
             </label>
 
-            <div class="relative">
+            <div
+              class="password-field rounded-lg border border-gray-300 shadow-sm focus-within:border-[#3d4494] focus-within:ring-1 focus-within:ring-[#3d4494]"
+            >
               <input
                 [type]="passwordVisible() ? 'text' : 'password'"
                 id="password"
@@ -92,7 +94,7 @@
                 maxlength="100"
                 autocomplete="new-password"
                 aria-describedby="password-hint"
-                class="form-input p-3 pr-10 focus:border-[#3d4494] focus:ring-1 focus:ring-[#3d4494] outline-none transition-all"
+                class="password-field-input p-3 text-sm text-gray-900"
                 placeholder="•••••••••••••••••"
               />
 
@@ -121,7 +123,9 @@
               Confirmar Contraseña <span class="text-red-500">*</span>
             </label>
 
-            <div class="relative">
+            <div
+              class="password-field rounded-lg border border-gray-300 shadow-sm focus-within:border-[#3d4494] focus-within:ring-1 focus-within:ring-[#3d4494]"
+            >
               <input
                 [type]="confirmPasswordVisible() ? 'text' : 'password'"
                 id="confirmPassword"
@@ -129,7 +133,7 @@
                 formControlName="confirmPassword"
                 maxlength="100"
                 autocomplete="new-password"
-                class="form-input p-3 pr-10 focus:border-[#3d4494] focus:ring-1 focus:ring-[#3d4494] outline-none transition-all"
+                class="password-field-input p-3 text-sm text-gray-900"
                 placeholder="Repetí tu contraseña"
               />
 
