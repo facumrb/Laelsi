@@ -90,6 +90,16 @@ export class ResetPasswordPageComponent implements OnInit {
     { initialValue: '' },
   );
 
+  private passwordControl = this.formReset.controls.password;
+
+  private passwordEvents = toSignal(this.passwordControl.events);
+
+  // La regla de la contraseña se muestra siempre (reserva su espacio) y pasa a rojo cuando no se cumple
+  passwordHintError = computed(() => {
+    this.passwordEvents();
+    return this.passwordControl.touched && this.passwordControl.invalid;
+  });
+
   showEyeIcon = computed(() => this.passwordValue().length > 0);
   showConfirmEyeIcon = computed(() => this.confirmPasswordValue().length > 0);
 
