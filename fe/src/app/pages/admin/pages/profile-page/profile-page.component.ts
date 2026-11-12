@@ -1,4 +1,12 @@
-import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { EMPTY, of, switchMap } from 'rxjs';
@@ -13,6 +21,7 @@ import { FormUtils } from '@shared/validators/form-utils';
 import { PhotoManagerComponent } from '@shared/components/photo-manager/photo-manager.component';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { GoBackButtonComponent } from '@shared/components/buttons/go-back-button/go-back-button.component';
+import { PasswordToggleButtonComponent } from '@shared/components/buttons/password-toggle-button/password-toggle-button.component';
 import { NumericInputDirective } from '@shared/directives/numeric-input.directive';
 import { PhoneInputDirective } from '@shared/directives/phone-input.directive';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
@@ -25,6 +34,7 @@ import { injectInvalidateAdmins } from '@services/queries/admin-queries';
     PhotoManagerComponent,
     FieldErrorComponent,
     GoBackButtonComponent,
+    PasswordToggleButtonComponent,
     NumericInputDirective,
     PhoneInputDirective,
     TrimInputDirective,
@@ -118,6 +128,19 @@ export class ProfilePageComponent implements OnInit {
       ],
     },
   );
+
+  passwordVisible = signal(false);
+  confirmPasswordVisible = signal(false);
+
+  private passwordValue = toSignal(
+    this.formEditProfile.controls.password.valueChanges,
+  );
+  private confirmPasswordValue = toSignal(
+    this.formEditProfile.controls.confirmPassword.valueChanges,
+  );
+
+  showEyeIcon = computed(() => !!this.passwordValue());
+  showConfirmEyeIcon = computed(() => !!this.confirmPasswordValue());
 
   ngOnInit(): void {
     this.fetchAdmin(this.authService.currentUser()!.id);

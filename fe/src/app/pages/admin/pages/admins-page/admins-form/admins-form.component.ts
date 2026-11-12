@@ -1,4 +1,12 @@
-import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Location } from '@angular/common';
@@ -16,6 +24,7 @@ import { PhotoManagerComponent } from '@shared/components/photo-manager/photo-ma
 import { AuditInfoComponent } from '@admin/components/audit-info/audit-info.component';
 import { PhoneInputDirective } from '@shared/directives/phone-input.directive';
 import { GoBackButtonComponent } from '@shared/components/buttons/go-back-button/go-back-button.component';
+import { PasswordToggleButtonComponent } from '@shared/components/buttons/password-toggle-button/password-toggle-button.component';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
 import { injectInvalidateAdmins } from '@services/queries/admin-queries';
@@ -29,6 +38,7 @@ import { injectInvalidateAdmins } from '@services/queries/admin-queries';
     PhotoManagerComponent,
     AuditInfoComponent,
     GoBackButtonComponent,
+    PasswordToggleButtonComponent,
     FieldErrorComponent,
     RouterLink,
     TrimInputDirective,
@@ -135,6 +145,19 @@ export class AdminsFormComponent implements OnInit {
       ],
     },
   );
+
+  passwordVisible = signal(false);
+  confirmPasswordVisible = signal(false);
+
+  private passwordValue = toSignal(
+    this.formAdmin.controls.password.valueChanges,
+  );
+  private confirmPasswordValue = toSignal(
+    this.formAdmin.controls.confirmPassword.valueChanges,
+  );
+
+  showEyeIcon = computed(() => !!this.passwordValue());
+  showConfirmEyeIcon = computed(() => !!this.confirmPasswordValue());
 
   ngOnInit() {
     this.checkEditMode();

@@ -170,15 +170,25 @@
           <!-- Contraseña -->
           <div>
             <label for="password" class="form-label"> Contraseña </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              formControlName="password"
-              maxlength="100"
-              class="form-input"
-              placeholder="Dejar vacío para mantener la actual"
-            />
+            <div
+              class="password-field rounded-lg border border-gray-300 shadow-sm focus-within:[outline:auto]"
+            >
+              <input
+                [type]="passwordVisible() ? 'text' : 'password'"
+                id="password"
+                name="password"
+                formControlName="password"
+                maxlength="100"
+                autocomplete="new-password"
+                class="password-field-input p-2.5 text-sm text-gray-900"
+                placeholder="Dejar vacío para mantener la actual"
+              />
+
+              <app-password-toggle-button
+                [(visible)]="passwordVisible"
+                [show]="showEyeIcon()"
+              />
+            </div>
             <div class="min-h-8">
               <app-field-error [control]="formEditProfile.controls.password" />
             </div>
@@ -189,15 +199,25 @@
             <label for="confirmPassword" class="form-label">
               Confirmar Contraseña
             </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              formControlName="confirmPassword"
-              maxlength="100"
-              class="form-input"
-              placeholder="Repetir nueva contraseña"
-            />
+            <div
+              class="password-field rounded-lg border border-gray-300 shadow-sm focus-within:[outline:auto]"
+            >
+              <input
+                [type]="confirmPasswordVisible() ? 'text' : 'password'"
+                id="confirmPassword"
+                name="confirmPassword"
+                formControlName="confirmPassword"
+                maxlength="100"
+                autocomplete="new-password"
+                class="password-field-input p-2.5 text-sm text-gray-900"
+                placeholder="Repetir nueva contraseña"
+              />
+
+              <app-password-toggle-button
+                [(visible)]="confirmPasswordVisible"
+                [show]="showConfirmEyeIcon()"
+              />
+            </div>
             <app-field-error
               [control]="formEditProfile.controls.confirmPassword"
             />
