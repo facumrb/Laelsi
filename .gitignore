@@ -65,6 +65,7 @@ graphify-out/
 .agents/
 CLAUDE.md
 .claude/settings.local.json
+.claude/agents
 .mcp.json
 .specify/local/
 docs/Datos de despliegue.md
