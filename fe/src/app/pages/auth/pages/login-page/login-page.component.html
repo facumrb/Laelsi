@@ -59,7 +59,9 @@
               Contraseña
             </label>
 
-            <div class="relative">
+            <div
+              class="password-field rounded-lg border border-gray-300 shadow-sm focus-within:border-[#3d4494] focus-within:ring-1 focus-within:ring-[#3d4494]"
+            >
               <input
                 [type]="passwordVisible() ? 'text' : 'password'"
                 id="password"
@@ -67,7 +69,7 @@
                 formControlName="password"
                 maxlength="100"
                 autocomplete="current-password"
-                class="form-input p-3 pr-10 focus:border-[#3d4494] focus:ring-1 focus:ring-[#3d4494] outline-none transition-all"
+                class="password-field-input p-3 text-sm text-gray-900"
               />
 
               <app-password-toggle-button
@@ -76,19 +78,21 @@
               />
             </div>
 
-            <div class="mt-1 flex justify-between items-start">
+            <div
+              class="mt-1 flex flex-col sm:flex-row sm:justify-between sm:items-start"
+            >
               <div class="flex-1">
                 <app-field-error [control]="formLogin.controls.password" />
               </div>
 
-            <a
-              routerLink="/auth/recover-password"
-              class="cursor-pointer inline-block py-1 mt-1 text-sm font-medium text-[#3d4494] hover:underline"
-            >
-              ¿Olvidaste tu contraseña?
-            </a>
+              <a
+                routerLink="/auth/recover-password"
+                class="cursor-pointer inline-block self-auto py-1 mt-1 text-sm font-medium text-[#3d4494] hover:underline"
+              >
+                ¿Olvidaste tu contraseña?
+              </a>
+            </div>
           </div>
-        </div>
 
           <div class="pt-2">
             <button
@@ -106,51 +110,51 @@
             </button>
           </div>
 
+          <!-- Inicio de sesión con Google (Supabase Auth) -->
+          <div class="flex items-center gap-3">
+            <div class="grow border-t border-gray-200"></div>
+            <span class="text-xs font-medium uppercase text-gray-400">o</span>
+            <div class="grow border-t border-gray-200"></div>
+          </div>
 
-        <!-- Inicio de sesión con Google (Supabase Auth) -->
-        <div class="flex items-center gap-3">
-          <div class="grow border-t border-gray-200"></div>
-          <span class="text-xs font-medium uppercase text-gray-400">o</span>
-          <div class="grow border-t border-gray-200"></div>
-        </div>
-
-        <button
-          type="button"
-          (click)="loginWithGoogle()"
-          [disabled]="loading()"
-          class="cursor-pointer w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg border border-gray-300 bg-white font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3d4494]"
-        >
-          <ng-icon name="bootstrapGoogle" class="text-lg"></ng-icon>
-          Continuar con Google
-        </button>
-
-        <p class="text-center text-xs text-gray-500">
-          La primera vez que entres con Google te vamos a pedir que aceptes los
-          <a
-            routerLink="/terminos"
-            target="_blank"
-            class="font-semibold text-[#3d4494] hover:underline"
-            >Términos y Condiciones</a
+          <button
+            type="button"
+            (click)="loginWithGoogle()"
+            [disabled]="loading()"
+            class="cursor-pointer w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg border border-gray-300 bg-white font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3d4494]"
           >
-          y la
-          <a
-            routerLink="/privacidad"
-            target="_blank"
-            class="font-semibold text-[#3d4494] hover:underline"
-            >Política de Privacidad</a
-          >.
-        </p>
+            <ng-icon name="bootstrapGoogle" class="text-lg"></ng-icon>
+            Continuar con Google
+          </button>
 
-        <div class="mt-6 text-center text-sm text-gray-600">
-          ¿No tenés cuenta aún?
-          <a
-            routerLink="/auth/register"
-            replaceUrl="true"
-            class="cursor-pointer inline-block py-1 font-bold text-[#3d4494] hover:text-[#2a2f63] hover:underline transition-colors ml-1"
-          >
-            Crear cuenta
-          </a>
-        </div>
+          <p class="text-center text-xs text-gray-500">
+            La primera vez que entres con Google te vamos a pedir que aceptes
+            los
+            <a
+              routerLink="/terminos"
+              target="_blank"
+              class="font-semibold text-[#3d4494] hover:underline"
+              >Términos y Condiciones</a
+            >
+            y la
+            <a
+              routerLink="/privacidad"
+              target="_blank"
+              class="font-semibold text-[#3d4494] hover:underline"
+              >Política de Privacidad</a
+            >.
+          </p>
+
+          <div class="mt-6 text-center text-sm text-gray-600">
+            ¿No tenés cuenta aún?
+            <a
+              routerLink="/auth/register"
+              replaceUrl="true"
+              class="cursor-pointer inline-block py-1 font-bold text-[#3d4494] hover:text-[#2a2f63] hover:underline transition-colors ml-1"
+            >
+              Crear cuenta
+            </a>
+          </div>
         </form>
       </div>
     </div>

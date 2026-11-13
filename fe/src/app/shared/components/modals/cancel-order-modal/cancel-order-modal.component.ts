@@ -6,9 +6,11 @@ import { AlertService } from '@services/alert.service';
 import { IApiOrder } from '@models/order.model';
 import { injectInvalidateCatalog } from '@services/queries/catalog-cache';
 
+import { BackdropCloseDirective } from '@shared/directives/backdrop-close.directive';
+
 @Component({
   selector: 'app-cancel-order-modal',
-  imports: [CloseModalButtonComponent, A11yModule],
+  imports: [BackdropCloseDirective, CloseModalButtonComponent, A11yModule],
   templateUrl: './cancel-order-modal.component.html',
 })
 export class CancelOrderModalComponent {

@@ -1,11 +1,13 @@
 import {
   Component,
+  computed,
   effect,
   inject,
   input,
   output,
   signal,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -67,8 +69,6 @@ export class ProfileDetailsComponent {
   fiscalConditions = Object.values(FiscalCondition);
   isFiscalMenuOpen = signal(false);
 
-  // ID 71 (pregunta 1 de la comparativa): nombre, apellido, DNI y teléfono son opcionales; un cliente creado con
-  // lo mínimo no tiene que completarlos para guardar otro cambio. Si se cargan, se siguen validando.
   formPerfil = this.fb.nonNullable.group({
     name: [
       '',
@@ -128,6 +128,19 @@ export class ProfileDetailsComponent {
     apartment: ['', FormUtils.maxLength(5)],
   });
 
+  // Valores con los que se cargó el formulario: sirven para saber si hay cambios y para descartarlos
+  private initialValue = signal<string | null>(null);
+  private formValue = toSignal(this.formPerfil.valueChanges);
+
+  hasChanges = computed(() => {
+    this.formValue();
+    const initial = this.initialValue();
+    return (
+      initial !== null &&
+      JSON.stringify(this.formPerfil.getRawValue()) !== initial
+    );
+  });
+
   constructor() {
     effect(() => {
       const profile = this.profile();
@@ -177,6 +190,15 @@ export class ProfileDetailsComponent {
     this.formPerfil.controls.cuit.setAsyncValidators(
       FormUtils.uniqueFieldValidator('Client', 'cuit', this.http, id),
     );
+
+    this.initialValue.set(JSON.stringify(this.formPerfil.getRawValue()));
+  }
+
+  discardChanges() {
+    const initial = this.initialValue();
+    if (initial === null) return;
+    this.formPerfil.reset(JSON.parse(initial));
+    this.isFiscalMenuOpen.set(false);
   }
 
   async onSubmit() {

@@ -1,8 +1,17 @@
-import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Location } from '@angular/common';
 import { GoBackButtonComponent } from '@shared/components/buttons/go-back-button/go-back-button.component';
+import { PasswordToggleButtonComponent } from '@shared/components/buttons/password-toggle-button/password-toggle-button.component';
 import { switchMap } from 'rxjs';
 import { ApiClientService } from '@services/api-services/api-client.service';
 import { ICreateClient, UserRole, FiscalCondition } from '@models/user.model';
@@ -37,6 +46,7 @@ import { injectInvalidateClients } from '@services/queries/client-queries';
     ClickOutsideDirective,
     AuditInfoComponent,
     GoBackButtonComponent,
+    PasswordToggleButtonComponent,
     FieldErrorComponent,
     TrimInputDirective,
     ListboxDirective,
@@ -177,6 +187,19 @@ export class ClientsFormComponent implements OnInit {
       ],
     },
   );
+
+  passwordVisible = signal(false);
+  confirmPasswordVisible = signal(false);
+
+  private passwordValue = toSignal(
+    this.formClient.controls.password.valueChanges,
+  );
+  private confirmPasswordValue = toSignal(
+    this.formClient.controls.confirmPassword.valueChanges,
+  );
+
+  showEyeIcon = computed(() => !!this.passwordValue());
+  showConfirmEyeIcon = computed(() => !!this.confirmPasswordValue());
 
   ngOnInit() {
     this.checkEditMode();

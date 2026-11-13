@@ -22,9 +22,12 @@ import { SearchInputComponent } from '@admin/components/toolbar-components/searc
 import { ProductImageComponent } from '@shared/components/product-image/product-image.component';
 import { ProductoDelSubarbol } from '@shared/utils/category-tree';
 
+import { BackdropCloseDirective } from '@shared/directives/backdrop-close.directive';
+
 @Component({
   selector: 'app-category-products-modal',
   imports: [
+    BackdropCloseDirective,
     FormsModule,
     A11yModule,
     NgIconComponent,

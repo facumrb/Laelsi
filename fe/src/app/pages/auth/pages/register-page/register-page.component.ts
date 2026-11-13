@@ -20,7 +20,6 @@ import { IClientRegister } from '@models/auth.model';
 import { injectAccessDraft } from '@services/access-draft';
 import { LEGAL_INFO } from '@client/pages/footer-pages/legal-info';
 
-
 @Component({
   selector: 'app-register-page',
   imports: [
@@ -95,10 +94,7 @@ export class RegisterPageComponent {
           Validators.pattern(FormUtils.passwordPattern),
         ],
       ],
-      confirmPassword: [
-        '',
-        [Validators.required, FormUtils.notOnlyWhiteSpace],
-      ],
+      confirmPassword: ['', [Validators.required, FormUtils.notOnlyWhiteSpace]],
       // Aceptación de los Términos y la Política de Privacidad. El servidor la vuelve a exigir
       acceptTerms: [false, [Validators.requiredTrue]],
     },
@@ -109,7 +105,6 @@ export class RegisterPageComponent {
       ),
     },
   );
-
 
   // Conserva el usuario y el email si la persona sale de la pantalla y vuelve.
   // Las contraseñas no se guardan: las completa el navegador o el gestor de contraseñas.
@@ -134,6 +129,16 @@ export class RegisterPageComponent {
     this.formRegister.get('confirmPassword')!.valueChanges,
     { initialValue: '' },
   );
+
+  private passwordControl = this.formRegister.controls.password;
+
+  private passwordEvents = toSignal(this.passwordControl.events);
+
+  // La regla de la contraseña se muestra siempre (reserva su espacio) y pasa a rojo cuando no se cumple
+  passwordHintError = computed(() => {
+    this.passwordEvents();
+    return this.passwordControl.touched && this.passwordControl.invalid;
+  });
 
   showEyeIcon = computed(() => {
     const val = this.passwordValue();
@@ -162,7 +167,8 @@ export class RegisterPageComponent {
 
     this.loading.set(true);
 
-    const { confirmPassword, ...registerData } = this.formRegister.getRawValue();
+    const { confirmPassword, ...registerData } =
+      this.formRegister.getRawValue();
 
     // El servidor guarda la fecha de la aceptación junto con la versión de los textos que se mostraron
     const payload: IClientRegister = {
@@ -192,6 +198,5 @@ export class RegisterPageComponent {
           this.alertService.toast(message, 'error');
         },
       });
-
   }
 }
