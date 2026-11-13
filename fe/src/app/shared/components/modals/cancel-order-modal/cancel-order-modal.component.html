@@ -1,6 +1,6 @@
 <div
   class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-110 flex items-center justify-center p-4 animate-fadeIn duration-200"
-  (click)="onClose()"
+  (backdropClose)="onClose()"
 >
   <div
     cdkTrapFocus
@@ -16,7 +16,7 @@
       class="flex items-center justify-between px-6 py-5 border-b border-gray-100 shrink-0"
     >
       <h2 id="cancel-modal-title" class="text-lg font-bold text-gray-900">
-        @if (variant() === 'client') {
+        @if (variant() === "client") {
           Pedido #{{ orderId() }}
         } @else {
           Orden #{{ orderId() }}
@@ -27,44 +27,75 @@
 
     <!-- Body -->
     <div class="px-6 sm:px-7 py-6 space-y-4 overflow-y-auto overscroll-contain">
-      @if (variant() === 'client') {
+      @if (variant() === "client") {
         <!-- Aviso Cliente -->
         <p class="text-sm text-gray-600 leading-relaxed">
-          ¿Estás seguro de que deseas cancelar tu pedido? Ten en cuenta que esta acción no se puede deshacer.<br />
+          ¿Estás seguro de que deseas cancelar tu pedido? Ten en cuenta que esta
+          acción no se puede deshacer.<br />
           Ocurrirán los siguientes cambios:
         </p>
 
         <!-- Lista de consecuencias Cliente -->
         <ul class="space-y-2.5">
           <li class="flex items-start gap-2.5 text-sm text-gray-700">
-            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
-            <span>El estado de tu pedido pasará a <span class="font-semibold text-gray-900">Cancelado</span>.</span>
+            <span
+              class="mt-1.5 w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"
+            ></span>
+            <span
+              >El estado de tu pedido pasará a
+              <span class="font-semibold text-gray-900">Cancelado</span>.</span
+            >
           </li>
           <li class="flex items-start gap-2.5 text-sm text-gray-700">
-            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
-            <span>Los artículos reservados serán <span class="font-semibold text-gray-900">liberados para otros compradores</span>.</span>
+            <span
+              class="mt-1.5 w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"
+            ></span>
+            <span
+              >Los artículos reservados serán
+              <span class="font-semibold text-gray-900"
+                >liberados para otros compradores</span
+              >.</span
+            >
           </li>
           <li class="flex items-start gap-2.5 text-sm text-gray-700">
-            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
-            <span>Si ya realizaste el pago por transferencia o tenés consultas, podés comunicarte con nosotros por WhatsApp.</span>
+            <span
+              class="mt-1.5 w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"
+            ></span>
+            <span
+              >Si ya realizaste el pago por transferencia o tenés consultas,
+              podés comunicarte con nosotros por WhatsApp.</span
+            >
           </li>
         </ul>
       } @else {
         <!-- Aviso Admin -->
         <p class="text-sm text-gray-600 leading-relaxed">
-          ¿Estás seguro que deseas continuar? Ten en cuenta que esta acción no se puede deshacer.<br />
+          ¿Estás seguro que deseas continuar? Ten en cuenta que esta acción no
+          se puede deshacer.<br />
           Ocurrirán los siguientes cambios:
         </p>
 
         <!-- Lista de consecuencias Admin -->
         <ul class="space-y-2.5">
           <li class="flex items-start gap-2.5 text-sm text-gray-700">
-            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-black shrink-0"></span>
-            <span>El estado de la orden pasará a <span class="font-semibold text-gray-900">Cancelada</span>.</span>
+            <span
+              class="mt-1.5 w-1.5 h-1.5 rounded-full bg-black shrink-0"
+            ></span>
+            <span
+              >El estado de la orden pasará a
+              <span class="font-semibold text-gray-900">Cancelada</span>.</span
+            >
           </li>
           <li class="flex items-start gap-2.5 text-sm text-gray-700">
-            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-black shrink-0"></span>
-            <span>El stock de los productos asociados será <span class="font-semibold text-gray-900">restaurado automáticamente</span>.</span>
+            <span
+              class="mt-1.5 w-1.5 h-1.5 rounded-full bg-black shrink-0"
+            ></span>
+            <span
+              >El stock de los productos asociados será
+              <span class="font-semibold text-gray-900"
+                >restaurado automáticamente</span
+              >.</span
+            >
           </li>
         </ul>
       }
@@ -79,7 +110,7 @@
         (click)="onClose()"
         class="w-full sm:w-auto btn-secondary"
       >
-        @if (variant() === 'client') {
+        @if (variant() === "client") {
           No, conservar pedido
         } @else {
           No, conservar orden
@@ -90,7 +121,7 @@
         (click)="onConfirm()"
         class="w-full sm:w-auto cursor-pointer rounded-md bg-rose-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-rose-700 transition-colors focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-rose-600"
       >
-        @if (variant() === 'client') {
+        @if (variant() === "client") {
           Sí, cancelar pedido
         } @else {
           Sí, cancelar orden

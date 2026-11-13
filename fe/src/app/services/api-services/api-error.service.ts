@@ -11,6 +11,12 @@ export class ApiErrorService {
   private authService = inject(AuthService);
 
   handle(err: HttpErrorResponse, reqUrl: string = '') {
+    // El modal de verificación de contraseña muestra estos errores debajo del campo (contraseña
+    // incorrecta, demasiados intentos): un aviso global los duplicaría.
+    if (reqUrl.includes('/verify-password') && (err.status === 400 || err.status === 429)) {
+      return;
+    }
+
     let titulo = 'Error';
     let mensaje = `Ocurrió un problema al procesar la solicitud.`;
     let esCritico = false;

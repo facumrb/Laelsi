@@ -97,6 +97,17 @@
     @apply block w-full rounded-lg border-gray-300 border p-2.5 text-gray-900 shadow-sm text-sm;
   }
 
+  /* Campo de contraseña con el botón del ojo FUERA del input: las extensiones (Bitwarden, etc.) dibujan su ícono
+     en el borde derecho del input, así queda a la izquierda del ojo en vez de taparlo. El borde y el foco van en
+     el contenedor (.password-field), cuyo aspecto define cada plantilla. */
+  .password-field {
+    @apply flex w-full items-center bg-white transition-all;
+  }
+
+  .password-field-input {
+    @apply min-w-0 flex-1 border-0 bg-transparent outline-none focus:ring-0;
+  }
+
   .form-card {
     @apply bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden;
   }
@@ -497,7 +508,7 @@
   }
 
   .elsi-add-initial-btn {
-    @apply w-full h-10 px-2 flex items-center justify-center rounded-xl bg-[#3d4494] text-white
+    @apply w-full h-9 sm:h-10 px-2 flex items-center justify-center rounded-xl bg-[#3d4494] text-white
            text-sm font-bold whitespace-nowrap
            hover:bg-[#2a2f63] transition-all duration-300 shadow-md cursor-pointer
            disabled:bg-gray-300 disabled:cursor-not-allowed;
