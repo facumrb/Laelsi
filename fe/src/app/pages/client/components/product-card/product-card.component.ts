@@ -19,6 +19,8 @@ import { ProductImageComponent } from '@shared/components/product-image/product-
 })
 export class ProductCardComponent {
   product = input.required<IApiProduct>();
+  // Para las tarjetas que se ven sin hacer scroll: su foto carga ya y con prioridad alta
+  prioritaria = input(false);
   imageFileName = computed(() => {
     const photos = this.product().photos;
     if (!photos || photos.length === 0) return null;

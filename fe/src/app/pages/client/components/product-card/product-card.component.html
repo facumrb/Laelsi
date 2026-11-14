@@ -3,6 +3,8 @@
     [imageUrl]="imageFileName()"
     [altText]="product().name"
     containerClass="w-full aspect-4/3 bg-gray-50"
+    [loading]="prioritaria() ? 'eager' : 'lazy'"
+    [priority]="prioritaria() ? 'high' : null"
   >
     @if (product().stock <= 0 || product().state === "Pausado") {
       <div

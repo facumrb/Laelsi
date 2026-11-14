@@ -27,14 +27,17 @@
 
   <div class="product-grid" [attr.aria-busy]="loadingProducts()">
     @if (loadingProducts()) {
-      <!-- Mientras cargan: esqueletos (ID 70). El cartel de "no hay productos" solo aparece si de verdad no hay -->
+      <!-- Mientras cargan el esqueleto. El cartel de "no hay productos" solo aparece si de verdad no hay -->
       <p role="status" class="sr-only">Cargando productos…</p>
       @for (n of skeletonCards; track n) {
         <app-product-card-skeleton />
       }
     } @else {
       @for (product of productsFiltered(); track product.id) {
-        <app-product-card [product]="product" />
+        <app-product-card
+          [product]="product"
+          [prioritaria]="$index < tarjetasPrioritarias"
+        />
       } @empty {
         <div class="col-span-full text-center py-12">
           <p class="text-gray-500 text-lg">
