@@ -26,7 +26,7 @@ export interface IProductQueryFilters {
  */
 export function injectActiveProductsQuery(
   filtersSignal: Signal<IProductQueryFilters>,
-  options?: { enabled?: Signal<boolean> | boolean }
+  options?: { enabled?: Signal<boolean> | boolean },
 ) {
   const apiProductService = inject(ApiProductService);
 
@@ -44,7 +44,7 @@ export function injectActiveProductsQuery(
               brand: filters.brand,
               priceOrder: filters.priceOrder,
               popularityOrder: filters.popularityOrder,
-            })
+            }),
           );
         }
         if (filters.categoryId && filters.categoryId !== 0) {
@@ -57,8 +57,8 @@ export function injectActiveProductsQuery(
                 brand: filters.brand,
                 priceOrder: filters.priceOrder,
                 popularityOrder: filters.popularityOrder,
-              }
-            )
+              },
+            ),
           );
         }
         return firstValueFrom(apiProductService.getActiveProducts(page, limit));
@@ -68,9 +68,12 @@ export function injectActiveProductsQuery(
       // anteriores. Sin esto la grilla queda vacía un instante en cada cambio de
       // página y la transición se ve brusca.
       placeholderData: keepPreviousData,
-      enabled: options?.enabled !== undefined
-        ? (typeof options.enabled === 'function' ? options.enabled() : options.enabled)
-        : true,
+      enabled:
+        options?.enabled !== undefined
+          ? typeof options.enabled === 'function'
+            ? options.enabled()
+            : options.enabled
+          : true,
     };
   });
 }
@@ -79,7 +82,7 @@ export function injectActiveProductsQuery(
  * Query reactiva de todos los productos (Panel Admin)
  */
 export function injectAllProductsQuery(
-  filtersSignal: Signal<IProductQueryFilters>
+  filtersSignal: Signal<IProductQueryFilters>,
 ) {
   const apiProductService = inject(ApiProductService);
 
@@ -97,7 +100,7 @@ export function injectAllProductsQuery(
             state: filters.state,
             categoryId: filters.categoryId,
             stockFilter: filters.stockFilter,
-          })
+          }),
         ),
       staleTime: 1000 * 60 * 2, // 2 minutos
       // Mantiene la tabla con los datos anteriores hasta que llega la página nueva
@@ -117,7 +120,7 @@ export function injectProductDetailQuery(idSignal: Signal<number>) {
     const id = idSignal();
     return {
       queryKey: ['products', 'detail', id],
-      queryFn: () => firstValueFrom(apiProductService.getProductById(id)),
+      queryFn: () => firstValueFrom(apiProductService.getProductById(id, true)),
       enabled: id > 0,
       staleTime: 1000 * 60 * 5, // 5 minutos
     };
@@ -196,8 +199,8 @@ export function injectBulkPriceMutation() {
           productIds,
           adjustmentType,
           adjustmentValue,
-          roundingRule
-        )
+          roundingRule,
+        ),
       ),
     onSuccess: () => {
       invalidateCatalog();
@@ -207,7 +210,7 @@ export function injectBulkPriceMutation() {
 
 /**
  * Query de la portada completa (Página principal): los más vendidos y el carrusel de cada una de las primeras
- * categorías, con UNA sola llamada. Antes la portada hacía 8 llamadas en dos tandas (ID 70).
+ * categorías, con UNA sola llamada para no encadenar varias en la carga de la portada.
  */
 export function injectHomeQuery() {
   const apiProductService = inject(ApiProductService);
@@ -237,7 +240,7 @@ export function injectBestSellersQuery(limit: number = 10) {
  */
 export function injectBestSellersByCategoryQuery(
   categoryIdSignal: Signal<number>,
-  limit: number = 10
+  limit: number = 10,
 ) {
   const apiProductService = inject(ApiProductService);
 
@@ -246,7 +249,9 @@ export function injectBestSellersByCategoryQuery(
     return {
       queryKey: ['products', 'best-sellers', 'category', categoryId, limit],
       queryFn: () =>
-        firstValueFrom(apiProductService.getBestSellersByCategory(categoryId, limit)),
+        firstValueFrom(
+          apiProductService.getBestSellersByCategory(categoryId, limit),
+        ),
       enabled: categoryId > 0,
       staleTime: 1000 * 60 * 10, // 10 minutos
     };

@@ -111,7 +111,9 @@ export class FormUtils {
           }
 
           // Usuario o email (login)
-          if (errors['pattern'].requiredPattern === this.loginIdentifierPattern) {
+          if (
+            errors['pattern'].requiredPattern === this.loginIdentifierPattern
+          ) {
             return 'Ingresá un email o un nombre de usuario válido, sin espacios.';
           }
 
@@ -232,7 +234,7 @@ export class FormUtils {
         switchMap(() => {
           const value = control.value;
           // La validación la resuelve la función SQL check_field_unique, que se
-          // invoca por la API REST de Supabase (reemplaza a /api/validate-unique)
+          // invoca por la API REST de Supabase
           const url = `${environment.supabaseUrl}/rest/v1/rpc/check_field_unique`;
           const body = {
             p_entity: entity,

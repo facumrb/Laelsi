@@ -5,7 +5,6 @@ import { IApiProduct } from '@models/product.model';
 import { ApiProductService } from '@services/api-services/api-product.service';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { bootstrapSearch } from '@ng-icons/bootstrap-icons';
-import { FormsModule } from '@angular/forms';
 import {
   catchError,
   debounceTime,
@@ -20,12 +19,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
 import { ProductImageComponent } from '@shared/components/product-image/product-image.component';
 
+// Cantidad de sugerencias que se piden al servicio y que se muestran en el autocompletado.
+const MAX_SUGERENCIAS = 6;
+
 @Component({
   selector: 'app-search-bar',
   imports: [
     CurrencyPipe,
     NgIconComponent,
-    FormsModule,
     ClickOutsideDirective,
     ProductImageComponent,
   ],
@@ -62,7 +63,6 @@ export class SearchBarComponent {
         debounceTime(300),
         distinctUntilChanged(),
         tap((term) => {
-          // Gestor de visualización
           if (term.length > 2) {
             this.isLoading.set(true);
           } else {
@@ -74,7 +74,7 @@ export class SearchBarComponent {
         }),
         filter((term) => term.length > 2),
         switchMap((term) =>
-          this.apiProductService.searchProducts(term).pipe(
+          this.apiProductService.searchProducts(term, 1, MAX_SUGERENCIAS).pipe(
             catchError(() => {
               return of({
                 data: [],
@@ -90,7 +90,7 @@ export class SearchBarComponent {
       )
       .subscribe({
         next: (products) => {
-          this.results.set(products.data.slice(0, 6)); // Top 6 matches recomendados
+          this.results.set(products.data.slice(0, MAX_SUGERENCIAS));
           this.showResults.set(products.data.length > 0);
           this.isLoading.set(false);
         },

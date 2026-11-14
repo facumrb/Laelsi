@@ -30,8 +30,8 @@ export interface OpcionesSubarbol {
  * Devuelve el id de la categoría y el de todas sus descendientes (hijas, nietas...).
  *
  * El id pedido va siempre en el resultado, aunque no exista en `categorias`: así el filtro
- * `category_id in (...)` nunca queda vacío y, para un id inexistente, no encuentra productos,
- * igual que antes de este cambio. El orden del resultado no está garantizado.
+ * `category_id in (...)` nunca queda vacío y, para un id inexistente, no encuentra productos.
+ * El orden del resultado no está garantizado.
  */
 export function idsDelSubarbol(
   raizId: number,

@@ -47,13 +47,14 @@ import {
   loadActiveProductCounts,
   loadCategories,
   likePattern,
+  loadProductCards,
   loadProducts,
   paginateProducts,
 } from '../_shared/catalogo.ts';
 import { deleteObject } from '../_shared/r2.ts';
 import { idsDelSubarbol } from '../_shared/subarbol-categorias.ts';
 import { PRODUCTOS_POR_CARRUSEL, armarPortada, categoriasDeLaPortada } from '../_shared/portada.ts';
-import { CACHE_CATALOGO_SEGUNDOS } from '../_shared/cache-publica.ts';
+import { CACHE_CATALOGO_SEGUNDOS, segundosDeCacheDelDetalle } from '../_shared/cache-publica.ts';
 import {
   ESTADOS_PRODUCTO,
   ESTADOS_VISIBLES_EN_TIENDA,
@@ -140,6 +141,7 @@ async function searchProductsByText(ctx: RequestContext) {
       orderBy: () => clientOrderBy(filters),
       page,
       limit,
+      tarjetas: true,
     }),
     loadBrands(matching),
   ]);
@@ -176,6 +178,7 @@ async function findActiveProductsByCategory(ctx: RequestContext) {
       orderBy: () => clientOrderBy(filters),
       page,
       limit,
+      tarjetas: true,
     }),
     loadBrands(inCategory),
   ]);
@@ -198,7 +201,6 @@ async function findAll(ctx: RequestContext) {
     throw new AppError(`Estado de producto inválido. Los estados válidos son: ${VALID_PRODUCT_STATES.join(', ')}`, 400);
   }
 
-  // Filtros de stock (WHERE) y ordenamiento
   const stockWhere = () => {
     if (stockFilter === 'AltoStock') return sql`and p.stock > 10`;
     if (stockFilter === 'BajoStock') return sql`and p.stock <= 10 and p.stock > 0`;
@@ -233,7 +235,7 @@ async function findOne(ctx: RequestContext) {
   const id = intParam(ctx, 'id', 'ID de producto inválido');
   const [product] = await loadProducts([id]);
   if (!product) throw new AppError('Producto no encontrado', 404);
-  return ok('Producto encontrado', product);
+  return ok('Producto encontrado', product, segundosDeCacheDelDetalle(ctx.req));
 }
 
 async function findOneActive(ctx: RequestContext) {
@@ -276,12 +278,13 @@ async function findAvailability(ctx: RequestContext) {
 
 async function findAllActive(ctx: RequestContext) {
   const { page, limit } = getPagination(ctx);
-  // 🚨 Para el cliente final, SÓLO se devuelven los activos con categoría activa
+  // Para el cliente final solo se devuelven los productos visibles con categoría activa (ver activeOnly)
   const products = await paginateProducts({
     where: activeOnly,
     orderBy: () => sql`p.id asc`,
     page,
     limit,
+    tarjetas: true,
   });
   return products;
 }
@@ -305,7 +308,7 @@ async function bestSellerIds(limit: number, categoryIds?: number[]): Promise<num
 async function bestSellers(limit: number, categoryId?: number) {
   // PROVISIONAL-2026-11-08 (subárbol de categorías): los más vendidos de una madre salen de todo su subárbol
   const categoryIds = categoryId ? await idsDeCategoria(categoryId, { soloActivas: true }) : undefined;
-  return await loadProducts(await bestSellerIds(limit, categoryIds));
+  return await loadProductCards(await bestSellerIds(limit, categoryIds));
 }
 
 /**
@@ -330,7 +333,7 @@ async function findHome() {
     ),
   );
 
-  const productos = await loadProducts([...new Set([...idsGenerales, ...idsPorCategoria.flat()])]);
+  const productos = await loadProductCards([...new Set([...idsGenerales, ...idsPorCategoria.flat()])]);
   // deno-lint-ignore no-explicit-any
   const porId = new Map<number, any>(productos.map((p: any) => [p.id, p]));
   const aProductos = (ids: number[]) => ids.map((id) => porId.get(id)).filter((p) => p !== undefined);
@@ -369,8 +372,7 @@ const isNonNegativeInteger = (value: unknown) => typeof value === 'number' && Nu
 
 /**
  * Valida el formato de los campos del producto que vinieron en la petición; los ausentes se ignoran.
- * Lo comparten el alta y la edición, que antes tenían cada una su copia de las mismas reglas.
- * Qué campos son obligatorios lo decide cada una por su cuenta.
+ * Lo comparten el alta y la edición. Qué campos son obligatorios lo decide cada una por su cuenta.
  */
 // deno-lint-ignore no-explicit-any
 function validateProductFields(fields: Record<string, any>): void {
@@ -399,7 +401,7 @@ function validateProductFields(fields: Record<string, any>): void {
 
 // ─── Creación ────────────────────────────────────────────────────────────────
 
-/** Traduce el error de nombre duplicado al mensaje que mostraba el backend anterior. */
+/** Traduce el error de nombre duplicado (unicidad) a un 409 con un mensaje claro. */
 function rethrowDuplicateName(err: unknown): never {
   // deno-lint-ignore no-explicit-any
   if ((err as any)?.code === '23505') throw new AppError('Ya existe un producto con el mismo nombre', 409);
@@ -579,7 +581,6 @@ async function removeProduct(ctx: RequestContext) {
   // Recién cuando el producto se borró de la base se eliminan sus archivos de R2
   await Promise.all(photos.map((photo) => deleteObject('product', photo.fileName)));
 
-  // Verificar si la categoría debe desactivarse tras eliminar el producto
   await checkAndDeactivateCategory(product.categoryId);
 
   return ok('Producto eliminado');

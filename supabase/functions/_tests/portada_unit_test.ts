@@ -26,7 +26,7 @@ const cat = (id: number, parentId: number | null = null, state: 'Activo' | 'Inac
 });
 const cuentas = (pares: [number, number][]) => new Map<number, number>(pares);
 
-// ─── Árbol de categorías (funciones que se movieron de catalogo.ts sin cambiar su comportamiento) ──────
+// ─── Árbol de categorías (categorias-arbol.ts) ──────────────────────────────────────────────────────
 
 Deno.test('groupByParent: agrupa por padre y las raíces quedan bajo null, conservando el orden', () => {
   const grupos = groupByParent([cat(1), cat(2, 1), cat(3), cat(4, 1)]);

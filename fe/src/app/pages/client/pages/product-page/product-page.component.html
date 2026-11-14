@@ -1,5 +1,4 @@
 <div class="container animate-fadeIn mx-auto p-4">
-  <!-- Breadcrumbs -->
   <app-breadcrumbs [steps]="breadcrumbSteps()" />
 
   @if (product(); as prod) {
@@ -70,6 +69,8 @@
                 [imageUrl]="selectedPhotoFileName()"
                 [altText]="prod.name"
                 containerClass="w-full h-full"
+                loading="eager"
+                priority="high"
               />
             </div>
 

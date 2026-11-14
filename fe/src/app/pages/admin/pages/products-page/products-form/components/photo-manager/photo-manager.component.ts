@@ -45,14 +45,13 @@ export class PhotoManagerComponent {
   private alertService = inject(AlertService);
   readonly MAX_PHOTOS = 10;
 
-  // Input: Recibimos las fotos cuando estamos en modo Edición
+  //Recibimos las fotos cuando estamos en modo Edición
   initialPhotos = input<IApiProductPhoto[]>([]);
 
-  // Estado interno
   gallery = signal<IUiPhoto[]>([]);
   photosToDeleteIds: number[] = [];
 
-  // NUEVO: Guardamos el orden original de los IDs para comparar cambios en el modo edicion
+  // Orden original de los IDs, para detectar cambios de orden en el modo edición
   private originalOrder = signal<number[]>([]);
 
   constructor() {
@@ -168,7 +167,7 @@ export class PhotoManagerComponent {
     return false;
   });
 
-  // --- LÓGICA DE PERSISTENCIA TEMPORAL ---
+  // Estado de la galería que el padre guarda y restaura como borrador al ir a crear una categoría.
   getCurrentState() {
     return {
       gallery: this.gallery(),
@@ -181,7 +180,7 @@ export class PhotoManagerComponent {
     this.photosToDeleteIds = state.photosToDeleteIds;
   }
 
-  // --- LÓGICA DE GUARDADO (Llamada por el Padre) ---
+  // Lo llama el componente padre al guardar el producto.
   saveChanges(productId: number): Observable<any> {
     const tasks: Observable<any>[] = [];
 
@@ -202,8 +201,8 @@ export class PhotoManagerComponent {
       const fd = new FormData();
 
       newPhotos.forEach((photo) => {
-        fd.append('files', photo.file!); // Adjuntamos el archivo
-        // Adjuntamos también su posición visual actual
+        fd.append('files', photo.file!);
+        // Se envía también su posición visual actual
         const visualIndex = this.gallery().indexOf(photo);
         fd.append('orders', visualIndex.toString());
       });

@@ -47,7 +47,6 @@ export class ResetPasswordPageComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private alertService = inject(AlertService);
 
-  // Signals para el estado de la UI
   state = signal<ResetState>('checking');
   loading = signal(false);
   passwordVisible = signal(false);
@@ -79,7 +78,6 @@ export class ResetPasswordPageComponent implements OnInit {
     },
   );
 
-  // Lógica UI para los inputs de contraseña
   private passwordValue = toSignal(
     this.formReset.controls.password.valueChanges,
     { initialValue: '' },

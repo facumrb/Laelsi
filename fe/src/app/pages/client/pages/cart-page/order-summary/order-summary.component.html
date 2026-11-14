@@ -204,7 +204,7 @@
       </p>
     }
 
-    @if (turnstileEnabled) {
+    @if (turnstileEnabled && isLoggedIn()) {
       <!-- Verificación anti-bots de Cloudflare Turnstile -->
       <app-turnstile (tokenChange)="turnstileToken.set($event)" />
     }

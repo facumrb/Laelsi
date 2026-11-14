@@ -20,9 +20,8 @@ describe('ProductsFilterButtonComponent: categorías para filtrar', () => {
   });
 });
 
-// Mismo problema que en el selector del formulario: con cinco niveles de sangría, el menú de 288 px dejaba ~125 px de
-// texto a los niveles profundos. Desde pantallas chicas en adelante (sm) el menú es más ancho; en un teléfono sigue
-// limitado al 90% de la pantalla.
+// Con cinco niveles de sangría, un menú de 288 px dejaría ~125 px de texto a los niveles profundos: desde
+// pantallas chicas en adelante (sm) el menú es más ancho; en un teléfono sigue limitado al 90% de la pantalla.
 describe('ProductsFilterButtonComponent: ancho del menú', () => {
   it('el menú de filtros es más ancho desde sm y nunca pasa del 90% de la pantalla', () => {
     const fixture = TestBed.createComponent(ProductsFilterButtonComponent);
@@ -40,10 +39,10 @@ describe('ProductsFilterButtonComponent: ancho del menú', () => {
     expect(menu.classList.contains('max-w-[90vw]')).toBe(true);
   });
 
-  // ID 64 (hallazgo 2): desde sm el menú se pegaba al borde DERECHO de su botón, pero el botón es más angosto que el menú
-  // (384 px) hasta ~820 px de ancho: entre 640 y 768 px el menú quedaba cortado por el borde izquierdo de la ventana
-  // (hasta 70 px fuera) y no se leía. Los filtros de Categorías, Clientes, Administradores y Órdenes ya se pegan a la
-  // derecha recién desde lg, donde el botón queda lejos del borde izquierdo.
+  // ID 64 (hallazgo 2): el botón es más angosto que el menú (384 px) hasta ~820 px de ancho, así que pegar el menú al
+  // borde DERECHO del botón desde sm lo cortaría por el borde izquierdo de la ventana entre 640 y 768 px (hasta 70 px
+  // fuera). Por eso, como en los filtros de Categorías, Clientes, Administradores y Órdenes, se pega a la derecha
+  // recién desde lg, donde el botón queda lejos del borde izquierdo.
   it('el menú se alinea a la izquierda de su botón hasta lg y a la derecha desde lg, nunca desde sm', () => {
     const fixture = TestBed.createComponent(ProductsFilterButtonComponent);
     fixture.componentRef.setInput('statusFilter', 'Todos');

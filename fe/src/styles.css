@@ -11,7 +11,6 @@
 @theme {
   /* 1. Defines la variable de la animación */
   --animate-fadeIn: fadeIn 0.2s ease-in-out;
-  --animate-slideUp: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* 2. Los keyframes van FUERA del bloque @theme */
@@ -21,17 +20,6 @@
   }
   to {
     opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }
 

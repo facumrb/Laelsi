@@ -6,8 +6,8 @@ import { ApiCategoryService } from '@services/api-services/api-category.service'
 import { cadenaAnidada } from '@shared/testing/categorias';
 import { CategoriesOrderModalComponent } from './categories-order-modal.component';
 
-// El modal para reordenar categorías dibujaba tres niveles a mano. Con hasta cinco niveles, las categorías de
-// más abajo no se podían reordenar: ahora cada nivel es una lista que se arma a sí misma.
+// En el modal para reordenar categorías cada nivel es una lista que se arma a sí misma, así que se pueden
+// reordenar las categorías de todos los niveles (hasta cinco), sin niveles escritos a mano.
 describe('CategoriesOrderModalComponent: niveles', () => {
   /** Abre el modal con la cadena de cinco niveles y expande todas las ramas. */
   function modalExpandido(): HTMLElement {
@@ -53,10 +53,9 @@ describe('CategoriesOrderModalComponent: niveles', () => {
     expect(modalExpandido().querySelectorAll('.cdk-drop-list').length).toBe(5);
   });
 
-  // En un teléfono de 360 px, con cinco niveles abiertos cada nivel restaba 32 px de sangría y el botón "Ver
-  // subcategorías (n)" ocupaba más de la mitad de la fila: el nombre de la categoría quedaba en 45 px y se partía en 4
-  // líneas (visto en el navegador con un árbol de 5 niveles). Ahora el botón baja a otra línea cuando no entra, el nombre
-  // conserva un ancho mínimo y la sangría es menor en pantallas chicas.
+  // En un teléfono de 360 px, con cinco niveles abiertos cada nivel resta 32 px de sangría y el botón "Ver
+  // subcategorías (n)" ocuparía más de la mitad de la fila, dejando el nombre en 45 px partido en 4 líneas. Por eso el
+  // botón baja a otra línea cuando no entra, el nombre conserva un ancho mínimo y la sangría es menor en pantallas chicas.
   it('el nombre conserva un ancho mínimo y el botón de subcategorías baja de línea si no entra', () => {
     const modal = modalExpandido();
     const nombres = Array.from(modal.querySelectorAll<HTMLElement>('span.flex-1'));

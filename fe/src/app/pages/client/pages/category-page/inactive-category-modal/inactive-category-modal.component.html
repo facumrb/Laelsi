@@ -1,0 +1,27 @@
+<div
+  cdkTrapFocus
+  cdkTrapFocusAutoCapture
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="inactive-category-modal-title"
+  class="elsi-modal-overlay"
+>
+  <div class="elsi-modal-card">
+    <div class="elsi-modal-icon-container">
+      <ng-icon
+        name="bootstrapExclamationTriangle"
+        class="text-3xl text-gray-500"
+        aria-hidden="true"
+      ></ng-icon>
+    </div>
+    <h2 id="inactive-category-modal-title" class="elsi-modal-title">
+      Categoría no disponible
+    </h2>
+    <p class="elsi-modal-text">
+      Esta categoría se encuentra pausada o ya no está disponible en la tienda.
+    </p>
+    <button (click)="closed.emit()" class="elsi-btn-primary-full">
+      Volver al inicio
+    </button>
+  </div>
+</div>

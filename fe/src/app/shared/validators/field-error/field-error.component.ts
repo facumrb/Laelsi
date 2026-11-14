@@ -46,13 +46,11 @@ export class FieldErrorComponent {
     effect((onCleanup) => {
       const ctrl = this.control();
 
-      // Sincronizar estado inicial al recibir el control
       this.syncState(ctrl);
 
       // Suscribirse a TODOS los eventos del control (Touch, StatusChange, ValueChange, etc)
       const sub = ctrl.events.subscribe(() => this.syncState(ctrl));
 
-      // Limpiar suscripción al destruir el efecto o cambiar el control
       onCleanup(() => sub.unsubscribe());
     });
   }
@@ -68,7 +66,6 @@ export class FieldErrorComponent {
   // Determina si el componente debe mostrar feedback de validación asíncrona.
   isAsyncMode = computed(() => !!this.validLabel());
 
-  // Calcula la longitud del valor actual para el contador.
   currentLength = computed(() => {
     const val = this.value();
     return val ? String(val).length : 0;

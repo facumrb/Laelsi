@@ -161,7 +161,7 @@ async function findAll(ctx: RequestContext) {
   const paymentMethod = queryParam(ctx, 'paymentMethod');
   const query = queryParam(ctx, 'query');
 
-  // Los filtros con valores desconocidos se ignoran (igual que en el backend anterior)
+  // Los filtros con valores desconocidos se ignoran
   const where = () => sql`
     true
     ${status && VALID_ORDER_STATES.includes(status) ? sql`and o.status = ${status}::order_state` : sql``}
@@ -252,7 +252,7 @@ async function updateStatus(ctx: RequestContext) {
 
   if (status === 'Cancelado') {
     // Cancelar siempre pasa por cancel_order, que además de cambiar el estado
-    // restaura el stock. El backend anterior, por esta ruta, no lo devolvía.
+    // restaura el stock.
     await sql`select cancel_order(${id})`;
   } else {
     await sql.begin(async (tx: Db) => {
@@ -307,24 +307,17 @@ async function cancel(ctx: RequestContext) {
 }
 
 serveRoutes('orders', [
-  // 1. Crear Orden (POST /orders)
   ['POST', '/', create],
 
-  // 2. Obtener todas las órdenes (GET /orders)
   ['GET', '/', findAll],
 
-  // 3. Obtener órdenes por Cliente (GET /orders/client/:clientId)
   ['GET', '/client/:clientId', findByClient],
 
-  // 4. Obtener una orden por ID (GET /orders/:id)
   ['GET', '/:id', findOne],
 
-  // 5. Actualizar Estado (PATCH /orders/:id/status)
   ['PATCH', '/:id/status', updateStatus],
 
-  // 6. Actualizar Método de Entrega (PATCH /orders/:id/delivery-method)
   ['PATCH', '/:id/delivery-method', updateDeliveryMethod],
 
-  // 7. Cancelar Orden (PATCH /orders/:id/cancel)
   ['PATCH', '/:id/cancel', cancel],
 ]);

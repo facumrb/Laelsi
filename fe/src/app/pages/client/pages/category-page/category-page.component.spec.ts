@@ -1,6 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { TestBed } from '@angular/core/testing';
+import { DeferBlockBehavior, DeferBlockState, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { provideTanStackQuery, QueryClient } from '@tanstack/angular-query-experimental';
 import { of } from 'rxjs';
@@ -44,12 +44,14 @@ function producto(id: number, marca: string): IApiProduct {
 describe('CategoryPageComponent: filtro de marcas', () => {
   let http: HttpTestingController;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // No se le habla al Supabase real
     vi.spyOn(supabase.auth, 'onAuthStateChange').mockReturnValue({
       data: { subscription: { unsubscribe: () => undefined } },
     } as never);
     TestBed.configureTestingModule({
+      deferBlockBehavior: DeferBlockBehavior.Manual,
+      imports: [CategoryPageComponent],
       providers: [
         provideRouter([]),
         provideHttpClient(),
@@ -61,6 +63,7 @@ describe('CategoryPageComponent: filtro de marcas', () => {
         },
       ],
     });
+    await TestBed.compileComponents();
     http = TestBed.inject(HttpTestingController);
   });
 
@@ -106,11 +109,13 @@ describe('CategoryPageComponent: filtro de marcas', () => {
 describe('CategoryPageComponent: esqueleto mientras carga', () => {
   let http: HttpTestingController;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.spyOn(supabase.auth, 'onAuthStateChange').mockReturnValue({
       data: { subscription: { unsubscribe: () => undefined } },
     } as never);
     TestBed.configureTestingModule({
+      deferBlockBehavior: DeferBlockBehavior.Manual,
+      imports: [CategoryPageComponent],
       providers: [
         provideRouter([]),
         provideHttpClient(),
@@ -122,6 +127,7 @@ describe('CategoryPageComponent: esqueleto mientras carga', () => {
         },
       ],
     });
+    await TestBed.compileComponents();
     http = TestBed.inject(HttpTestingController);
   });
 
@@ -199,9 +205,12 @@ describe('CategoryPageComponent: esqueleto mientras carga', () => {
 
   // El cartel de "categoría no disponible" atrapa el foco como un diálogo pero no se anunciaba como tal: el lector de
   // pantalla seguía leyendo la página de atrás sin avisar que se abrió un cuadro.
-  it('el cartel de categoría no disponible se anuncia como diálogo modal con su título', () => {
+  it('el cartel de categoría no disponible se anuncia como diálogo modal con su título', async () => {
     const fixture = TestBed.createComponent(CategoryPageComponent);
     fixture.componentInstance.showInactiveCategoryModal.set(true);
+    fixture.detectChanges();
+    const [bloque] = await fixture.getDeferBlocks();
+    await bloque.render(DeferBlockState.Complete);
     fixture.detectChanges();
     const raiz = fixture.nativeElement as HTMLElement;
 

@@ -14,7 +14,6 @@ import { getClientIp } from './turnstile.ts';
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
 
-// Límite de intentos fallidos por IP (reemplaza a loginLimiter)
 const MAX_FAILED_ATTEMPTS = 5;
 const ATTEMPT_WINDOW_MINUTES = 15;
 

@@ -21,12 +21,11 @@
 // categorías activas (las inactivas son material de trabajo del panel admin).
 //
 // Ninguna ruta pública devuelve los productos de una categoría con todos sus datos: la tienda los
-// pide paginados a /products. Antes /active y /:id los cargaban TODOS (con fotos y precios) para
-// que la home y la página de categoría leyeran apenas el nombre.
+// pide paginados a /products.
 // ============================================================================
 import { sql, type Db } from '../_shared/db.ts';
 import { isAdminRequest, requireAdmin } from '../_shared/auth.ts';
-import { CACHE_CATALOGO_SEGUNDOS } from '../_shared/cache-publica.ts';
+import { CACHE_CATALOGO_SEGUNDOS, segundosDeCacheDelDetalle } from '../_shared/cache-publica.ts';
 import {
   AppError,
   created,
@@ -63,7 +62,7 @@ const VALID_STATES = ['Activo', 'Inactivo'];
 /**
  * Resumen de los productos agrupados por categoría: ID, nombre y primera foto. Es lo que necesita
  * el panel admin para contarlos y listarlos en el modal de cada categoría. No trae descripción,
- * stock, precios ni el resto de las fotos: antes se cargaba el producto completo de TODO el catálogo.
+ * stock, precios ni el resto de las fotos.
  */
 // deno-lint-ignore no-explicit-any
 async function loadProductSummariesByCategory(onlyActive: boolean): Promise<Map<number, any[]>> {
@@ -92,7 +91,7 @@ async function searchCategories(ctx: RequestContext) {
   const [categories, activeCounts, productsByCategory] = await Promise.all([
     loadCategories(),
     loadActiveProductCounts(),
-    // Es una ruta pública: solo los productos activos (antes devolvía también los inactivos)
+    // Es una ruta pública: solo los productos activos
     loadProductSummariesByCategory(true),
   ]);
   const byParent = groupByParent(categories);
@@ -135,7 +134,7 @@ async function findOne(ctx: RequestContext) {
   if (!category) throw new AppError('Categoría no encontrada', 404);
 
   // Es público a propósito: la página de categoría muestra el aviso de "categoría inactiva"
-  return ok('Categoría encontrada', withParents(category, byId));
+  return ok('Categoría encontrada', withParents(category, byId), segundosDeCacheDelDetalle(ctx.req));
 }
 
 async function getTree(ctx: RequestContext) {

@@ -63,7 +63,7 @@ export function injectCategoryDetailQuery(idSignal: Signal<number>) {
     const id = idSignal();
     return {
       queryKey: ['categories', 'detail', id],
-      queryFn: () => firstValueFrom(apiCategoryService.getCategoryById(id)),
+      queryFn: () => firstValueFrom(apiCategoryService.getCategoryById(id, true)),
       enabled: id > 0,
       staleTime: 1000 * 60 * 15, // 15 minutos
     };

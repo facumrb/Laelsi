@@ -11,11 +11,15 @@ export class ProductImageComponent {
 
   altText = input<string>('Imagen de producto');
 
-  // Clases por defecto.
   containerClass = input<string>('w-full aspect-4/3 bg-gray-50');
 
   // Clases adicionales para la etiqueta img real
   imageClass = input<string>('');
+
+  loading = input<'lazy' | 'eager'>('lazy');
+
+  // Sin valor no se escribe el atributo fetchpriority en el img
+  priority = input<'high' | 'low' | 'auto' | null>(null);
 
   hasError = signal(false);
 

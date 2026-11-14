@@ -27,7 +27,7 @@ export class NavbarAccordionItemComponent {
   isActive = computed(() => this.activeCategoryIds().has(this.category().id));
 
   constructor() {
-    // effect para expandir el acordeon de las categorias del mobile-sidebar cuando se recarga la pagina y la categoria esta activa
+    // Expande el acordeón del menú móvil cuando la categoría está activa (por ejemplo, al recargar la página dentro de ella)
     effect(() => {
       if (this.isActive()) {
         this.isExpanded.set(true);

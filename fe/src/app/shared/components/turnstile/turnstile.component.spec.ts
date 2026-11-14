@@ -2,10 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { elegirTamanoDelWidget, TurnstileComponent } from './turnstile.component';
 
-// ID 64 (hallazgo 6): el widget de Cloudflare se dibujaba siempre en tamaño `normal` (300×65 px). En un celular de 320
-// o 360 px el contenido de la tarjeta mide 222 o 262 px: el widget sobresalía. Según la documentación de Cloudflare:
-// `normal` 300×65, `flexible` 100 % con mínimo 300 px (no arregla nada acá) y `compact` 150×140. El tamaño se pasa al
-// dibujar el widget (no se documenta cambiarlo después), así que se decide con el ancho de la ventana en ese momento.
+// ID 64 (hallazgo 6): en un celular de 320 o 360 px el contenido de la tarjeta mide 222 o 262 px, y el widget `normal`
+// de Cloudflare (300×65 px) sobresale. Según la documentación de Cloudflare: `normal` 300×65, `flexible` 100 % con
+// mínimo 300 px (no sirve acá) y `compact` 150×140. El tamaño se pasa al dibujar el widget (no se documenta cambiarlo
+// después), así que se decide con el ancho de la ventana en ese momento.
 describe('elegirTamanoDelWidget', () => {
   it('por debajo de 400 px usa el compacto, que mide 150 px de ancho', () => {
     expect(elegirTamanoDelWidget(320)).toBe('compact');
@@ -56,7 +56,7 @@ describe('TurnstileComponent: tamaño con el que dibuja el widget', () => {
   });
 
   // ID 64: `app-turnstile` es un elemento personalizado, en línea por defecto: el margen que le da `space-y-4` a sus
-  // hermanos no se aplica en vertical y el widget quedaba pegado al botón "Crear Cuenta". Como bloque, el espacio vale.
+  // hermanos no se aplica en vertical y el widget queda pegado al botón "Crear Cuenta". Como bloque, el espacio vale.
   it('el elemento del componente es un bloque, para que el espacio entre hermanos se aplique', async () => {
     await dibujarConUnAncho(360);
     const fixture = TestBed.createComponent(TurnstileComponent);

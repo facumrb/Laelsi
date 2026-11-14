@@ -12,7 +12,8 @@
       "@services/*": ["./src/app/services/*"],
       "@models/*": ["./src/app/models/*"],
       "@shared/*": ["./src/app/shared/*"],
-      "@guards/*": ["./src/app/guards/*"]
+      "@guards/*": ["./src/app/guards/*"],
+      "@interceptor/*": ["./src/app/interceptors/*"]
     },
     "strict": true,
     "noImplicitOverride": true,
