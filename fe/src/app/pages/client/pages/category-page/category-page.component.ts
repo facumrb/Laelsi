@@ -123,6 +123,8 @@ export class CategoryPageComponent implements OnInit {
   // reservan el lugar y evitan el salto de diseño y el cartel falso de "no hay productos" (ID 70)
   loadingProducts = computed(() => this.productsQuery.isPending());
   readonly skeletonCards = [1, 2, 3, 4, 5, 6, 7, 8];
+  // Las que entran en la primera fila de la grilla en celular (2 columnas)
+  readonly tarjetasPrioritarias = 2;
 
   constructor() {
     effect(() => {
