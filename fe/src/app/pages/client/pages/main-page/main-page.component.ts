@@ -8,6 +8,7 @@ import { ProductCardComponent } from '../../components/product-card/product-card
 import { LogoComponent } from '@shared/components/logo/logo.component';
 import { ScrollTrackerDirective } from '@shared/directives/scroll-tracker.directive';
 import { CarouselNavComponent } from '@client/components/carousel-nav/carousel-nav.component';
+import { ProductCardSkeletonComponent } from '@client/components/product-card-skeleton/product-card-skeleton.component';
 import { injectHomeQuery } from '@services/queries/product-queries';
 
 @Component({
@@ -15,6 +16,7 @@ import { injectHomeQuery } from '@services/queries/product-queries';
   imports: [
     // RouterLink, // PROVISIONAL-2026-11-08 (arrepentimiento): ver el import comentado arriba
     ProductCardComponent,
+    ProductCardSkeletonComponent,
     LogoComponent,
     ScrollTrackerDirective,
     CarouselNavComponent,
@@ -33,8 +35,11 @@ export class MainPageComponent {
     { category: IApiCategory; products: IApiProduct[] }[]
   >(() => this.homeQuery.data()?.categories ?? []);
 
-  // Mostramos el spinner hasta tener los datos iniciales: todos los carruseles aparecen juntos.
+  // Mostramos los esqueletos hasta tener los datos iniciales: todos los carruseles aparecen juntos.
   loading = computed(() => this.homeQuery.isPending());
+
+  // Tantas tarjetas como entran en la fila más ancha (xl: 5 por fila)
+  readonly skeletonCards = [1, 2, 3, 4, 5];
 
   scrollCarousel(
     container: HTMLElement,

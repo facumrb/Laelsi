@@ -57,10 +57,8 @@ export class CategoryProductsModalComponent {
     this.close.emit();
   }
 
-  // Lógica del buscador interno
   searchQuery = signal('');
 
-  // Productos filtrados
   filteredProducts = computed(() => {
     const products = this.products();
     const query = this.searchQuery().toLowerCase().trim();

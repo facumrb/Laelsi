@@ -2,8 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
-// Este es un servicio dedicado principalmente para el boton de "Volver" y asi saber hacia que pagina ir.
-
+// Registra las rutas visitadas para que el botón "Volver" sepa si hay una anterior a la que ir.
 @Injectable({
   providedIn: 'root',
 })

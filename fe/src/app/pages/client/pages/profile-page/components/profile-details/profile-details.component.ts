@@ -62,7 +62,6 @@ export class ProfileDetailsComponent {
 
   profile = input<IApiClient | null>(null);
 
-  // Como output, disparamos un evento para decir que se actualizó
   profileUpdated = output<void>();
 
   saving = signal(false);
@@ -179,7 +178,6 @@ export class ProfileDetailsComponent {
       apartment: fullUser.apartment || '',
     });
 
-    // Validación async para edición
     const id = fullUser.id;
     this.formPerfil.controls.dni.setAsyncValidators(
       FormUtils.uniqueFieldValidator('Client', 'dni', this.http, id),

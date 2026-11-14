@@ -357,13 +357,11 @@ export class AdminsFormComponent implements OnInit {
         next: (photoResponse: any) => {
           this.invalidateAdmins();
           this.alertService.toast('Guardado exitosamente', 'success');
-          // --- Logica para actualizar el token en caso de que sea un edit del mismo usuario que esta logeado
+          // Si el administrador editó su propio perfil, se actualizan nombre, apellido y foto en la sesión para que el encabezado los muestre sin recargar.
           const currentUserId = this.authService.currentUser()?.id;
           const editedId = this.adminId();
 
-          // Si estoy editando MI PROPIO perfil
           if (editedId && editedId === currentUserId) {
-            // Preparamos los cambios de texto
             const sessionUpdates: any = {
               name: formValue.name,
               lastName: formValue.lastName,

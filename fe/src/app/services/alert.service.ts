@@ -18,7 +18,7 @@ export class AlertService {
       timerProgressBar: true,
       icon: icon,
       title: title,
-      text: text, // Texto secundario opcional
+      text: text,
       didOpen: (toast) => {
         toast.addEventListener('mouseenter', Swal.stopTimer);
         toast.addEventListener('mouseleave', Swal.resumeTimer);
@@ -34,7 +34,7 @@ export class AlertService {
     this.toast(title, 'success', message);
   }
 
-  //Modal util para mensajes como "Sesión Expirada" o "Error de Red Crítico".
+  // Modal para mensajes como "Sesión expirada" o "Error de red crítico".
   async modal(title: string, html: string, icon: SweetAlertIcon = 'info') {
     const Swal = await cargarSwal();
     return Swal.fire({

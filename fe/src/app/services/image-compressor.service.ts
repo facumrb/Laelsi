@@ -6,14 +6,13 @@ export const PRODUCT_IMAGE_MAX_WIDTH = 1200;
 export const USER_IMAGE_MAX_WIDTH = 400;
 
 const WEBP_MIME_TYPE = 'image/webp';
-const WEBP_QUALITY = 0.8; // 80%: misma calidad que usaba sharp en el backend anterior
+const WEBP_QUALITY = 0.8; // 80%
 
 /**
  * Convierte y comprime imágenes a WebP EN EL NAVEGADOR, antes de subirlas.
  *
- * Reemplaza al middleware de sharp del backend Express. Como ahora las imágenes
- * viajan directo del navegador a Cloudflare R2, ya no hay un servidor en el
- * medio que las pueda optimizar: lo hace el propio cliente con la Canvas API.
+ * Las imágenes viajan directo del navegador a Cloudflare R2, así que no hay un
+ * servidor en el medio que las optimice: lo hace el propio cliente con la Canvas API.
  */
 @Injectable({
   providedIn: 'root',

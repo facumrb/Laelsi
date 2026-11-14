@@ -18,6 +18,33 @@
 export const CACHE_CATALOGO_SEGUNDOS = 60;
 
 /**
+ * Segundos de caché del detalle de un producto o categoría: ninguno si quien pide es administrador (el panel abre
+ * sus formularios con esas mismas rutas y no debe ver datos de hasta un minuto atrás), el del catálogo en cualquier
+ * otro caso (sin cabecera, token de cliente o token ilegible).
+ *
+ * Decisión de seguridad: el rol se lee del payload del JWT SIN verificar la firma, con el mismo criterio que
+ * `isAdminRequest` (auth.ts: `app_metadata.role === 'Admin'`). Es deliberado: un token falsificado que diga "Admin"
+ * solo consigue que su propia respuesta no se cachee. Un administrador real nunca recibe caché, y esta función no
+ * concede acceso a nada. No se importa auth.ts porque crea el cliente de Supabase al cargarse.
+ */
+export function segundosDeCacheDelDetalle(req: Request): number | undefined {
+  const cabecera = req.headers.get('Authorization') ?? '';
+  const token = cabecera.startsWith('Bearer ') ? cabecera.slice(7).trim() : '';
+  if (!token) return CACHE_CATALOGO_SEGUNDOS;
+
+  try {
+    const partes = token.split('.');
+    if (partes.length === 3) {
+      const payload = JSON.parse(atob(partes[1].replace(/-/g, '+').replace(/_/g, '/')));
+      if (payload?.app_metadata?.role === 'Admin') return undefined;
+    }
+  } catch {
+    return CACHE_CATALOGO_SEGUNDOS;
+  }
+  return CACHE_CATALOGO_SEGUNDOS;
+}
+
+/**
  * Cabeceras de caché para una respuesta. Vacías salvo que sea un GET exitoso (200) con un tiempo válido.
  * `Vary` hace que el navegador guarde una versión por origen y por sesión, para no mezclarlas.
  */

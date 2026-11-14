@@ -13,13 +13,15 @@
     [activeCategoryIds]="activeCategoryIds()"
   />
 
-  <app-navbar-mobile-sidebar
-    [(isOpen)]="showSideMenu"
-    [categories]="categories()"
-    [activeCategoryIds]="activeCategoryIds()"
-    [currentUser]="currentUser()"
-    [isLoggedIn]="authService.isLoggedIn()"
-    [isAdmin]="authService.isAdmin()"
-    (logoutRequested)="handleLogout()"
-  />
+  @defer (when showSideMenu(); prefetch on idle) {
+    <app-navbar-mobile-sidebar
+      [(isOpen)]="showSideMenu"
+      [categories]="categories()"
+      [activeCategoryIds]="activeCategoryIds()"
+      [currentUser]="currentUser()"
+      [isLoggedIn]="authService.isLoggedIn()"
+      [isAdmin]="authService.isAdmin()"
+      (logoutRequested)="handleLogout()"
+    />
+  }
 </header>

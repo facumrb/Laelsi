@@ -1,10 +1,10 @@
 import { Directive, ElementRef, HostListener, inject } from '@angular/core';
 import { NgControl } from '@angular/forms';
 
-// Directiva para eliminar espacios en blanco al final de los inputs
+// Al salir del campo quita los espacios de los extremos y junta los repetidos. Se aplica sola, sin atributo,
+// a todo input de texto, email o búsqueda y a los textarea.
 
 @Directive({
-  // Intercepta todos los inputs de tipo texto y textareas
   selector:
     'input[type="text"], input[type="email"], input[type="search"], textarea',
 })

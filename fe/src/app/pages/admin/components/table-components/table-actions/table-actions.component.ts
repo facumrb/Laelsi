@@ -42,7 +42,7 @@ export class TableActionsComponent<T> {
   // Texto del botón de la baja: en clientes y administradores no se elimina nada, se DESACTIVA (ID 65)
   deleteLabel = input<string>('Eliminar');
   // Ícono de la baja: el tacho es para BORRAR; en clientes y administradores, que se desactivan, va una persona
-  // tachada. Para reactivar, una persona con tilde (antes era la flecha de "deshacer").
+  // tachada. Para reactivar, una persona con tilde.
   deleteIcon = input<string>('bootstrapTrash');
   reactivateIcon = input<string>('bootstrapPersonCheck');
   canReactivate = input<boolean>(false);

@@ -6,11 +6,12 @@
     <label for="search-input" class="sr-only">Buscar productos</label>
 
     <input
+      #campo
       id="search-input"
       type="text"
       maxlength="80"
-      [ngModel]="query()"
-      (ngModelChange)="onSearch($event)"
+      [value]="query()"
+      (input)="onSearch(campo.value)"
       (keyup.enter)="handleFullSearch()"
       inputmode="search"
       placeholder="Buscar productos ..."

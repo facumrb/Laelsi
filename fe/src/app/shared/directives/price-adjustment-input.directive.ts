@@ -105,7 +105,6 @@ export class PriceAdjustmentInputDirective {
     }
     // Si no hay ningún separador → número entero, sin ambigüedad
 
-    // Eliminar cualquier carácter que no sea dígito, signo negativo o punto
     result = result.replace(/[^-\d.]/g, '');
 
     // Colapsar múltiples puntos residuales (caso de seguridad)
@@ -114,7 +113,7 @@ export class PriceAdjustmentInputDirective {
       result = parts[0] + '.' + parts.slice(1).join('');
     }
 
-    // Convertir al formato europeo/argentino: punto decimal interno → coma decimal
+    // El punto decimal interno vuelve a coma (formato argentino)
     result = result.replace('.', ',');
 
     return result;

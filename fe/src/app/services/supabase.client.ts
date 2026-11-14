@@ -6,7 +6,7 @@ import { environment } from 'src/environments/environment';
  *
  * Solo se usa para la AUTENTICACIÓN (sesión, Google OAuth, renovación de tokens).
  * Los datos de negocio no se consultan con este cliente: pasan por las Edge
- * Functions a través de HttpClient, igual que antes pasaban por el backend Express.
+ * Functions a través de HttpClient.
  *
  * Por eso se carga únicamente el cliente de autenticación (@supabase/auth-js, el mismo código que
  * supabase-js usa por dentro) y no supabase-js completo: sumaba 225 kB (50 kB transferidos) de

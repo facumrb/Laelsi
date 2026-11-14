@@ -1,5 +1,4 @@
 <div class="container animate-fadeIn mx-auto p-4">
-  <!-- Breadcrumbs -->
   <app-breadcrumbs [steps]="breadcrumbSteps()" />
 
   <!-- El encabezado siempre ocupa su lugar: mientras carga la categoría se ve una barra gris de la altura del
@@ -17,7 +16,6 @@
     }
   </header>
 
-  <!-- Componente de Filtros -->
   <section aria-label="Filtros de búsqueda">
     <app-products-filter
       [(priceOrder)]="priceOrder"
@@ -27,7 +25,6 @@
     />
   </section>
 
-  <!-- Grilla de Productos -->
   <div class="product-grid" [attr.aria-busy]="loadingProducts()">
     @if (loadingProducts()) {
       <!-- Mientras cargan: esqueletos (ID 70). El cartel de "no hay productos" solo aparece si de verdad no hay -->
@@ -48,41 +45,15 @@
     }
   </div>
 
-  <!-- Paginación -->
   <app-pagination
     [currentPage]="currentPage()"
     [totalPages]="totalPages()"
     (pageChange)="onPageChange($event)"
   />
 
-  @if (showInactiveCategoryModal()) {
-    <div
-      cdkTrapFocus
-      cdkTrapFocusAutoCapture
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="inactive-category-modal-title"
-      class="elsi-modal-overlay"
-    >
-      <div class="elsi-modal-card">
-        <div class="elsi-modal-icon-container">
-          <ng-icon
-            name="bootstrapExclamationTriangle"
-            class="text-3xl text-gray-500"
-            aria-hidden="true"
-          ></ng-icon>
-        </div>
-        <h2 id="inactive-category-modal-title" class="elsi-modal-title">
-          Categoría no disponible
-        </h2>
-        <p class="elsi-modal-text">
-          Esta categoría se encuentra pausada o ya no está disponible en la
-          tienda.
-        </p>
-        <button (click)="closeInactiveModal()" class="elsi-btn-primary-full">
-          Volver al inicio
-        </button>
-      </div>
-    </div>
+  @defer (when showInactiveCategoryModal()) {
+    @if (showInactiveCategoryModal()) {
+      <app-inactive-category-modal (closed)="closeInactiveModal()" />
+    }
   }
 </div>

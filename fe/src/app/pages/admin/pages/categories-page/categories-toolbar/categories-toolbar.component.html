@@ -47,7 +47,9 @@
   </div>
 </div>
 
-<app-categories-order-modal
-  [(isOpen)]="showOrderModal"
-  (onSaved)="onOrderChange.emit()"
-></app-categories-order-modal>
+@defer (when showOrderModal()) {
+  <app-categories-order-modal
+    [(isOpen)]="showOrderModal"
+    (onSaved)="onOrderChange.emit()"
+  ></app-categories-order-modal>
+}

@@ -139,7 +139,6 @@ export class ProfileUserComponent {
       username: fullUser.username || '',
     });
 
-    // Validación async para edición
     this.formUsuario.controls.username.setAsyncValidators(
       FormUtils.uniqueFieldValidator(
         'Client',

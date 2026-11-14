@@ -15,11 +15,12 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Si es un 401 y no es la ruta de login, intentamos refrescar el token
+      // Ante un 401 fuera del login se renueva el token y se reintenta una vez
       if (error.status === 401 && !req.url.includes('/auth/login')) {
         return authService.refreshToken().pipe(
           switchMap(() => {
-            // Re-intentamos la petición original con el nuevo token (se adjuntará en el AuthInterceptor)
+            // El reintento no vuelve a pasar por authInterceptor (va antes en la cadena): por eso el
+            // token nuevo se pone a mano
             const newToken = authService.getToken();
             const clonedReq = req.clone({
               setHeaders: {
@@ -29,7 +30,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             return next(clonedReq);
           }),
           catchError((refreshError) => {
-            // Si el refresh falla, el logout ya lo hace el AuthService internamente
+            // Llega acá si falla la renovación (el AuthService ya cierra la sesión) o el reintento
             apiErrorService.handle(error, req.url);
             return throwError(() => refreshError);
           }),

@@ -15,7 +15,6 @@ export class CartService {
     private readonly STORAGE_KEY = 'laelsi_cart';
     private readonly apiProductService = inject(ApiProductService);
 
-    // Usamos señales para una reactividad moderna
     private cartItemsSignal = signal<ICartItem[]>(this.loadFromStorage());
 
     // El carrito guarda una COPIA del producto, y su estado puede estar vencido (se pausó o se desactivó
@@ -23,7 +22,6 @@ export class CartService {
     // la última vez que se consultó (refreshAvailability). Mientras no se sabe, no se avisa nada.
     private liveStates = signal<Record<number, ProductState>>({});
 
-    // Selectores
     items = computed(() => this.cartItemsSignal());
 
     totalItems = computed(() =>

@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal, viewChild } from '@angular/core';
+import { Component, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { DeliveryMethod, PaymentMethod } from '@models/order.model';
@@ -61,8 +61,15 @@ export class OrderSummaryComponent {
 
   // Verificación anti-bots (Cloudflare Turnstile). Solo se exige si hay una clave configurada.
   turnstileEnabled = !!environment.turnstileSiteKey;
+  isLoggedIn = this.authService.isLoggedIn;
   turnstileToken = signal<string | null>(null);
   private turnstile = viewChild(TurnstileComponent);
+
+  // La sesión puede cerrarse desde otra pestaña sin navegar: el widget se desmonta sin emitir y el token
+  // quedaría guardado, y al volver la sesión se usaría uno viejo, ya vencido o gastado.
+  private limpiarTokenSinSesion = effect(() => {
+    if (!this.isLoggedIn()) this.turnstileToken.set(null);
+  });
 
   setShippingMethod(method: DeliveryMethod) {
     this.shippingMethod.set(method);

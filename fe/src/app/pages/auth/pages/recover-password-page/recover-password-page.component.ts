@@ -50,7 +50,6 @@ export class RecoverPasswordPageComponent {
   private authService = inject(AuthService);
   private alertService = inject(AlertService);
 
-  // Signals para el estado de la UI
   loading = signal(false);
   // Cuando la solicitud se envió, el formulario se reemplaza por el mensaje de confirmación
   sent = signal(false);

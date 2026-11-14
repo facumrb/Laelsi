@@ -47,8 +47,8 @@ describe('TableActionsComponent: íconos', () => {
   });
 });
 
-// ID 64 (hallazgo 8): los botones de ícono medían 20×20 px, por debajo de los 24×24 que pide WCAG 2.2 (criterio 2.5.8) y
-// muy lejos de lo cómodo en un celular. Con `p-2` alrededor del ícono de 20 px el botón mide 36×36 px.
+// ID 64 (hallazgo 8): un botón de ícono de 20×20 px queda por debajo de los 24×24 que pide WCAG 2.2 (criterio 2.5.8) y
+// es incómodo en un celular. Con `p-2` alrededor del ícono de 20 px el botón mide 36×36 px.
 describe('TableActionsComponent: tamaño de los botones', () => {
   function botones(entradas: Record<string, unknown>) {
     const fixture = TestBed.createComponent(TableActionsComponent<unknown>);

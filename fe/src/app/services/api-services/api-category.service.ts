@@ -7,6 +7,7 @@ import {
   IUpdateCategory,
 } from '@models/category.model';
 import { environment } from 'src/environments/environment';
+import { contextoPublico } from '@interceptor/peticion-publica';
 
 @Injectable({
   providedIn: 'root',
@@ -29,10 +30,11 @@ export class ApiCategoryService {
       .pipe(map((response) => response.data));
   }
 
-  // Obtener una categoría por ID
-  getCategoryById(id: number): Observable<IApiCategory> {
+  getCategoryById(id: number, publico = false): Observable<IApiCategory> {
     return this.http
-      .get<{ message: string; data: IApiCategory }>(`${this.apiUrl}/${id}`)
+      .get<{ message: string; data: IApiCategory }>(`${this.apiUrl}/${id}`, {
+        context: publico ? contextoPublico() : undefined,
+      })
       .pipe(map((response) => response.data));
   }
 
@@ -47,7 +49,6 @@ export class ApiCategoryService {
       .pipe(map((response) => response.data));
   }
 
-  // Crea una nueva categoría
   addCategory(category: ICreateCategory): Observable<IApiCategory> {
     return this.http
       .post<{
@@ -57,7 +58,6 @@ export class ApiCategoryService {
       .pipe(map((response) => response.data));
   }
 
-  // Actualiza una categoría
   updateCategory(
     id: number,
     category: IUpdateCategory,
@@ -70,14 +70,12 @@ export class ApiCategoryService {
       .pipe(map((response) => response.data));
   }
 
-  // Elimina una categoría
   deleteCategory(id: number): Observable<void> {
     return this.http
       .delete<{ message: string }>(`${this.apiUrl}/${id}`)
       .pipe(map(() => void 0));
   }
 
-  // Obtener el árbol de categorías
   getCategoryTree(state?: string): Observable<IApiCategory[]> {
     let params = {};
     if (state) {
@@ -87,11 +85,12 @@ export class ApiCategoryService {
     return this.http
       .get<{ message: string; data: IApiCategory[] }>(`${this.apiUrl}/tree`, {
         params,
+        // Sin estado el servidor distingue al administrador, por eso solo el árbol 'Activo' es público
+        context: state === 'Activo' ? contextoPublico() : undefined,
       })
       .pipe(map((response) => response.data));
   }
 
-  // Obtener subcategorías de una categoría
   getCategoryChildren(id: number): Observable<IApiCategory[]> {
     return this.http
       .get<{

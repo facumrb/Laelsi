@@ -1,12 +1,10 @@
 @if (isOpen()) {
   <div class="fixed inset-0 z-100 flex items-center justify-center p-4">
-    <!-- Backdrop -->
     <div
       class="absolute inset-0 bg-gray-500/75 transition-opacity"
       aria-hidden="true"
     ></div>
 
-    <!-- Modal content -->
     <div
       cdkTrapFocus
       cdkTrapFocusAutoCapture
@@ -16,7 +14,6 @@
       class="relative bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col [@media(max-height:480px)]:overflow-y-auto font-sans"
       (clickOutside)="close()"
     >
-      <!-- Header -->
       <div
         class="flex items-center justify-between px-6 py-4 border-b border-gray-200"
       >
@@ -29,7 +26,6 @@
         <app-close-modal-button (clicked)="close()"></app-close-modal-button>
       </div>
 
-      <!-- Body -->
       <div class="p-6 overflow-y-auto [@media(max-height:480px)]:overflow-visible overscroll-contain flex-1">
         <p class="text-sm text-gray-500 mb-4">
           Arrastra y suelta las categorías para cambiar su orden de
@@ -52,7 +48,6 @@
         }
       </div>
 
-      <!-- Footer -->
       <div
         class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3 rounded-b-lg"
       >
@@ -178,7 +173,6 @@
           }
         </div>
 
-        <!-- Las hijas, un nivel más abajo -->
         @if (expandedMap()[cat.id] && cat.children && cat.children.length > 0) {
           <div
             [class]="

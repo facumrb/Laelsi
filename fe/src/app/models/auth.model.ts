@@ -26,7 +26,7 @@ export interface IApiResponse<T> {
   data: T;
 }
 
-// Interfaz para el registro completo (Admin/Client Full)
+// Registro completo (Admin/Client)
 export interface RegisterData {
   name: string;
   lastName: string;
@@ -37,7 +37,7 @@ export interface RegisterData {
   password: string;
 }
 
-// Interfaz para el pre-registro simplificado (Client)
+// Pre-registro simplificado (Client)
 export interface IClientRegister {
   username: string;
   email: string;

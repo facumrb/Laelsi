@@ -48,7 +48,6 @@ function computeNewPrice(
 
   if (roundingRule === 'nearest-integer') newPrice = Math.round(newPrice);
   else if (roundingRule === 'ceil') newPrice = Math.ceil(newPrice);
-  // "Redondeo hacia abajo": el formulario ya lo ofrecía, pero el backend anterior lo ignoraba
   else if (roundingRule === 'floor') newPrice = Math.floor(newPrice);
   // Sin regla de redondeo se conservan 2 decimales (la precisión de la columna)
   else newPrice = Math.round(newPrice * 100) / 100;
@@ -139,7 +138,6 @@ async function apply(ctx: RequestContext) {
     const products = await loadProductsWithPrice(tx, dto.productIds, true);
     if (products.length === 0) throw new AppError('No se encontraron productos para actualizar', 404);
 
-    // Crear el lote de cambios
     const [batch] = await tx`
       insert into price_change_batch ${tx({
         userId: admin.id,
@@ -165,7 +163,6 @@ async function apply(ctx: RequestContext) {
         continue;
       }
 
-      // Desactivar precio actual y crear el nuevo
       await tx`update price set is_current = false where product_id = ${product.id} and is_current`;
       await tx`
         insert into price ${tx({
@@ -179,7 +176,6 @@ async function apply(ctx: RequestContext) {
       updatedCount++;
     }
 
-    // Registrar auditoría
     await tx`
       insert into audit_log (user_id, action, target_type, target_id, details)
       values (
@@ -239,7 +235,6 @@ async function rollback(ctx: RequestContext) {
 
     await tx`update price_change_batch set is_reverted = true where id = ${batchId}`;
 
-    // Auditoría
     await tx`
       insert into audit_log (user_id, action, target_type, target_id)
       values (${admin.id}, 'BULK_PRICE_ROLLBACK', 'PriceChangeBatch', ${batchId})

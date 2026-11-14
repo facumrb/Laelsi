@@ -21,10 +21,8 @@ import {
   BreadcrumbStep,
 } from '@client/components/breadcrumbs/breadcrumbs.component';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
-import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { bootstrapExclamationTriangle } from '@ng-icons/bootstrap-icons';
-import { A11yModule } from '@angular/cdk/a11y';
 import { combineLatest } from 'rxjs';
+import { InactiveCategoryModalComponent } from './inactive-category-modal/inactive-category-modal.component';
 import { injectCategoryDetailQuery } from '@services/queries/category-queries';
 import { injectActiveProductsQuery } from '@services/queries/product-queries';
 
@@ -36,17 +34,14 @@ import { injectActiveProductsQuery } from '@services/queries/product-queries';
     ProductsFilterComponent,
     BreadcrumbsComponent,
     PaginationComponent,
-    NgIconComponent,
-    A11yModule,
+    InactiveCategoryModalComponent,
   ],
-  viewProviders: [provideIcons({ bootstrapExclamationTriangle })],
   templateUrl: './category-page.component.html',
 })
 export class CategoryPageComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  // ID de la categoría actual
   private currentCategoryId = signal<number>(0);
 
   // 1. Obtener la categoría y validar que esté activa
@@ -60,12 +55,10 @@ export class CategoryPageComponent implements OnInit {
   // productos de la página actual no alcanzan para armar la lista completa
   availableBrands = computed(() => this.productsQuery.data()?.brands ?? []);
 
-  // Filtros
   priceOrder = signal<PriceOrder>('Defecto');
   brandFilter = signal<string>('Todas');
   popularityOrder = signal<PopularityOrder>('Defecto');
 
-  // Paginación
   // Reacciona a cambios en los filtros y recarga del server: al cambiar cualquiera,
   // reseteamos a página 1. No hace falta recargar a mano porque la página forma
   // parte de la queryKey y TanStack Query pide los datos por su cuenta.
@@ -78,14 +71,12 @@ export class CategoryPageComponent implements OnInit {
     computation: () => 1,
   });
 
-  // Breadcrumbs
   breadcrumbSteps = computed<BreadcrumbStep[]>(() => {
     const cat = this.category();
     if (!cat) return [];
 
     const steps: BreadcrumbStep[] = [];
 
-    // Función para construir el path hacia arriba
     const buildPath = (current: IApiCategory) => {
       steps.unshift({
         label: current.name,
@@ -103,7 +94,6 @@ export class CategoryPageComponent implements OnInit {
     return steps;
   });
 
-  // Estado del modal para categoría inactiva
   showInactiveCategoryModal = signal<boolean>(false);
 
   // Filtros agrupados que consume la query (cada combinación se cachea por separado)
@@ -135,7 +125,6 @@ export class CategoryPageComponent implements OnInit {
   readonly skeletonCards = [1, 2, 3, 4, 5, 6, 7, 8];
 
   constructor() {
-    // Reacciona al resultado de la query de la categoría
     effect(() => {
       // Si la categoría no existe (o falla la carga), volvemos al inicio
       if (this.categoryQuery.isError()) {
@@ -143,7 +132,6 @@ export class CategoryPageComponent implements OnInit {
         return;
       }
 
-      // Validar que la categoría esté activa
       const data = this.categoryQuery.data();
       if (data && data.state !== CategoryState.Activo) {
         this.showInactiveCategoryModal.set(true);
@@ -158,7 +146,6 @@ export class CategoryPageComponent implements OnInit {
       ([params, queryParams]) => {
         const id = Number(params.get('id'));
 
-        // Sin un ID válido no hay categoría que mostrar
         if (!id) {
           this.router.navigate(['/']);
           return;

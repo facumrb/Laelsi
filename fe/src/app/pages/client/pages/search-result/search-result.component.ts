@@ -35,12 +35,10 @@ export class SearchResultComponent implements OnInit {
   availableBrands = computed(() => this.productsQuery.data()?.brands ?? []);
   searchTerm = signal<string>('');
 
-  // Filtros
   priceOrder = signal<PriceOrder>('Defecto');
   brandFilter = signal<string>('Todas');
   popularityOrder = signal<PopularityOrder>('Defecto');
 
-  // Paginación
   // Reacciona a cambios en los filtros y recarga del server: al cambiar cualquiera,
   // reseteamos a página 1. No hace falta recargar a mano porque la página forma
   // parte de la queryKey y TanStack Query pide los datos por su cuenta.
@@ -53,7 +51,6 @@ export class SearchResultComponent implements OnInit {
     computation: () => 1,
   });
 
-  // Breadcrumbs dinámicos
   breadcrumbSteps = computed(() => [
     { label: 'Búsqueda' },
     {
@@ -76,7 +73,6 @@ export class SearchResultComponent implements OnInit {
   // La query se habilita recién cuando leímos los parámetros de la URL
   private isReady = signal(false);
 
-  // Capa de queries (TanStack Query)
   private productsQuery = injectActiveProductsQuery(this.activeFilters, {
     enabled: this.isReady,
   });

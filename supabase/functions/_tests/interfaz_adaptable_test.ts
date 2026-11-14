@@ -106,7 +106,7 @@ Deno.test('ninguna plantilla de la interfaz tiene un problema de diseño adaptab
 });
 
 // Ninguna plantilla de la aplicación (panel, acceso, catálogo público y lo compartido) usa fuentes de menos de 12 px
-// (ID 64, hallazgo 10; el catálogo público se sumó el mismo día, con el mismo criterio).
+// (ID 64, hallazgo 10).
 Deno.test('ninguna plantilla de la interfaz usa fuentes de menos de 12 px', async () => {
   const problemas: string[] = [];
   for (const archivo of await plantillas(RAIZ)) {

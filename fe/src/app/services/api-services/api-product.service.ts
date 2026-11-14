@@ -13,6 +13,7 @@ import {
 } from '@models/product.model';
 import { IPaginatedResult } from '../../models/pagination.model';
 import { environment } from 'src/environments/environment';
+import { contextoPublico } from '../../interceptors/peticion-publica';
 
 @Injectable({
   providedIn: 'root',
@@ -23,7 +24,6 @@ export class ApiProductService {
   // Los cambios masivos de precio tienen su propia Edge Function
   private readonly bulkUrl = `${environment.apiUrl}/bulk-prices`;
 
-  // Obtener todos los productos
   getAllProducts(
     page: number = 1,
     limit: number = 16,
@@ -52,7 +52,6 @@ export class ApiProductService {
       .pipe(map((response) => response.data));
   }
 
-  // Obtener todos los productos activos
   getActiveProducts(
     page: number = 1,
     limit: number = 16,
@@ -62,11 +61,10 @@ export class ApiProductService {
       .get<{
         message: string;
         data: IPaginatedProducts;
-      }>(`${this.apiUrl}/active`, { params })
+      }>(`${this.apiUrl}/active`, { params, context: contextoPublico() })
       .pipe(map((response) => response.data));
   }
 
-  // Obtener productos con paginación
   getProductsPage(
     page: number = 1,
     limit: number = 16,
@@ -83,10 +81,11 @@ export class ApiProductService {
       .pipe(map((response) => response.data));
   }
 
-  // Obtener un producto por ID
-  getProductById(id: number): Observable<IApiProduct> {
+  getProductById(id: number, publico = false): Observable<IApiProduct> {
     return this.http
-      .get<{ message: string; data: IApiProduct }>(`${this.apiUrl}/${id}`)
+      .get<{ message: string; data: IApiProduct }>(`${this.apiUrl}/${id}`, {
+        context: publico ? contextoPublico() : undefined,
+      })
       .pipe(map((response) => response.data));
   }
 
@@ -100,13 +99,12 @@ export class ApiProductService {
       .pipe(map((response) => response.data));
   }
 
-  /**
-   * La portada de la tienda en una sola llamada: más vendidos y carruseles de las primeras categorías.
-   * Reemplaza a las 8 llamadas en dos tandas que hacía la portada (ID 70, mejora de rendimiento 2).
-   */
   getHome(): Observable<IHome> {
     return this.http
-      .get<{ message: string; data: IHome }>(`${this.apiUrl}/home`)
+      .get<{
+        message: string;
+        data: IHome;
+      }>(`${this.apiUrl}/home`, { context: contextoPublico() })
       .pipe(map((response) => response.data));
   }
 
@@ -120,7 +118,7 @@ export class ApiProductService {
       .get<{
         message: string;
         data: Record<number, ProductState>;
-      }>(`${this.apiUrl}/availability`, { params })
+      }>(`${this.apiUrl}/availability`, { params, context: contextoPublico() })
       .pipe(map((response) => response.data));
   }
 
@@ -149,11 +147,10 @@ export class ApiProductService {
       .get<{
         message: string;
         data: IPaginatedProducts;
-      }>(`${this.apiUrl}/search`, { params })
+      }>(`${this.apiUrl}/search`, { params, context: contextoPublico() })
       .pipe(map((response) => response.data));
   }
 
-  // Obtener productos segun una categoría (todos)
   getProductsByCategory(
     categoryId: number,
     page: number = 1,
@@ -168,7 +165,6 @@ export class ApiProductService {
       .pipe(map((response) => response.data));
   }
 
-  // Obtener productos activos segun una categoría
   getActiveProductsByCategory(
     categoryId: number,
     page: number = 1,
@@ -190,7 +186,10 @@ export class ApiProductService {
       .get<{
         message: string;
         data: IPaginatedProducts;
-      }>(`${this.apiUrl}/active/category/${categoryId}`, { params })
+      }>(`${this.apiUrl}/active/category/${categoryId}`, {
+        params,
+        context: contextoPublico(),
+      })
       .pipe(map((response) => response.data));
   }
 
@@ -201,7 +200,6 @@ export class ApiProductService {
       .pipe(map((response) => response.data));
   }
 
-  // Actualiza un producto
   updateProduct(id: number, product: IUpdateProduct): Observable<IApiProduct> {
     return this.http
       .patch<{
@@ -211,14 +209,12 @@ export class ApiProductService {
       .pipe(map((response) => response.data));
   }
 
-  // Elimina un producto
   deleteProduct(id: number): Observable<void> {
     return this.http
       .delete<{ message: string }>(`${this.apiUrl}/${id}`)
       .pipe(map(() => void 0));
   }
 
-  // Bulk operations
   previewBulkPriceChange(
     productIds: number[],
     adjustmentType: string,
@@ -269,18 +265,16 @@ export class ApiProductService {
       .pipe(map((res) => res.data));
   }
 
-  // Obtener los más vendidos
   getBestSellers(limit: number = 10): Observable<IApiProduct[]> {
     const params = new HttpParams().set('limit', limit.toString());
     return this.http
       .get<{
         message: string;
         data: IApiProduct[];
-      }>(`${this.apiUrl}/best-sellers`, { params })
+      }>(`${this.apiUrl}/best-sellers`, { params, context: contextoPublico() })
       .pipe(map((response) => response.data));
   }
 
-  // Obtener los más vendidos por categoría
   getBestSellersByCategory(
     categoryId: number,
     limit: number = 10,
@@ -290,7 +284,10 @@ export class ApiProductService {
       .get<{
         message: string;
         data: IApiProduct[];
-      }>(`${this.apiUrl}/best-sellers/category/${categoryId}`, { params })
+      }>(`${this.apiUrl}/best-sellers/category/${categoryId}`, {
+        params,
+        context: contextoPublico(),
+      })
       .pipe(map((response) => response.data));
   }
 }

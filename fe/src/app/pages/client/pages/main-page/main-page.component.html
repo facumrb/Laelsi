@@ -65,16 +65,54 @@
 
   <div>
     @if (loading()) {
-      <div class="flex justify-center items-center py-20">
-        <div
-          class="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"
-        ></div>
+      <!-- Mientras carga: esqueletos que reservan el lugar de los carruseles. Se muestran los "más vendidos" y una sección de categoría, que es lo que entra en la primera pantalla -->
+      <div aria-busy="true">
+        <p role="status" class="sr-only">Cargando productos…</p>
+        <section class="mb-10">
+          <div
+            class="bg-white rounded-2xl shadow-sm border border-neutral-200 px-4 py-3 md:px-8 md:py-5 relative overflow-hidden"
+          >
+            <div class="flex h-9 md:h-10 items-center mb-2">
+              <div
+                class="h-7 w-64 max-w-full animate-pulse rounded-md bg-gray-200"
+              ></div>
+            </div>
+            <div class="flex overflow-hidden gap-4 md:gap-6 pt-3 pb-4">
+              @for (n of skeletonCards; track n) {
+                <div
+                  class="flex-none w-[calc(50%-0.5rem)] md:w-[calc(33.333%-1rem)] lg:w-[calc(25%-1.125rem)] xl:w-[calc(20%-1.2rem)]"
+                >
+                  <app-product-card-skeleton />
+                </div>
+              }
+            </div>
+          </div>
+        </section>
+        <section class="mb-10">
+          <div
+            class="bg-white rounded-2xl shadow-sm border border-neutral-200 px-4 py-3 md:px-8 md:py-5 relative overflow-hidden"
+          >
+            <div class="flex h-9 md:h-10 items-center mb-2">
+              <div
+                class="h-6 w-64 max-w-full animate-pulse rounded-md bg-gray-200"
+              ></div>
+            </div>
+            <div class="flex overflow-hidden gap-4 md:gap-6 pt-3 pb-4">
+              @for (n of skeletonCards; track n) {
+                <div
+                  class="flex-none w-[calc(50%-0.5rem)] md:w-[calc(33.333%-1rem)] lg:w-[calc(25%-1.125rem)] xl:w-[calc(20%-1.2rem)]"
+                >
+                  <app-product-card-skeleton />
+                </div>
+              }
+            </div>
+          </div>
+        </section>
       </div>
     }
 
     @if (!loading()) {
       <div class="animate-fadeIn duration-700">
-        <!-- Carrusel de los productos más vendidos -->
         @if (globalBestSellers().length > 0) {
           <section class="mb-10">
             <div
@@ -103,7 +141,7 @@
                   appScrollTracker
                   class="flex overflow-x-auto gap-4 md:gap-6 pt-3 pb-4 scroll-smooth scrollbar-hide snap-x snap-mandatory"
                 >
-                  @for (product of globalBestSellers(); track $index) {
+                  @for (product of globalBestSellers(); track product.id) {
                     <div
                       class="flex-none w-[calc(50%-0.5rem)] md:w-[calc(33.333%-1rem)] lg:w-[calc(25%-1.125rem)] xl:w-[calc(20%-1.2rem)] snap-start"
                     >
@@ -119,8 +157,7 @@
           </section>
         }
 
-        <!-- Carrusel de cada Categoría de los productos mas vendidos -->
-        @for (item of categoriesWithBestSellers(); track $index) {
+        @for (item of categoriesWithBestSellers(); track item.category.id) {
           <section class="mb-10">
             <div
               class="bg-white rounded-2xl shadow-sm border border-neutral-200 px-4 py-3 md:px-8 md:py-5 relative overflow-hidden group"
@@ -149,7 +186,7 @@
                   appScrollTracker
                   class="flex overflow-x-auto gap-4 md:gap-6 pt-3 pb-4 scroll-smooth scrollbar-hide snap-x snap-mandatory"
                 >
-                  @for (product of item.products; track $index) {
+                  @for (product of item.products; track product.id) {
                     <div
                       class="flex-none w-[calc(50%-0.5rem)] md:w-[calc(33.333%-1rem)] lg:w-[calc(25%-1.125rem)] xl:w-[calc(20%-1.2rem)] snap-start"
                     >
@@ -165,7 +202,6 @@
           </section>
         }
 
-        <!-- No products state -->
         @if (
           globalBestSellers().length === 0 &&
           categoriesWithBestSellers().length === 0

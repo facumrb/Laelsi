@@ -8,6 +8,7 @@ import { sql, type Db } from './db.ts';
 import { paginated } from './http.ts';
 import { idsDelSubarbol, type OpcionesSubarbol } from './subarbol-categorias.ts';
 import { groupByParent, hasActiveProductsInSubtree } from './categorias-arbol.ts';
+import { armarTarjetasDeProducto } from './tarjeta-producto.ts';
 
 export interface CategoryRow {
   id: number;
@@ -97,7 +98,6 @@ export async function checkAndDeactivateCategory(categoryId: number, db: Db = sq
     await db`update category set state = 'Inactivo', deleted_at = now() where id = ${current.id}`;
     current.state = 'Inactivo';
 
-    // Verificar padre
     current = current.parentId !== null ? byId.get(current.parentId) : undefined;
   }
 }
@@ -181,12 +181,49 @@ export async function loadFirstPhotos(
 }
 
 /**
+ * Carga liviana de los productos indicados para las tarjetas de la tienda: la misma forma que `loadProducts`,
+ * pero sin `description` y con solo la primera foto (`photos` de 0 o 1 elemento, la misma que `loadProducts`
+ * deja en `photos[0]`: ambas ordenan por `"order"` e `id`). Los listados que muestran la ficha completa
+ * (detalle, panel admin) siguen usando `loadProducts`. El armado está en tarjeta-producto.ts.
+ */
+export async function loadProductCards(
+  ids: number[],
+  db: Db = sql,
+  // deno-lint-ignore no-explicit-any
+): Promise<any[]> {
+  if (ids.length === 0) return [];
+
+  const [products, firstPhotos, prices, categories] = await Promise.all([
+    db`
+      select id, name, brand, total_sold, state, stock, category_id, created_at, updated_at, deleted_at
+      from product
+      where id in ${db(ids)}
+    `,
+    loadFirstPhotos(ids, db),
+    db`
+      select id, amount, currency, valid_from, is_current, product_id
+      from price
+      where product_id in ${db(ids)} and is_current
+    `,
+    loadCategories(db),
+  ]);
+
+  const categoriesById = indexById(categories);
+  return armarTarjetasDeProducto(ids, products, firstPhotos, prices, (categoryId) => {
+    const category = categoriesById.get(categoryId);
+    return category ? withParents(category, categoriesById) : null;
+  });
+}
+
+/**
  * Lista productos paginados.
  *
  * `where` y `orderBy` son funciones que devuelven un fragmento SQL nuevo cada
  * vez, porque el mismo filtro se usa en dos consultas (la página y el total).
  * Los alias disponibles son: p (product) y c (category) en ambas consultas, y
  * cp (precio vigente) SOLO en la de la página: el `where` no puede filtrar por precio.
+ *
+ * Con `tarjetas` los productos salen en formato liviano (`loadProductCards`); por defecto, completos.
  */
 export async function paginateProducts(options: {
   // deno-lint-ignore no-explicit-any
@@ -195,6 +232,7 @@ export async function paginateProducts(options: {
   orderBy: () => any;
   page: number;
   limit: number;
+  tarjetas?: boolean;
 }) {
   const { page, limit } = options;
   const offset = (page - 1) * limit;
@@ -219,7 +257,8 @@ export async function paginateProducts(options: {
   ]);
 
   // deno-lint-ignore no-explicit-any
-  const data = await loadProducts(rows.map((r: any) => r.id));
+  const ids = rows.map((r: any) => r.id);
+  const data = options.tarjetas ? await loadProductCards(ids) : await loadProducts(ids);
 
   return paginated(data, total, page, limit);
 }
