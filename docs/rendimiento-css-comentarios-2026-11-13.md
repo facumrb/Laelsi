@@ -141,6 +141,56 @@ Qué salió **peor y no está explicado del todo**:
 | JavaScript sin usar | Trozo del framework de Angular (57 de 103 kB transferidos) | 55 KiB; 300 a 450 ms |
 | Saltos de diseño | Pie de página y logo del encabezado, en categoría | CLS 0,188 |
 
+## Medición sobre Vercel: producción contra la vista previa de la rama (2026-11-14)
+
+Los cambios se subieron a la rama `mejora-de-rendimiento` (commit `f14bc93`; `main` no se tocó) y Vercel publicó su vista previa. Como `main` está en el commit base de la rama, producción sirve de "antes" y la vista previa de "después", las dos por HTTP/2. Las midió el dueño del proyecto con Lighthouse 13.5 en Chrome (móvil, red simulada), 3 corridas por página; se toma la mediana. Las Edge Functions no se desplegaron, así que **no mide b2 ni b3**.
+
+| Página | Puntaje | FCP | LCP | CLS | TBT | Pedidos a la API |
+| --- | --- | --- | --- | --- | --- | --- |
+| Inicio | 83 → 90 | 2,3 → 2,3 s | 3,4 → 3,1 s | 0,096 → 0,000 | 219 → 78 ms | 2 GET + 2 OPTIONS → 2 GET |
+| Categoría | 70 → 72 | 2,3 → 2,2 s | 4,5 → 4,5 s | 0,177 → 0,188 | 212 → 108 ms | 3 GET + 3 OPTIONS → 3 GET |
+| Ficha | 81 → 83 | 2,2 → 2,3 s | 4,1 → 4,2 s | 0,011 → 0,011 | 179 → 85 ms | 2 GET + 2 OPTIONS → 2 GET |
+
+Conclusiones:
+
+- **El empeoramiento del primer pintado visto en local no aparece en Vercel**: el FCP queda igual en las tres páginas (diferencias de 0,1 s, dentro de la variación entre corridas). Era un efecto del servidor local con HTTP/1.1, donde cada archivo extra del arranque cuesta una espera; con HTTP/2 los 3 o 4 archivos de más no pesan.
+- **Mejora clara en el inicio**: el salto de diseño desaparece (0,096 → 0,000) y el puntaje pasa de 83 a 90, con las tres corridas en 90.
+- **El tiempo de bloqueo (TBT) baja a menos de la mitad en las tres páginas.** No se aisló a qué cambio se debe.
+- **Las consultas OPTIONS desaparecen** también en Vercel.
+- **El LCP de la categoría y de la ficha no cambia.** En la ficha, la foto principal ya no carga con `lazy`, pero eso solo no alcanzó para mover el LCP: la imagen sigue dependiendo de la respuesta de la API.
+- **El CLS de la categoría sigue en 0,18**: es el salto del pie de página, anterior a este trabajo.
+
+Reservas: son 3 corridas por página y hay variación (el inicio de producción dio 71, 83 y 91); la vista previa carga un pedido extra de la barra de Vercel (`vercel.live`), que juega levemente en contra del "después"; y los dominios son distintos (dominio propio contra `vercel.app`).
+
+## Correcciones de la categoría y su medición (2026-11-14)
+
+Commit `29e312f` en la rama `mejora-de-rendimiento` (hecho con el implementador y revisado, sin bloqueantes):
+
+- Las dos primeras tarjetas de la categoría cargan su foto sin `lazy` y con prioridad alta (entrada `prioritaria` de `ProductCardComponent`; la grilla tiene 2 columnas en celular).
+- `<main>` del layout de la tienda tiene alto mínimo de pantalla, para que el pie de página no suba cuando la página queda corta. Las páginas cortas de la tienda quedan con más espacio en blanco antes del pie.
+- El logo del pie reserva su proporción real (996×516) y ya no cambia de ancho al cargar.
+
+Medición de `/category/1`, producción contra la vista previa de ese commit, Lighthouse 12.8 en Edge, móvil, 3 corridas alternadas y mediana:
+
+| | Puntaje | FCP | LCP | CLS | TBT |
+| --- | --- | --- | --- | --- | --- |
+| Producción | 77 (70, 77, 79) | 2,3 s | 3,9 s (4,7; 3,9; 3,6) | 0,177 | 106 ms |
+| Vista previa | 80 (77, 80, 81) | 2,5 s | 4,4 s (4,4; 4,5; 4,4) | 0,011 | 103 ms |
+
+- **El salto del pie de página quedó resuelto**: el CLS baja de 0,177 a 0,011 en las tres corridas.
+- **La carga prioritaria de la primera fila no mostró mejora en el LCP.** La foto ya no figura como "con carga diferida", pero Lighthouse ahora pide precargarla (600 a 850 ms estimados): sigue dependiendo de la respuesta de la API para descubrirse. La comparación además tiene ruido (producción varió entre 3,6 y 4,7 s) y la vista previa carga un script de Vercel (`vercel.live`) que producción no tiene.
+
+## Prueba de las tarjetas livianas contra una base real (2026-11-14)
+
+La consulta nueva de b3 nunca se había ejecutado. Se probó con el código real de `supabase/functions/_shared/catalogo.ts` (una copia idéntica, fuera del repositorio) contra un Postgres 14.3 descartable en Docker, con el esquema cargado desde las migraciones del proyecto (`20261012000100`, `20261106000100` y `20261106000300`, aplicadas sin adaptaciones sobre un esquema `auth` mínimo) y cuatro productos de prueba. **13 comprobaciones, 13 correctas:**
+
+- `loadProductCards` corre y devuelve los productos en el orden pedido, omitiendo los inexistentes.
+- La tarjeta tiene las mismas claves que el producto completo menos `description`, y todos los demás campos son idénticos en valor y tipo (precio como número, categoría con sus padres).
+- `photos` trae 0 o 1 elemento, y es la misma primera foto que la carga completa: la de menor `order` aunque tenga el `id` más alto, y con el mismo `order` desempata el `id` más bajo.
+- `paginateProducts` con `tarjetas: true` sale liviano; sin el parámetro, como lo llama el panel, sale completo.
+
+El contenedor se borró al terminar. Lo que esta prueba no cubre: las cabeceras de caché a través de una ruta real (tienen pruebas unitarias) y las rutas completas servidas como función. Postgres 14 no es la versión de producción; las consultas no usan nada específico de una versión.
+
 ## Propuestas que quedaron afuera
 
 Con su motivo, para retomarlas:
