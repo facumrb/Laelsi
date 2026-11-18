@@ -46,11 +46,13 @@
               class="form-input p-3 focus:border-[#3d4494] focus:ring-1 focus:ring-[#3d4494] outline-none transition-all"
               placeholder="Ej: jperez"
             />
-            <app-field-error
-              [control]="formRegister.controls.username"
-              [maxLength]="30"
-              validLabel="Usuario disponible"
-            />
+            <div class="min-h-8">
+              <app-field-error
+                [control]="formRegister.controls.username"
+                [maxLength]="30"
+                validLabel="Usuario disponible"
+              />
+            </div>
           </div>
 
           <div>
@@ -68,11 +70,13 @@
               class="form-input p-3 focus:border-[#3d4494] focus:ring-1 focus:ring-[#3d4494] outline-none transition-all"
               placeholder="Ej: juan@ejemplo.com"
             />
-            <app-field-error
-              [control]="formRegister.controls.email"
-              [maxLength]="255"
-              validLabel="Email disponible"
-            />
+            <div class="min-h-8">
+              <app-field-error
+                [control]="formRegister.controls.email"
+                [maxLength]="255"
+                validLabel="Email disponible"
+              />
+            </div>
           </div>
 
           <div>
@@ -101,14 +105,16 @@
               />
             </div>
 
-            <p
-              id="password-hint"
-              class="mt-1 text-xs"
-              [class.text-red-600]="passwordHintError()"
-              [class.text-gray-500]="!passwordHintError()"
-            >
-              Mínimo 8 caracteres, con al menos una letra y un número.
-            </p>
+            <div class="min-h-8">
+              <p
+                id="password-hint"
+                class="mt-1 text-xs font-medium"
+                [class.text-red-600]="passwordHintError()"
+                [class.text-gray-500]="!passwordHintError()"
+              >
+                {{ passwordRule }}
+              </p>
+            </div>
           </div>
 
           <div>
@@ -139,9 +145,11 @@
               />
             </div>
 
-            <app-field-error
-              [control]="formRegister.controls.confirmPassword"
-            />
+            <div class="min-h-8">
+              <app-field-error
+                [control]="formRegister.controls.confirmPassword"
+              />
+            </div>
           </div>
         </div>
 

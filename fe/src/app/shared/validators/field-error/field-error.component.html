@@ -15,7 +15,7 @@
           {{ validLabel() }}
         </span>
       } @else if (hasErrors()) {
-        <span class="text-red-600 flex items-center gap-1">
+        <span class="text-red-600 font-medium flex items-center gap-1">
           @if (hasTakenError()) {
             <ng-icon name="bootstrapXCircleFill"></ng-icon>
           }
@@ -24,7 +24,7 @@
       }
     } @else {
       @if (hasErrors()) {
-        <span class="text-red-600">{{ errorText() }}</span>
+        <span class="text-red-600 font-medium">{{ errorText() }}</span>
       }
     }
   </div>

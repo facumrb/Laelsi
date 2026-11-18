@@ -201,6 +201,22 @@ export class ClientsFormComponent implements OnInit {
   showEyeIcon = computed(() => !!this.passwordValue());
   showConfirmEyeIcon = computed(() => !!this.confirmPasswordValue());
 
+  private passwordEvents = toSignal(this.formClient.controls.password.events);
+
+  readonly passwordRule = FormUtils.passwordRule;
+
+  // Al editar, con el campo vacío se aclara que la contraseña se conserva; al escribir se muestra la regla
+  showKeepPasswordHint = computed(
+    () => this.isEditMode() && !this.passwordValue(),
+  );
+
+  // La regla de la contraseña se muestra siempre (reserva su espacio) y pasa a rojo cuando no se cumple
+  passwordHintError = computed(() => {
+    this.passwordEvents();
+    const control = this.formClient.controls.password;
+    return control.touched && control.invalid;
+  });
+
   ngOnInit() {
     this.checkEditMode();
     if (!this.isEditMode()) {

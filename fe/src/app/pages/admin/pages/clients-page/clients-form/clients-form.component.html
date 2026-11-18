@@ -27,7 +27,9 @@
               class="form-input"
               placeholder="Ej: Juan"
             />
-            <app-field-error [control]="formClient.controls.name" />
+            <div class="min-h-8">
+              <app-field-error [control]="formClient.controls.name" />
+            </div>
           </div>
 
           <div>
@@ -42,7 +44,9 @@
               class="form-input"
               placeholder="Ej: Perez"
             />
-            <app-field-error [control]="formClient.controls.lastName" />
+            <div class="min-h-8">
+              <app-field-error [control]="formClient.controls.lastName" />
+            </div>
           </div>
 
           <div>
@@ -59,10 +63,12 @@
               class="form-input"
               placeholder="Ej: 12345678"
             />
-            <app-field-error
-              [control]="formClient.controls.dni"
-              validLabel="DNI disponible"
-            />
+            <div class="min-h-8">
+              <app-field-error
+                [control]="formClient.controls.dni"
+                validLabel="DNI disponible"
+              />
+            </div>
           </div>
 
           <div>
@@ -79,7 +85,9 @@
               class="form-input"
               placeholder="Ej: 3415555555"
             />
-            <app-field-error [control]="formClient.controls.phone" />
+            <div class="min-h-8">
+              <app-field-error [control]="formClient.controls.phone" />
+            </div>
           </div>
         </div>
       </div>
@@ -102,10 +110,12 @@
               class="form-input"
               placeholder="Ej: jperez"
             />
-            <app-field-error
-              [control]="formClient.controls.username"
-              validLabel="Usuario disponible"
-            />
+            <div class="min-h-8">
+              <app-field-error
+                [control]="formClient.controls.username"
+                validLabel="Usuario disponible"
+              />
+            </div>
           </div>
 
           <div>
@@ -122,10 +132,12 @@
               class="form-input"
               placeholder="Ej: juan@ejemplo.com"
             />
-            <app-field-error
-              [control]="formClient.controls.email"
-              validLabel="Email disponible"
-            />
+            <div class="min-h-8">
+              <app-field-error
+                [control]="formClient.controls.email"
+                validLabel="Email disponible"
+              />
+            </div>
           </div>
 
           <div>
@@ -145,12 +157,9 @@
                 formControlName="password"
                 maxlength="100"
                 autocomplete="new-password"
+                aria-describedby="password-hint"
                 class="password-field-input p-2.5 text-sm text-gray-900"
-                placeholder="{{
-                  isEditMode()
-                    ? 'Dejar vacío para mantener la actual'
-                    : 'Mínimo 8 caracteres, 1 letra, 1 número.'
-                }}"
+                placeholder="•••••••••••••••••"
               />
 
               <app-password-toggle-button
@@ -159,7 +168,18 @@
               />
             </div>
             <div class="min-h-8">
-              <app-field-error [control]="formClient.controls.password" />
+              <p
+                id="password-hint"
+                class="mt-1 text-xs font-medium"
+                [class.text-red-600]="passwordHintError()"
+                [class.text-gray-500]="!passwordHintError()"
+              >
+                @if (showKeepPasswordHint()) {
+                  Dejar vacío para mantener la actual.
+                } @else {
+                  {{ passwordRule }}
+                }
+              </p>
             </div>
           </div>
 
@@ -184,7 +204,7 @@
                 placeholder="{{
                   isEditMode()
                     ? 'Repetir nueva contraseña'
-                    : 'Repetir la contraseña ingresada'
+                    : 'Repetir contraseña'
                 }}"
               />
 
@@ -193,10 +213,12 @@
                 [show]="showConfirmEyeIcon()"
               />
             </div>
-            <app-field-error [control]="formClient.controls.confirmPassword" />
+            <div class="min-h-8">
+              <app-field-error [control]="formClient.controls.confirmPassword" />
+            </div>
           </div>
 
-          <div class="flex justify-center md:justify-start pt-2 md:col-span-2">
+          <div class="flex justify-center sm:justify-start pt-2 sm:col-span-2">
             <div class="w-full">
               <app-photo-manager
                 [currentPhoto]="currentPhoto()"
@@ -296,6 +318,7 @@
                 }
               </ul>
             }
+            <div class="min-h-8" aria-hidden="true"></div>
           </div>
 
           <div>
@@ -314,10 +337,12 @@
               class="form-input"
               placeholder="Ej: 20123456789"
             />
-            <app-field-error
-              [control]="formClient.controls.cuit"
-              validLabel="CUIT disponible"
-            />
+            <div class="min-h-8">
+              <app-field-error
+                [control]="formClient.controls.cuit"
+                validLabel="CUIT disponible"
+              />
+            </div>
           </div>
         </div>
       </div>

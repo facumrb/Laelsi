@@ -23,6 +23,8 @@ export class FormUtils {
   static loginIdentifierPattern = '^[a-zA-Z0-9._%+@-]+$';
   // Mínimo 8 caracteres y debe tener al menos 1 letra, y 1 número.
   static passwordPattern = '^(?=.*[A-Za-z])(?=.*\\d).{8,}$';
+  // Texto de la regla: lo usan el mensaje de error y la ayuda fija debajo de los campos de contraseña
+  static passwordRule = 'Mínimo 8 caracteres, al menos una letra y un número.';
   // Validadores para strings reemplazando los nativos para eliminar espacios vacios con trim
   static minLength(minLength: number) {
     return (control: AbstractControl): ValidationErrors | null => {
@@ -102,12 +104,12 @@ export class FormUtils {
 
           // Contraseña (Password)
           if (errors['pattern'].requiredPattern === this.passwordPattern) {
-            return 'La contraseña debe tener al menos 8 caracteres, con al menos una letra y un número.';
+            return this.passwordRule;
           }
 
           // Nombre de Usuario (Username)
           if (errors['pattern'].requiredPattern === this.usernamePattern) {
-            return 'Solo se permiten letras, números, puntos (.) y guiones bajos (_) y guiones medios (-).';
+            return 'Solo letras, números, puntos (.), guiones (-) y guiones bajos (_).';
           }
 
           // Usuario o email (login)
@@ -124,7 +126,7 @@ export class FormUtils {
 
           // Teléfono (Phone)
           if (errors['pattern'].requiredPattern === this.phonePattern) {
-            return 'Solo se permiten números, espacios, guiones (-) y el signo más (+).';
+            return 'Solo se permiten números, espacios, guiones (-) y el signo (+).';
           }
 
           // Solo Números (Number)

@@ -134,6 +134,8 @@ export class RegisterPageComponent {
 
   private passwordEvents = toSignal(this.passwordControl.events);
 
+  readonly passwordRule = FormUtils.passwordRule;
+
   // La regla de la contraseña se muestra siempre (reserva su espacio) y pasa a rojo cuando no se cumple
   passwordHintError = computed(() => {
     this.passwordEvents();

@@ -1,5 +1,11 @@
 import { Component, inject, signal, viewChild } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -68,8 +74,12 @@ export class RevocationPageComponent {
   turnstileToken = signal<string | null>(null);
   private turnstile = viewChild(TurnstileComponent);
 
-  // El email se valida sin distinguir mayúsculas: no tiene que trabar a quien ejerce un derecho
-  private emailRegex = new RegExp(FormUtils.emailPattern, 'i');
+  // El email se valida en minúsculas con el patrón estándar: no tiene que trabar a quien ejerce un derecho
+  private emailPattern = Validators.pattern(FormUtils.emailPattern);
+  private emailValidator = (control: AbstractControl): ValidationErrors | null =>
+    this.emailPattern({
+      value: String(control.value ?? '').toLowerCase(),
+    } as AbstractControl);
 
   form = this.fb.nonNullable.group({
     firstName: [
@@ -95,7 +105,7 @@ export class RevocationPageComponent {
       [
         Validators.required,
         FormUtils.maxLength(255),
-        Validators.pattern(this.emailRegex),
+        this.emailValidator,
       ],
     ],
     // Opcionales
