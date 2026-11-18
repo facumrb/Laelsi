@@ -1,16 +1,13 @@
-import { Component, HostListener, inject, input, output } from '@angular/core';
-import { A11yModule } from '@angular/cdk/a11y';
-import { CloseModalButtonComponent } from '@shared/components/buttons/close-modal-button/close-modal-button.component';
+import { Component, computed, inject, input, output } from '@angular/core';
+import { ModalShellComponent } from '@shared/components/modals/modal-shell/modal-shell.component';
 import { ApiOrderService } from '@services/api-services/api-order.service';
 import { AlertService } from '@services/alert.service';
 import { IApiOrder } from '@models/order.model';
 import { injectInvalidateCatalog } from '@services/queries/catalog-cache';
 
-import { BackdropCloseDirective } from '@shared/directives/backdrop-close.directive';
-
 @Component({
   selector: 'app-cancel-order-modal',
-  imports: [BackdropCloseDirective, CloseModalButtonComponent, A11yModule],
+  imports: [ModalShellComponent],
   templateUrl: './cancel-order-modal.component.html',
 })
 export class CancelOrderModalComponent {
@@ -18,6 +15,10 @@ export class CancelOrderModalComponent {
   variant = input<'admin' | 'client'>('admin');
   close = output<void>();
   orderCancelled = output<IApiOrder>();
+
+  protected readonly titulo = computed(
+    () => `${this.variant() === 'client' ? 'Pedido' : 'Orden'} #${this.orderId()}`,
+  );
 
   private orderService = inject(ApiOrderService);
   private alertService = inject(AlertService);
@@ -40,11 +41,6 @@ export class CancelOrderModalComponent {
   }
 
   onClose() {
-    this.close.emit();
-  }
-
-  @HostListener('document:keydown.escape')
-  onEscapeKey() {
     this.close.emit();
   }
 }

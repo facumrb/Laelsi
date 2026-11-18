@@ -1,69 +1,62 @@
 @if (needsAcceptance()) {
-  <div
-    class="elsi-modal-overlay"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="terms-gate-title"
-  >
-    <div class="elsi-modal-card max-h-[90dvh] overflow-y-auto">
-      <h2 id="terms-gate-title" class="elsi-modal-title">Antes de seguir</h2>
-      <p class="elsi-modal-text">
-        Para usar tu cuenta de {{ legal.brand }} tenés que aceptar los Términos y
-        Condiciones y la Política de Privacidad. Guardamos la fecha en que los
-        aceptás y la versión que tenías delante.
-      </p>
+  <app-modal-shell title="Antes de seguir" size="sm" [dismissible]="false">
+    <p modalDescription class="text-sm text-gray-600 leading-relaxed">
+      Para usar tu cuenta de {{ legal.brand }} tenés que aceptar los Términos y
+      Condiciones y la Política de Privacidad. Guardamos la fecha en que los
+      aceptás y la versión que tenías delante.
+    </p>
 
-      <label
-        for="terms-gate-accept"
-        class="mb-5 flex cursor-pointer items-start gap-2 text-left text-sm text-gray-600"
-      >
-        <input
-          #box
-          type="checkbox"
-          id="terms-gate-accept"
-          class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 accent-[#3d4494]"
-          [checked]="accepted()"
-          (change)="accepted.set(box.checked)"
-        />
-        <span>
-          Leí y acepto los
-          <a
-            routerLink="/terminos"
-            target="_blank"
-            class="font-bold text-[#3d4494] hover:underline"
-            >Términos y Condiciones</a
-          >
-          y la
-          <a
-            routerLink="/privacidad"
-            target="_blank"
-            class="font-bold text-[#3d4494] hover:underline"
-            >Política de Privacidad</a
-          >, incluida la transferencia de mis datos a proveedores ubicados fuera
-          de la Argentina.
-        </span>
-      </label>
+    <label
+      for="terms-gate-accept"
+      class="flex cursor-pointer items-start gap-2 text-left text-sm text-gray-600"
+    >
+      <input
+        #box
+        type="checkbox"
+        id="terms-gate-accept"
+        class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 accent-[#3d4494]"
+        [checked]="accepted()"
+        (change)="accepted.set(box.checked)"
+      />
+      <span>
+        Leí y acepto los
+        <a
+          routerLink="/terminos"
+          target="_blank"
+          class="font-bold text-[#3d4494] hover:underline"
+          >Términos y Condiciones</a
+        >
+        y la
+        <a
+          routerLink="/privacidad"
+          target="_blank"
+          class="font-bold text-[#3d4494] hover:underline"
+          >Política de Privacidad</a
+        >, incluida la transferencia de mis datos a proveedores ubicados fuera
+        de la Argentina.
+      </span>
+    </label>
 
-      <button
-        type="button"
-        class="elsi-btn-primary-full disabled:cursor-not-allowed disabled:opacity-50"
-        [disabled]="!accepted() || saving()"
-        (click)="accept()"
-      >
-        @if (saving()) {
-          Guardando...
-        } @else {
-          Aceptar y continuar
-        }
-      </button>
-
-      <button
-        type="button"
-        class="mt-3 w-full cursor-pointer text-sm font-semibold text-gray-500 transition-colors hover:text-gray-800"
-        (click)="logout()"
-      >
-        No acepto, cerrar sesión
-      </button>
-    </div>
-  </div>
+    <button
+      modalFooter
+      type="button"
+      class="btn-secondary w-full sm:w-auto"
+      (click)="logout()"
+    >
+      No acepto, cerrar sesión
+    </button>
+    <button
+      modalFooter
+      type="button"
+      class="btn-primary w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-50"
+      [disabled]="!accepted() || saving()"
+      (click)="accept()"
+    >
+      @if (saving()) {
+        Guardando...
+      } @else {
+        Aceptar y continuar
+      }
+    </button>
+  </app-modal-shell>
 }

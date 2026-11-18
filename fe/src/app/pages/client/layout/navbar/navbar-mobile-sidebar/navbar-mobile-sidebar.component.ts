@@ -1,10 +1,15 @@
+import { DOCUMENT } from '@angular/common';
 import {
   Component,
+  DestroyRef,
   ElementRef,
+  afterNextRender,
   effect,
+  inject,
   input,
   model,
   output,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
@@ -18,6 +23,7 @@ import {
   bootstrapPerson,
   bootstrapBoxArrowRight,
 } from '@ng-icons/bootstrap-icons';
+import { ScrollLockService } from '@services/ui/scroll-lock.service';
 import { LogoComponent } from '@shared/components/logo/logo.component';
 import { NavbarAccordionItemComponent } from '../navbar-accordion-item/navbar-accordion-item.component';
 
@@ -53,47 +59,33 @@ export class NavbarMobileSidebarComponent {
 
   private panel = viewChild<ElementRef<HTMLElement>>('panel');
 
-  /**
-   * Mientras el menú está abierto el fondo no se desplaza, pero la barra de scroll de la página sigue en su
-   * lugar (si desaparece, el contenido de fondo se corre al abrir y cerrar) y queda debajo del fondo oscuro,
-   * como en el panel de admin. La barra de la ventana no la puede tapar ningún elemento fijo, así que mientras
-   * el menú está abierto el scroll pasa al body, en la misma posición, y al cerrarlo vuelve a la ventana. La
-   * rueda y el toque fuera del menú se cancelan, y cualquier otro desplazamiento del body se revierte.
-   */
+  private readonly scrollLock = inject(ScrollLockService);
+  private readonly documento = inject(DOCUMENT);
+  private readonly destroyRef = inject(DestroyRef);
+
+  /** Mientras el menú está abierto la página no se desplaza; el bloqueo lo gestiona `ScrollLockService`. */
   constructor() {
+    // Misma consulta que la variante `barra-hover` de styles.css: desde ese ancho el menú se oculta, así que se
+    // cierra para no dejar el bloqueo de scroll tomado sin nada visible.
+    afterNextRender(() => {
+      const consulta = this.documento.defaultView?.matchMedia?.(
+        '(min-width: 68.75rem) and (hover: hover) and (pointer: fine)',
+      );
+      if (!consulta) return;
+      const cerrarSiSeOculta = () => {
+        if (consulta.matches) this.isOpen.set(false);
+      };
+      cerrarSiSeOculta();
+      consulta.addEventListener('change', cerrarSiSeOculta);
+      this.destroyRef.onDestroy(() => consulta.removeEventListener('change', cerrarSiSeOculta));
+    });
+
     effect((onCleanup) => {
       const panel = this.panel()?.nativeElement;
-      if (!this.isOpen() || !panel || typeof window === 'undefined') return;
+      if (!this.isOpen() || !panel) return;
 
-      const html = document.documentElement;
-      const body = document.body;
-      const y = window.scrollY;
-
-      html.style.overflow = 'hidden';
-      body.style.height = '100dvh';
-      body.style.overflowY = 'scroll';
-      body.scrollTop = y;
-
-      const cancelarFuera = (e: Event) => {
-        if (!panel.contains(e.target as Node)) e.preventDefault();
-      };
-      const volver = () => {
-        if (body.scrollTop !== y) body.scrollTop = y;
-      };
-
-      document.addEventListener('wheel', cancelarFuera, { passive: false });
-      document.addEventListener('touchmove', cancelarFuera, { passive: false });
-      body.addEventListener('scroll', volver);
-
-      onCleanup(() => {
-        document.removeEventListener('wheel', cancelarFuera);
-        document.removeEventListener('touchmove', cancelarFuera);
-        body.removeEventListener('scroll', volver);
-        html.style.overflow = '';
-        body.style.height = '';
-        body.style.overflowY = '';
-        window.scrollTo({ top: y, behavior: 'instant' });
-      });
+      const soltar = untracked(() => this.scrollLock.bloquear(() => panel));
+      onCleanup(soltar);
     });
   }
 

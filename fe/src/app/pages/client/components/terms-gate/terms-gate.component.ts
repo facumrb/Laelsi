@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { UserRole } from '@models/user.model';
 import { AuthService } from '@services/auth.service';
+import { ModalDescriptionDirective, ModalShellComponent } from '@shared/components/modals/modal-shell/modal-shell.component';
 import { LEGAL_INFO } from '../../pages/footer-pages/legal-info';
 
 /**
@@ -16,7 +17,7 @@ import { LEGAL_INFO } from '../../pages/footer-pages/legal-info';
  */
 @Component({
   selector: 'app-terms-gate',
-  imports: [RouterLink],
+  imports: [RouterLink, ModalShellComponent, ModalDescriptionDirective],
   templateUrl: './terms-gate.component.html',
 })
 export class TermsGateComponent {

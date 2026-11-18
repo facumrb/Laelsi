@@ -1,15 +1,5 @@
-import {
-  Component,
-  input,
-  output,
-  OnInit,
-  OnDestroy,
-  inject,
-  computed,
-  HostListener,
-} from '@angular/core';
-import { A11yModule } from '@angular/cdk/a11y';
-import { CurrencyPipe, DOCUMENT } from '@angular/common';
+import { Component, input, output, inject, computed } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
 import { FormatDatePipe } from '@shared/pipes/format-date.pipe';
 import { NombrePersonaPipe } from '@shared/pipes/nombre-persona.pipe';
 import { RouterModule } from '@angular/router';
@@ -21,23 +11,19 @@ import {
 } from '@ng-icons/bootstrap-icons';
 import { IApiOrder, OrderState, PaymentMethod } from '@models/order.model';
 import { AuthService } from 'src/app/services/auth.service';
-import { CloseModalButtonComponent } from '@shared/components/buttons/close-modal-button/close-modal-button.component';
 import { ProductImageComponent } from '@shared/components/product-image/product-image.component';
-
-import { BackdropCloseDirective } from '@shared/directives/backdrop-close.directive';
+import { ModalShellComponent } from '@shared/components/modals/modal-shell/modal-shell.component';
 
 @Component({
   selector: 'app-order-detail-modal',
   imports: [
-    BackdropCloseDirective,
+    ModalShellComponent,
     NgIconComponent,
     CurrencyPipe,
     FormatDatePipe,
     NombrePersonaPipe,
     RouterModule,
-    CloseModalButtonComponent,
     ProductImageComponent,
-    A11yModule,
   ],
   viewProviders: [
     provideIcons({
@@ -48,7 +34,7 @@ import { BackdropCloseDirective } from '@shared/directives/backdrop-close.direct
   ],
   templateUrl: './order-detail-modal.component.html',
 })
-export class OrderDetailModalComponent implements OnInit, OnDestroy {
+export class OrderDetailModalComponent {
   order = input.required<IApiOrder>();
   showClientInfo = input<boolean>(false); // Opcional: mostrar info de contacto del cliente
   close = output<void>();
@@ -58,7 +44,6 @@ export class OrderDetailModalComponent implements OnInit, OnDestroy {
   OrderState = OrderState;
   PaymentMethod = PaymentMethod;
 
-  private document = inject(DOCUMENT);
   private authService = inject(AuthService);
 
   private nombrePersona = new NombrePersonaPipe();
@@ -70,24 +55,7 @@ export class OrderDetailModalComponent implements OnInit, OnDestroy {
     return this.nombrePersona.transform(persona, this.order().client.email);
   });
 
-  ngOnInit() {
-    this.document.body.style.overflow = 'hidden';
-  }
-
-  ngOnDestroy() {
-    this.document.body.style.overflow = '';
-  }
-
   onClose() {
-    this.close.emit();
-  }
-
-  @HostListener('document:keydown.escape')
-  onEscapeKey() {
-    // Si hay un modal de cancelación abierto en primer plano, no cerramos este modal
-    if (this.document.querySelector('app-cancel-order-modal')) {
-      return;
-    }
     this.close.emit();
   }
 

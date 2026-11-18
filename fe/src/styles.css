@@ -1,19 +1,37 @@
 @import "tailwindcss";
 
-/* La barra de categorías (menús que se abren con mouse o teclado) solo se muestra donde se puede usar: un
-   dispositivo con hover y puntero fino, y una pantalla de al menos 1100 px (68,75 rem), que es lo que ocupan sus
-   menús de varios niveles. En cualquier otro lado (teléfono, tablet, teléfono en horizontal) se usa el menú móvil
-   con acordeón, aunque la pantalla sea ancha: tocar una categoría de la barra navegaba directo a su página y el
-   desplegable no se podía abrir. La barra, el botón hamburguesa y el menú móvil usan esta misma variante para que
-   siempre se vea uno de los dos y nunca los dos ni ninguno. */
 @custom-variant barra-hover (@media (min-width: 68.75rem) and (hover: hover) and (pointer: fine));
 
 @theme {
-  /* 1. Defines la variable de la animación */
   --animate-fadeIn: fadeIn 0.2s ease-in-out;
+  /* Entrada de la tarjeta de un modal. Se usa con motion-safe: para respetar prefers-reduced-motion. */
+  --animate-modal-in: modal-in 0.2s ease-out;
+
+  --color-brand: #3d4494;
+  --color-brand-hover: #2a2f63;
+
+  @keyframes modal-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 }
 
-/* 2. Los keyframes van FUERA del bloque @theme */
+@theme static {
+  --z-dropdown: 20;
+  --z-header: 50;
+  --z-drawer: 60;
+  --z-modal: 100;
+  --z-modal-nested: 110;
+  --z-blocking: 200;
+  --z-toast: 1060;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -23,14 +41,14 @@
   }
 }
 
-/* 3. Estilos base globales */
+/* Estilos base globales */
 @layer base {
   ng-icon {
     @apply shrink-0;
   }
 }
 
-/* 4. Estilos de componentes compartidos */
+/* Estilos de componentes compartidos */
 @layer components {
   .admin-table-body {
     @apply block;
@@ -131,9 +149,9 @@
 
   /* ── Botones ── */
   .btn-primary {
-    @apply cursor-pointer rounded-md bg-[#3d4494] px-6 py-2.5 text-sm font-semibold
-           text-white shadow-sm enabled:hover:bg-[#2a2f63] transition-colors
-           focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-[#3d4494]
+    @apply cursor-pointer rounded-md bg-brand px-6 py-2.5 text-sm font-semibold
+           text-white shadow-sm enabled:hover:bg-brand-hover transition-colors
+           focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-brand
            disabled:bg-gray-300 disabled:cursor-not-allowed;
   }
 
@@ -141,6 +159,14 @@
     @apply cursor-pointer rounded-md bg-white px-5 py-2.5 text-sm font-semibold
            text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300
            hover:bg-gray-50 transition-colors;
+  }
+
+  /* Acción destructiva (eliminar, cancelar un pedido): mismo formato que .btn-primary, en rose */
+  .btn-danger {
+    @apply cursor-pointer rounded-md bg-rose-600 px-6 py-2.5 text-sm font-semibold
+           text-white shadow-sm enabled:hover:bg-rose-700 transition-colors
+           focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-rose-600
+           disabled:bg-gray-300 disabled:cursor-not-allowed;
   }
 
   /* ── Títulos ── */
@@ -257,14 +283,10 @@
     @apply absolute top-full left-0 mt-0 pt-3 w-50 opacity-0 invisible
            transition-all duration-200 z-50 translate-y-2;
   }
-  /* Ya no se abre con :group-hover. La clase la pone el componente (navbar-category-bar.component.ts) tanto al pasar
-     el mouse como al enfocar con el teclado, y se la saca con Esc: con :hover no había forma de abrirlo ni de cerrarlo
-     sin mouse. */
+
   .navbar-dropdown-abierto {
     @apply opacity-100 visible translate-y-0;
-    /* Al abrir, `visibility` cambia en el acto: si entrara en la transición (transition-all de .navbar-dropdown), el
-       menú seguiría "hidden" durante el primer instante y no se le podría enfocar un ítem enseguida (flecha abajo).
-       Al cerrar vale la regla base, que sí transiciona `visibility` y conserva el fundido. */
+
     transition-property: opacity, translate;
   }
 
@@ -303,9 +325,7 @@
            w-44 bg-white rounded-xl shadow-xl border border-black/5 ring-1 ring-black/5 z-50
            before:absolute before:-left-3 before:top-0 before:h-full before:w-3;
   }
-  /* Ya no se abre con :hover. La clase la pone el componente (navbar-category-bar.component.ts) para poder esperar
-     un momento antes de cerrar o de pasar de un ítem al vecino: con :hover el menú se cerraba apenas el puntero
-     salía de la fila, y al ir en diagonal hacia el menú lateral se cruzaba la fila de al lado y se perdía. */
+
   .navbar-subdropdown-abierto {
     @apply block;
   }
@@ -464,30 +484,41 @@
   }
 
   /* ── Modales ── */
-  .elsi-modal-overlay {
-    @apply fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4;
+  /* Capa del fondo de app-modal-shell: la variable de la escala que elige la pila más un desplazamiento, para que un
+     modal nunca quede debajo de los que tiene abajo (ModalStackService). */
+  .modal-capa {
+    z-index: calc(
+      var(--modal-capa-base, var(--z-modal)) + var(--modal-capa-extra, 0)
+    );
   }
 
-  .elsi-modal-card {
-    /* max-h y overflow-y-auto: en una ventana baja (celular apaisado) el cartel no se sale de la pantalla (ID 64) */
-    @apply bg-white rounded-2xl shadow-xl max-w-md w-full p-6 text-center max-h-[90vh] overflow-y-auto;
-    animation: fadeIn 0.3s ease-out;
+  /* Cuerpo y pie de app-modal-shell. Son clases (y no utilidades en su plantilla) para que un formulario proyectado
+     con [modalForm] pueda armar el mismo cuerpo y el mismo pie adentro. */
+  .modal-body {
+    @apply min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 py-6 sm:px-7;
   }
 
-  .elsi-modal-icon-container {
-    @apply mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100;
+  .modal-footer {
+    @apply flex shrink-0 flex-col-reverse items-center justify-end gap-3 border-t border-gray-100 bg-gray-50/50 px-6 py-4 sm:flex-row;
   }
 
-  .elsi-modal-title {
-    @apply text-xl font-bold text-gray-900 mb-2;
+  [modalForm] {
+    @apply flex min-h-0 flex-1 flex-col;
   }
 
-  .elsi-modal-text {
-    @apply text-gray-500 mb-6;
+  /* Cuerpo sin padding ni espacio entre hijos (input flushBody del shell); sigue siendo el que se desplaza. */
+  .modal-body-flush {
+    @apply p-0 space-y-0;
   }
 
-  .elsi-btn-primary-full {
-    @apply w-full bg-[#3d4494] hover:bg-[#2a2f63] text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer;
+  /* En pantallas bajas (celular apaisado) la tarjeta del shell es la que se desplaza: el cuerpo y el formulario de
+     [modalForm] crecen con su contenido en lugar de encogerse, y llenan el resto de la tarjeta si les sobra lugar. */
+  @media (max-height: 480px) {
+    .modal-body,
+    [modalForm] {
+      flex: 1 0 auto;
+      overflow: visible;
+    }
   }
 
   /* ── Estilos compartidos del control de agregar al carrito ── */

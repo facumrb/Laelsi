@@ -1,7 +1,21 @@
-import { Component, input, output } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  afterNextRender,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { A11yModule } from '@angular/cdk/a11y';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { ScrollLockService } from '@services/ui/scroll-lock.service';
 import {
   bootstrapSpeedometer2,
   bootstrapPersonGear,
@@ -38,6 +52,33 @@ export class SidebarComponent {
   mobileMenuOpen = input.required<boolean>();
 
   toggleMobileMenu = output<void>();
+
+  private readonly scrollLock = inject(ScrollLockService);
+  private readonly documento = inject(DOCUMENT);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
+
+  /** Verdadero por debajo del breakpoint `lg`, donde el drawer es visible (desde `lg` lleva `lg:hidden`). */
+  private readonly esMovil = signal(false);
+
+  constructor() {
+    afterNextRender(() => {
+      const consulta = this.documento.defaultView?.matchMedia?.('(min-width: 64rem)');
+      if (!consulta) return;
+      const actualizar = () => this.esMovil.set(!consulta.matches);
+      actualizar();
+      consulta.addEventListener('change', actualizar);
+      this.destroyRef.onDestroy(() => consulta.removeEventListener('change', actualizar));
+    });
+
+    // El bloqueo solo vive con el drawer abierto y visible: la señal del layout puede seguir en true al pasar a
+    // ancho de escritorio, donde el drawer está oculto.
+    effect((onCleanup) => {
+      if (!this.mobileMenuOpen() || !this.esMovil()) return;
+      const soltar = untracked(() => this.scrollLock.bloquear(() => this.panel()?.nativeElement));
+      onCleanup(soltar);
+    });
+  }
 
   menuItems: menuItems[] = [
     {

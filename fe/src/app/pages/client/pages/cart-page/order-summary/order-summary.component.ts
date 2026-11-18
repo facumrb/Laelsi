@@ -1,4 +1,11 @@
-import { Component, computed, effect, inject, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { DeliveryMethod, PaymentMethod } from '@models/order.model';
@@ -92,7 +99,9 @@ export class OrderSummaryComponent {
    */
   private async asegurarTelefono(userId: number): Promise<boolean> {
     try {
-      const cuenta = await firstValueFrom(this.apiClientService.getAccountInfoById(userId));
+      const cuenta = await firstValueFrom(
+        this.apiClientService.getAccountInfoById(userId),
+      );
       if (hayTelefono(cuenta.phone)) return true;
 
       const telefono = await this.alertService.askPhone(
@@ -100,7 +109,9 @@ export class OrderSummaryComponent {
       );
       if (telefono === null) return false;
 
-      await firstValueFrom(this.apiClientService.updateClient(userId, { phone: telefono }));
+      await firstValueFrom(
+        this.apiClientService.updateClient(userId, { phone: telefono }),
+      );
       return true;
     } catch {
       return false;
@@ -142,7 +153,7 @@ export class OrderSummaryComponent {
       })),
     };
 
-    const confirmText = `El total es ${this.totalAmount().toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}. ¿Deseas confirmar la compra?`;
+    const confirmText = `El total es de ${this.totalAmount().toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })} ¿Deseas confirmar la compra?`;
     const isConfirmed = await this.alertService.confirmAction(
       'Confirmar pedido',
       confirmText,
@@ -159,25 +170,49 @@ export class OrderSummaryComponent {
         return;
       }
 
-      this.apiOrderService.createOrder(orderData, this.turnstileToken()).subscribe({
-        next: () => {
-          // La compra descuenta stock y suma ventas: invalidamos el caché
-          // para no seguir mostrando los datos viejos de los productos
-          this.invalidateCatalog();
+      this.apiOrderService
+        .createOrder(orderData, this.turnstileToken())
+        .subscribe({
+          next: () => {
+            // La compra descuenta stock y suma ventas: invalidamos el caché
+            // para no seguir mostrando los datos viejos de los productos
+            this.invalidateCatalog();
 
-          const isTransfer =
-            this.paymentMethod() === PaymentMethod.Transferencia;
-          const successText = isTransfer
-            ? `Tu pedido se ha recibido correctamente.<br><br>Realiza el pago al alias: <b>${this.mpAlias}</b><br><br>Recuerda enviar el comprobante a nuestro Whatsapp: <b>+54 9 3417121860</b>`
-            : 'Tu pedido se ha recibido correctamente.';
-
-          this.alertService.modal('¡Pedido realizado!', successText, 'success');
-          this.cartService.clearCart();
-          this.router.navigate(['/client/profile/orders']);
-        },
-        // El token de Turnstile es de un solo uso: si la compra falla, se pide uno nuevo
-        error: () => this.turnstile()?.reset(),
-      });
+            const successText = 'Tu pedido se ha recibido correctamente.';
+            if (this.paymentMethod() === PaymentMethod.Transferencia) {
+              this.alertService.modal(
+                '¡Pedido realizado!',
+                successText,
+                'success',
+                {
+                  datos: [
+                    {
+                      etiqueta: 'Realiza el pago al alias',
+                      valor: this.mpAlias,
+                      destacado: true,
+                    },
+                    {
+                      etiqueta:
+                        'Recuerda enviar el comprobante a nuestro Whatsapp',
+                      valor: '+54 9 3417121860',
+                      destacado: true,
+                    },
+                  ],
+                },
+              );
+            } else {
+              this.alertService.modal(
+                '¡Pedido realizado!',
+                successText,
+                'success',
+              );
+            }
+            this.cartService.clearCart();
+            this.router.navigate(['/profile/orders']);
+          },
+          // El token de Turnstile es de un solo uso: si la compra falla, se pide uno nuevo
+          error: () => this.turnstile()?.reset(),
+        });
     }
   }
 

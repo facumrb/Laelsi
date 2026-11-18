@@ -1,6 +1,5 @@
 import {
   Component,
-  HostListener,
   computed,
   inject,
   input,
@@ -9,19 +8,21 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { A11yModule } from '@angular/cdk/a11y';
 import { AuthService } from '@services/auth.service';
-import { CloseModalButtonComponent } from '@shared/components/buttons/close-modal-button/close-modal-button.component';
 import { PasswordToggleButtonComponent } from '@shared/components/buttons/password-toggle-button/password-toggle-button.component';
-import { BackdropCloseDirective } from '@shared/directives/backdrop-close.directive';
+import {
+  ModalDescriptionDirective,
+  ModalShellComponent,
+  ModalSubtitleDirective,
+} from '@shared/components/modals/modal-shell/modal-shell.component';
 
 @Component({
   selector: 'app-verify-password-modal',
   imports: [
     ReactiveFormsModule,
-    A11yModule,
-    BackdropCloseDirective,
-    CloseModalButtonComponent,
+    ModalShellComponent,
+    ModalDescriptionDirective,
+    ModalSubtitleDirective,
     PasswordToggleButtonComponent,
   ],
   templateUrl: './verify-password-modal.component.html',
@@ -77,10 +78,5 @@ export class VerifyPasswordModalComponent {
   onClose() {
     if (this.verifying()) return;
     this.close.emit();
-  }
-
-  @HostListener('document:keydown.escape')
-  onEscapeKey() {
-    this.onClose();
   }
 }

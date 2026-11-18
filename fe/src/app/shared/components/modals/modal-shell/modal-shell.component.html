@@ -1,0 +1,58 @@
+<div
+  class="modal-capa fixed inset-0 flex items-center justify-center bg-gray-900/60 p-4 backdrop-blur-sm motion-safe:animate-fadeIn"
+  [style.--modal-capa-base]="capaBase()"
+  [style.--modal-capa-extra]="capaExtra()"
+  (backdropClose)="alClicEnElFondo()"
+>
+  <div
+    #tarjeta
+    cdkTrapFocus
+    cdkTrapFocusAutoCapture
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="titleId"
+    [attr.aria-describedby]="describedBy()"
+    [attr.aria-busy]="busy() || null"
+    class="flex w-full flex-col overflow-hidden rounded-2xl bg-white shadow-xl motion-safe:animate-modal-in [@media(max-height:480px)]:overflow-y-auto [@media(max-height:480px)]:overscroll-contain"
+    [class]="clasesTarjeta()"
+  >
+    <header
+      class="flex shrink-0 items-center justify-between gap-4 border-b border-gray-100 px-6 py-5"
+      [class]="clasesHeader()"
+    >
+      <div class="flex min-w-0 items-center gap-3">
+        @if (icon(); as nombre) {
+          <div
+            data-modal-icon
+            aria-hidden="true"
+            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border shadow-xs"
+            [class]="clasesIcono()"
+          >
+            <ng-icon [name]="nombre" class="text-xl" />
+          </div>
+        }
+        <div class="min-w-0">
+          <h2
+            [id]="titleId"
+            [attr.title]="title()"
+            class="line-clamp-2 text-lg font-bold wrap-break-word text-gray-900"
+          >
+            {{ title() }}
+          </h2>
+          <div class="mt-0.5 text-xs font-medium text-gray-500 empty:hidden"><ng-content select="[modalSubtitle]" />@if (subtituloDeTexto(); as texto) {<p>{{ texto }}</p>}</div>
+        </div>
+      </div>
+      @if (dismissible()) {
+        <app-close-modal-button (clicked)="alClicEnLaX()" />
+      }
+    </header>
+
+    <ng-content select="[modalStrip]" />
+
+    <div class="modal-body empty:hidden" [class.modal-body-flush]="flushBody()"><ng-content /></div>
+
+    <ng-content select="[modalForm]" />
+
+    <footer class="modal-footer empty:hidden"><ng-content select="[modalFooter]" /></footer>
+  </div>
+</div>

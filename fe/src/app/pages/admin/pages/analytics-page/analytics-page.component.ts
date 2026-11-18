@@ -14,6 +14,7 @@ import {
   bootstrapReceipt,
 } from '@ng-icons/bootstrap-icons';
 import { OrderState, IApiOrder } from '@models/order.model';
+import { CancelOrderModalComponent } from '@shared/components/modals/cancel-order-modal/cancel-order-modal.component';
 import { OrderDetailModalComponent } from '@shared/components/modals/order-detail-modal/order-detail-modal.component';
 import { ProductImageComponent } from '@shared/components/product-image/product-image.component';
 import { injectAnalyticsSummaryQuery } from '@services/queries/analytics-queries';
@@ -29,6 +30,7 @@ import { ActivableDirective } from '@shared/directives/activable.directive';
     FormatDatePipe,
     NombrePersonaPipe,
     OrderDetailModalComponent,
+    CancelOrderModalComponent,
     ProductImageComponent,
   ],
   viewProviders: [
@@ -70,6 +72,7 @@ export class AnalyticsPageComponent {
   );
 
   selectedOrder = signal<IApiOrder | null>(null);
+  orderIdToCancel = signal<number | null>(null);
 
   retry() {
     this.summaryQuery.refetch();
@@ -81,6 +84,12 @@ export class AnalyticsPageComponent {
 
   closeOrderModal() {
     this.selectedOrder.set(null);
+  }
+
+  handleOrderCancelled() {
+    this.orderIdToCancel.set(null);
+    this.selectedOrder.set(null);
+    this.summaryQuery.refetch();
   }
 
   getOrderStatusColor(status: OrderState): string {

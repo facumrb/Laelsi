@@ -7,21 +7,18 @@ import {
   output,
   signal,
   computed,
-  HostListener,
 } from '@angular/core';
 import {
   CdkDragDrop,
   DragDropModule,
   moveItemInArray,
 } from '@angular/cdk/drag-drop';
-import { A11yModule } from '@angular/cdk/a11y';
 import { ApiCategoryService } from '@services/api-services/api-category.service';
 import { AlertService } from '@services/alert.service';
 import { IApiCategory } from '@models/category.model';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { bootstrapChevronDown } from '@ng-icons/bootstrap-icons';
-import { CloseModalButtonComponent } from '@shared/components/buttons/close-modal-button/close-modal-button.component';
-import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
+import { ModalShellComponent } from '@shared/components/modals/modal-shell/modal-shell.component';
 
 @Component({
   selector: 'app-categories-order-modal',
@@ -29,9 +26,7 @@ import { ClickOutsideDirective } from '@shared/directives/click-outside.directiv
     DragDropModule,
     NgTemplateOutlet,
     NgIconComponent,
-    CloseModalButtonComponent,
-    ClickOutsideDirective,
-    A11yModule,
+    ModalShellComponent,
   ],
   providers: [provideIcons({ bootstrapChevronDown })],
   templateUrl: './categories-order-modal.component.html',
@@ -128,10 +123,5 @@ export class CategoriesOrderModalComponent {
         this.isSaving.set(false);
       },
     });
-  }
-
-  @HostListener('document:keydown.escape')
-  onEscapeKey() {
-    this.close();
   }
 }

@@ -349,5 +349,15 @@
     [order]="order"
     [showClientInfo]="true"
     (close)="closeOrderModal()"
+    (onCancel)="orderIdToCancel.set($event)"
+  />
+}
+
+@if (orderIdToCancel()) {
+  <app-cancel-order-modal
+    [orderId]="orderIdToCancel()!"
+    variant="admin"
+    (orderCancelled)="handleOrderCancelled()"
+    (close)="orderIdToCancel.set(null)"
   />
 }

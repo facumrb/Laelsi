@@ -1,82 +1,50 @@
 @if (isOpen()) {
-  <div class="fixed inset-0 z-100 flex items-center justify-center p-4">
-    <div
-      class="absolute inset-0 bg-gray-500/75 transition-opacity"
-      aria-hidden="true"
-    ></div>
+  <app-modal-shell title="Reordenar Categorías" (close)="close()">
+    <p class="text-sm text-gray-500">
+      Arrastra y suelta las categorías para cambiar su orden de visualización.
+      Solo puedes reordenar categorías que se encuentren en el mismo nivel.
+    </p>
 
-    <div
-      cdkTrapFocus
-      cdkTrapFocusAutoCapture
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="categories-order-modal-title"
-      class="relative bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col [@media(max-height:480px)]:overflow-y-auto font-sans"
-      (clickOutside)="close()"
-    >
-      <div
-        class="flex items-center justify-between px-6 py-4 border-b border-gray-200"
-      >
-        <h2
-          id="categories-order-modal-title"
-          class="text-lg font-semibold text-gray-900"
-        >
-          Reordenar Categorías
-        </h2>
-        <app-close-modal-button (clicked)="close()"></app-close-modal-button>
+    @if (isLoading()) {
+      <div class="flex justify-center p-8">
+        <div
+          class="w-8 h-8 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin"
+        ></div>
       </div>
+    } @else {
+      <!-- Primer nivel; los demás se arman con la misma plantilla (ver "nivel" al final del archivo) -->
+      <ng-container
+        [ngTemplateOutlet]="nivel"
+        [ngTemplateOutletContext]="{ $implicit: categories(), profundidad: 0 }"
+      />
+    }
 
-      <div class="p-6 overflow-y-auto [@media(max-height:480px)]:overflow-visible overscroll-contain flex-1">
-        <p class="text-sm text-gray-500 mb-4">
-          Arrastra y suelta las categorías para cambiar su orden de
-          visualización. Solo puedes reordenar categorías que se encuentren en
-          el mismo nivel.
-        </p>
-
-        @if (isLoading()) {
-          <div class="flex justify-center p-8">
-            <div
-              class="w-8 h-8 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin"
-            ></div>
-          </div>
+    <div modalFooter class="contents">
+      <button
+        type="button"
+        (click)="close()"
+        class="btn-secondary w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+        [disabled]="isSaving()"
+      >
+        Cancelar
+      </button>
+      <button
+        type="button"
+        (click)="save()"
+        class="btn-primary w-full sm:w-auto min-w-36"
+        [disabled]="isSaving() || isLoading() || !hasRealChanges()"
+      >
+        @if (isSaving()) {
+          <div
+            class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin mr-2"
+          ></div>
+          Guardando...
         } @else {
-          <!-- Primer nivel; los demás se arman con la misma plantilla (ver "nivel" al final del archivo) -->
-          <ng-container
-            [ngTemplateOutlet]="nivel"
-            [ngTemplateOutletContext]="{ $implicit: categories(), profundidad: 0 }"
-          />
+          Guardar Orden
         }
-      </div>
-
-      <div
-        class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3 rounded-b-lg"
-      >
-        <button
-          type="button"
-          (click)="close()"
-          class="btn-secondary"
-          [disabled]="isSaving()"
-        >
-          Cancelar
-        </button>
-        <button
-          type="button"
-          (click)="save()"
-          class="btn-primary min-w-36"
-          [disabled]="isSaving() || isLoading() || !hasRealChanges()"
-        >
-          @if (isSaving()) {
-            <div
-              class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin mr-2"
-            ></div>
-            Guardando...
-          } @else {
-            Guardar Orden
-          }
-        </button>
-      </div>
+      </button>
     </div>
-  </div>
+  </app-modal-shell>
 }
 
 <!--
@@ -155,6 +123,7 @@
 
           @if (cat.children && cat.children.length > 0) {
             <button
+              type="button"
               (click)="toggleExpand(cat.id)"
               class="px-2 py-1 text-xs text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded transition-colors flex items-center gap-1 cursor-pointer"
             >

@@ -1,28 +1,20 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  HostListener,
+  computed,
   input,
   output,
 } from '@angular/core';
-import { A11yModule } from '@angular/cdk/a11y';
-import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { provideIcons } from '@ng-icons/core';
 import {
   bootstrapExclamationTriangle,
   bootstrapPersonSlash,
 } from '@ng-icons/bootstrap-icons';
-import { CloseModalButtonComponent } from '@shared/components/buttons/close-modal-button/close-modal-button.component';
-
-import { BackdropCloseDirective } from '@shared/directives/backdrop-close.directive';
+import { ModalShellComponent } from '@shared/components/modals/modal-shell/modal-shell.component';
 
 @Component({
   selector: 'app-confirm-delete-modal',
-  imports: [
-    BackdropCloseDirective,
-    A11yModule,
-    NgIconComponent,
-    CloseModalButtonComponent,
-  ],
+  imports: [ModalShellComponent],
   viewProviders: [
     provideIcons({
       bootstrapExclamationTriangle,
@@ -46,6 +38,17 @@ export class ConfirmDeleteModalComponent {
   // "Desactivar" que explica que no se borra nada.
   allowPermanentDelete = input<boolean>(true);
 
+  protected readonly titulo = computed(
+    () => `${this.allowPermanentDelete() ? 'Eliminar' : 'Desactivar'} ${this.entityType()}`,
+  );
+
+  // Etiqueta de la línea del nombre; evita resolver el artículo y el género del tipo.
+  protected readonly etiqueta = computed(() => {
+    const tipo = this.entityType();
+    const accion = this.allowPermanentDelete() ? 'eliminar' : 'desactivar';
+    return `${tipo.charAt(0).toUpperCase()}${tipo.slice(1)} a ${accion}`;
+  });
+
   confirmDelete = output<void>();
   confirmDeactivate = output<void>();
   confirmPause = output<void>();
@@ -65,10 +68,5 @@ export class ConfirmDeleteModalComponent {
 
   onConfirmPause(): void {
     this.confirmPause.emit();
-  }
-
-  @HostListener('document:keydown.escape')
-  onEscapeKey(): void {
-    this.onClose();
   }
 }
