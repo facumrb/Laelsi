@@ -1,9 +1,11 @@
 import { HttpContext, HttpContextToken } from '@angular/common/http';
 
-/**
- * Marca un pedido del catálogo cuya respuesta no depende de la sesión. El interceptor de autenticación lo deja
- * salir sin `apikey` ni `Authorization`, de modo que el navegador no necesita la consulta previa (OPTIONS) y el
- * pedido no espera al token.
+/*
+ Este archivo define una marca que se le pone a un pedido HTTP para indicar que es público: devuelve lo mismo con o sin sesión iniciada (catálogo, búsqueda, etc.).
+
+ Por defecto, `authInterceptor` agrega `apikey` y `Authorization` a todo pedido al backend. Un pedido marcado sale sin esos headers, y eso tiene dos ventajas:
+ - El navegador no hace la consulta previa (OPTIONS) de CORS, que los headers propios obligan a hacer.
+ - El pedido sale enseguida, sin esperar a que se lea o se renueve el token.
  */
 export const PETICION_PUBLICA = new HttpContextToken<boolean>(() => false);
 

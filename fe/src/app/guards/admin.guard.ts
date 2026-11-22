@@ -8,8 +8,7 @@ export const adminGuard: CanActivateFn = (route, state) => {
 
   // Verificar si está logueado
   if (!authService.isLoggedIn()) {
-    router.navigate(['/']);
-    return false;
+    return router.createUrlTree(['/']);
   }
 
   // Verificar si es Administrador
@@ -18,6 +17,5 @@ export const adminGuard: CanActivateFn = (route, state) => {
   }
 
   // Si está logueado pero NO es admin (es Cliente)
-  router.navigate(['/']); // Lo mandamos al eccomerce
-  return false;
+  return router.createUrlTree(['/']); // Lo mandamos al eccomerce
 };
