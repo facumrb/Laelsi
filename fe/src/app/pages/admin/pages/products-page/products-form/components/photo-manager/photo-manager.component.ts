@@ -1,10 +1,14 @@
 import {
+  afterNextRender,
   Component,
   computed,
+  DestroyRef,
   effect,
+  ElementRef,
   inject,
   input,
   signal,
+  viewChild,
 } from '@angular/core';
 import { IApiProductPhoto, IUiPhoto } from '@models/photo.model';
 import { ApiPhotoService } from '@services/api-services/api-photo.service';
@@ -35,7 +39,18 @@ import {
 export class PhotoManagerComponent {
   private photoService = inject(ApiPhotoService);
   private alertService = inject(AlertService);
+  private destroyRef = inject(DestroyRef);
   readonly MAX_PHOTOS = 10;
+  readonly MAX_FILE_SIZE_MB = 5;
+  private readonly MAX_FILE_SIZE_BYTES = this.MAX_FILE_SIZE_MB * 1024 * 1024;
+
+  // Indica si hay archivos arrastrándose sobre la zona de subida
+  isDragging = signal(false);
+
+  // Altura medida de la galería; el envoltorio la anima con una transición CSS
+  galleryHeight = signal(0);
+  private galleryContent =
+    viewChild.required<ElementRef<HTMLElement>>('galleryContent');
 
   //Recibimos las fotos cuando estamos en modo Edición
   initialPhotos = input<IApiProductPhoto[]>([]);
@@ -62,31 +77,88 @@ export class PhotoManagerComponent {
         this.originalOrder.set(photos.map((p) => p.id));
       }
     });
+
+    afterNextRender(() => {
+      const content = this.galleryContent().nativeElement;
+      const observer = new ResizeObserver(() =>
+        this.galleryHeight.set(content.offsetHeight),
+      );
+      observer.observe(content);
+      this.destroyRef.onDestroy(() => observer.disconnect());
+    });
   }
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-
-    // 1. Verificamos que haya archivos seleccionados
     if (!input.files || input.files.length === 0) return;
 
-    const newFilesCount = input.files.length;
-    const currentFilesCount = this.gallery().length;
+    this.addFiles(Array.from(input.files));
 
-    // 2. VALIDACIÓN: ¿La suma supera el límite?
-    if (currentFilesCount + newFilesCount > this.MAX_PHOTOS) {
+    // Se limpia el input para poder volver a elegir los mismos archivos
+    input.value = '';
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    this.isDragging.set(true);
+  }
+
+  onDragLeave(event: DragEvent) {
+    // Pasar sobre un hijo de la zona también dispara dragleave: solo cuenta si se sale de la zona
+    const zone = event.currentTarget as HTMLElement;
+    const next = event.relatedTarget as Node | null;
+    if (next && zone.contains(next)) return;
+    this.isDragging.set(false);
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    this.isDragging.set(false);
+    this.addFiles(Array.from(event.dataTransfer?.files ?? []));
+  }
+
+  /*
+  Agrega a la galería las imágenes válidas. Descarta las que no son imagen (al soltar no se aplica el
+  accept del input) y las que superan el tamaño máximo, y avisa cuáles se descartaron.
+  */
+  addFiles(files: File[]) {
+    if (files.length === 0) return;
+
+    const notImages = files.filter((f) => !f.type.startsWith('image/'));
+    const tooLarge = files.filter(
+      (f) => f.type.startsWith('image/') && f.size > this.MAX_FILE_SIZE_BYTES,
+    );
+    const valid = files.filter(
+      (f) => f.type.startsWith('image/') && f.size <= this.MAX_FILE_SIZE_BYTES,
+    );
+
+    if (
+      valid.length > 0 &&
+      this.gallery().length + valid.length > this.MAX_PHOTOS
+    ) {
       this.alertService.toast(
         `Límite excedido. Solo puedes tener ${this.MAX_PHOTOS} fotos en total.`,
         'warning',
       );
-
-      // Limpiamos el input para que pueda intentar de nuevo y salimos
-      input.value = '';
       return;
     }
 
-    // 3. Si pasa la validación, procesamos los archivos
-    Array.from(input.files).forEach((file) => {
+    const reasons: string[] = [];
+    if (notImages.length > 0) {
+      reasons.push(
+        `No son imágenes: ${notImages.map((f) => f.name).join(', ')}.`,
+      );
+    }
+    if (tooLarge.length > 0) {
+      reasons.push(
+        `Superan los ${this.MAX_FILE_SIZE_MB}MB: ${tooLarge.map((f) => f.name).join(', ')}.`,
+      );
+    }
+    if (reasons.length > 0) {
+      this.alertService.toast(reasons.join(' '), 'warning');
+    }
+
+    valid.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (e: any) => {
         const newPhoto: IUiPhoto = {
@@ -99,9 +171,6 @@ export class PhotoManagerComponent {
       };
       reader.readAsDataURL(file);
     });
-
-    // Limpiamos el input al final
-    input.value = '';
   }
 
   movePhoto(index: number, direction: 'left' | 'right') {

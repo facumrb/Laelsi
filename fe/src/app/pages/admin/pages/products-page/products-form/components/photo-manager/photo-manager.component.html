@@ -8,7 +8,13 @@
 
   <label
     for="productImages"
-    class="group flex justify-center rounded-lg border-2 border-dashed border-gray-300 px-6 py-8 hover:bg-gray-50 hover:border-[#3d4494] transition-all cursor-pointer relative"
+    class="group flex justify-center rounded-lg border-2 border-dashed px-6 py-8 hover:bg-gray-50 hover:border-[#3d4494] transition-all cursor-pointer relative"
+    [class.border-gray-300]="!isDragging()"
+    [class.border-brand]="isDragging()"
+    [class.bg-gray-50]="isDragging()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
   >
     <div class="text-center">
       <ng-icon
@@ -20,7 +26,9 @@
         <span class="font-semibold text-[#3d4494]">Haz clic para subir</span> o
         arrastra la imagen aquí.
       </div>
-      <p class="text-xs text-gray-500 mt-1">PNG, JPG hasta 5MB</p>
+      <p class="text-xs text-gray-500 mt-1">
+        PNG, JPG hasta {{ MAX_FILE_SIZE_MB }}MB
+      </p>
     </div>
 
     <input
@@ -35,78 +43,88 @@
     />
   </label>
 
-  @if (gallery().length > 0) {
-    <div class="mt-6">
-      <h2 class="text-sm font-semibold text-gray-500 tracking-wide mb-3">
-        Galería ({{ gallery().length }} fotos) - Utiliza las flechas para
-        reordenar la secuencia de imágenes.
-      </h2>
+  <div
+    class="overflow-hidden motion-safe:transition-[height] motion-safe:duration-300 ease-in-out"
+    [style.height.px]="galleryHeight()"
+  >
+    <div #galleryContent>
+      @if (gallery().length > 0) {
+        <div class="pt-6">
+          <h2 class="text-sm font-semibold text-gray-500 tracking-wide mb-3">
+            Galería ({{ gallery().length }} fotos) - Utiliza las flechas para
+            reordenar la secuencia de imágenes.
+          </h2>
 
-      <div class="flex flex-wrap gap-4">
-        @for (photo of gallery(); track photo.uiId; let i = $index) {
-          <div
-            [style.view-transition-name]="'photo-' + photo.uiId"
-            class="relative group size-32 shrink-0 rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-white"
-          >
-            <app-product-image
-              [imageUrl]="photo.src"
-              altText="Producto"
-              containerClass="w-full h-full bg-white text-gray-400"
-            />
+          <div class="flex flex-wrap gap-4">
+            @for (photo of gallery(); track photo.uiId; let i = $index) {
+              <div
+                [style.view-transition-name]="'photo-' + photo.uiId"
+                class="relative group size-32 shrink-0 motion-safe:animate-fadeIn rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-white"
+              >
+                <app-product-image
+                  [imageUrl]="photo.src"
+                  altText="Producto"
+                  containerClass="w-full h-full bg-white text-gray-400"
+                />
 
-            <span
-              class="absolute top-2 left-2 bg-gray-900/60 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm z-10 backdrop-blur-sm border border-white/20"
-            >
-              #{{ i + 1 }}
-            </span>
-
-            <div
-              class="absolute inset-0 bg-black/0 md:group-hover:bg-black/40 transition-all duration-200 p-2 flex flex-col justify-between opacity-100 md:opacity-0 md:group-hover:opacity-100"
-            >
-              <div class="flex justify-end">
-                <button
-                  type="button"
-                  (click)="removePhoto(i)"
-                  aria-label="Eliminar foto"
-                  class="cursor-pointer bg-white/90 text-red-600 p-1.5 rounded-full hover:bg-red-600 hover:text-white transition shadow-sm backdrop-blur-sm flex items-center justify-center"
+                <span
+                  class="absolute top-2 left-2 bg-gray-900/60 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm z-10 backdrop-blur-sm border border-white/20"
                 >
-                  <ng-icon name="bootstrapTrash" class="text-base"></ng-icon>
-                </button>
+                  #{{ i + 1 }}
+                </span>
+
+                <div
+                  class="absolute inset-0 bg-black/0 md:group-hover:bg-black/40 transition-all duration-200 p-2 flex flex-col justify-between opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                >
+                  <div class="flex justify-end">
+                    <button
+                      type="button"
+                      (click)="removePhoto(i)"
+                      aria-label="Eliminar foto"
+                      class="cursor-pointer bg-white/90 text-red-600 p-1.5 rounded-full hover:bg-red-600 hover:text-white transition shadow-sm backdrop-blur-sm flex items-center justify-center"
+                    >
+                      <ng-icon
+                        name="bootstrapTrash"
+                        class="text-base"
+                      ></ng-icon>
+                    </button>
+                  </div>
+
+                  <div class="flex justify-between items-center px-1">
+                    <button
+                      type="button"
+                      (click)="movePhoto(i, 'left')"
+                      [disabled]="i === 0"
+                      [class.opacity-30]="i === 0"
+                      aria-label="Mover foto a la izquierda"
+                      class="cursor-pointer bg-white/90 text-gray-800 p-1.5 rounded-full hover:bg-[#3d4494] hover:text-white transition shadow-sm disabled:cursor-not-allowed backdrop-blur-sm flex items-center justify-center"
+                    >
+                      <ng-icon
+                        name="bootstrapChevronLeft"
+                        class="text-base"
+                      ></ng-icon>
+                    </button>
+
+                    <button
+                      type="button"
+                      (click)="movePhoto(i, 'right')"
+                      [disabled]="i === gallery().length - 1"
+                      [class.opacity-30]="i === gallery().length - 1"
+                      aria-label="Mover foto a la derecha"
+                      class="cursor-pointer bg-white/90 text-gray-800 p-1.5 rounded-full hover:bg-[#3d4494] hover:text-white transition shadow-sm disabled:cursor-not-allowed backdrop-blur-sm flex items-center justify-center"
+                    >
+                      <ng-icon
+                        name="bootstrapChevronRight"
+                        class="text-base"
+                      ></ng-icon>
+                    </button>
+                  </div>
+                </div>
               </div>
-
-              <div class="flex justify-between items-center px-1">
-                <button
-                  type="button"
-                  (click)="movePhoto(i, 'left')"
-                  [disabled]="i === 0"
-                  [class.opacity-30]="i === 0"
-                  aria-label="Mover foto a la izquierda"
-                  class="cursor-pointer bg-white/90 text-gray-800 p-1.5 rounded-full hover:bg-[#3d4494] hover:text-white transition shadow-sm disabled:cursor-not-allowed backdrop-blur-sm flex items-center justify-center"
-                >
-                  <ng-icon
-                    name="bootstrapChevronLeft"
-                    class="text-base"
-                  ></ng-icon>
-                </button>
-
-                <button
-                  type="button"
-                  (click)="movePhoto(i, 'right')"
-                  [disabled]="i === gallery().length - 1"
-                  [class.opacity-30]="i === gallery().length - 1"
-                  aria-label="Mover foto a la derecha"
-                  class="cursor-pointer bg-white/90 text-gray-800 p-1.5 rounded-full hover:bg-[#3d4494] hover:text-white transition shadow-sm disabled:cursor-not-allowed backdrop-blur-sm flex items-center justify-center"
-                >
-                  <ng-icon
-                    name="bootstrapChevronRight"
-                    class="text-base"
-                  ></ng-icon>
-                </button>
-              </div>
-            </div>
+            }
           </div>
-        }
-      </div>
+        </div>
+      }
     </div>
-  }
+  </div>
 </div>
