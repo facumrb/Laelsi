@@ -4,12 +4,12 @@ La librería “Laelsi” es un negocio dedicado a la venta de productos de libr
 
 Trabajo práctico de Desarrollo de Software (UTN FRRo), según las consignas de [utnfrrodsw/tp](https://github.com/utnfrrodsw/tp).
 
-| | |
-| :-- | :-- |
-| Sitio | [laelsi.com.ar](https://laelsi.com.ar) |
-| Propuesta | [docs/catedra/proposal.md](docs/catedra/proposal.md) |
-| Documentación | [docs/README.md](docs/README.md) |
-| Video demostración | [Google Drive](https://drive.google.com/file/d/1qXaOcWWohlrfDlq3GMMrZ0Pog4uzKca6/view?usp=drive_link) |
+|                                  |                                                                                   |
+| :------------------------------- | :-------------------------------------------------------------------------------- |
+| Sitio                            | [laelsi.com.ar](https://laelsi.com.ar)                                            |
+| Propuesta                        | [docs/catedra/proposal.md](docs/catedra/proposal.md)                              |
+| Documentación                    | [docs/README.md](docs/README.md)                                                  |
+| Video demostración (regularidad) | [Google Drive](https://drive.google.com/file/d/1qXaOcWWohlrfDlq3GMMrZ0Pog4uzKca6) |
 
 ## Integrantes
 
