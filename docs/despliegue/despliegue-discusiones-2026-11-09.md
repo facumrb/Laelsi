@@ -95,4 +95,4 @@ Vercel despliega solo. Después se mira el sitio y el carrito.
 
 **Regla de caché de Cloudflare para las imágenes: NO hace falta.** Esta guía decía que las imágenes no se cacheaban en el borde (`cf-cache-status: DYNAMIC`); era un **error de medición**: se midió con `curl -I` (un pedido `HEAD`), que Cloudflare no trata como un `GET`. Con `GET` reales, una imagen de producto responde `cf-cache-status: HIT` con más de 10 días de antigüedad en el borde y `Cache-Control: public, max-age=31536000, immutable`: ya se cachea. Si en el futuro se quiere verificar, hay que usar `curl -s -D - -o /dev/null <url>` (GET), nunca `-I`.
 
-**Clave de PageSpeed Insights** para medir antes y después: ver [rendimiento-investigacion-2026-11-09.md](./requerimientos/rendimiento-investigacion-2026-11-09.md). Se guarda como `PAGESPEED_API_KEY` en `supabase/.env` (ignorado por git).
+**Clave de PageSpeed Insights** para medir antes y después: ver [rendimiento-investigacion-2026-11-09.md](../requerimientos/rendimiento-investigacion-2026-11-09.md). Se guarda como `PAGESPEED_API_KEY` en `supabase/.env` (ignorado por git).

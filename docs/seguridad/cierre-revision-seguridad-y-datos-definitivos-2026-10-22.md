@@ -22,7 +22,7 @@ Entre los pasos 3 y 4 el frontend viejo no funciona del todo con las funciones n
 La cuenta de Google se crea al volver de Google, sin casilla. Ahora:
 
 - `getSessionUser` informa `termsAccepted` y el frontend lo guarda en la sesión.
-- Si una cuenta de **cliente** tiene `termsAccepted = false` (cuentas de Google y cuentas anteriores a la casilla), el layout de la tienda muestra un diálogo bloqueante con una casilla explícita ([terms-gate](../fe/src/app/pages/client/components/terms-gate/terms-gate.component.ts)).
+- Si una cuenta de **cliente** tiene `termsAccepted = false` (cuentas de Google y cuentas anteriores a la casilla), el layout de la tienda muestra un diálogo bloqueante con una casilla explícita ([terms-gate](../../fe/src/app/pages/client/components/terms-gate/terms-gate.component.ts)).
 - Al aceptar, `POST /auth/accept-terms` guarda `terms_accepted_at` y `terms_version`. Si ya aceptó esa versión no se toca nada: la fecha que vale es la de la primera aceptación. Las cuentas de administración no pasan por acá.
 - Las sesiones guardadas por una versión anterior (sin ese dato) se completan solas desde `/auth/me`, sin cerrar la sesión si falla.
 - Se actualizaron el aviso del login, los Términos y la Política de Privacidad.

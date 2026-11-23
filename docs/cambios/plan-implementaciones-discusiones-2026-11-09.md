@@ -1,6 +1,6 @@
 # Plan: implementaciones de `discusiones.md` en el sistema actual (2026-11-09)
 
-Pedido de Facundo: todas las implementaciones de [discusiones.md](./requerimientos/discusiones.md) **se hacen lo antes posible en el sistema actual** (`fe/` y las Edge Functions), y se mejoran más adelante cuando el sistema multi-tenant esté en marcha y el repositorio sea privado. Hasta entonces, no se sube nada.
+Pedido de Facundo: todas las implementaciones de [discusiones.md](../requerimientos/discusiones.md) **se hacen lo antes posible en el sistema actual** (`fe/` y las Edge Functions), y se mejoran más adelante cuando el sistema multi-tenant esté en marcha y el repositorio sea privado. Hasta entonces, no se sube nada.
 
 ## Estado
 
@@ -10,8 +10,8 @@ Pedido de Facundo: todas las implementaciones de [discusiones.md](./requerimient
 | 54 | Estado **Pausado** distinto de Inactivo, y carrito que avisa | Migración `20261106000300` **verificada** | **Hecho y probado** (tienda, categoría y ruta `availability`) | **Hecha y probada** (selector, filtro, etiqueta, carrito, WhatsApp, "Pausar") | Falta probarlo funcionando |
 | 68 | Carrito del administrador | — | — | **Hecha y probada** (ícono oculto para administradores y modal "MODO ADMIN: carrito no habilitado") | Falta probarlo funcionando |
 | 77 | Contraste de las etiquetas de las tarjetas | — | — | **Hecho** (`text-gray-600`) | Hecho |
-| 70 | Rendimiento (prioridad máxima) | — | — | **Investigación hecha** ([rendimiento-investigacion-2026-11-09.md](./requerimientos/rendimiento-investigacion-2026-11-09.md)); **Hechas** las mejoras 1 (`preconnect`), 2 (portada en una llamada, 8 a 1) y 3 (`Cache-Control` de 60 s en el catálogo público). Sin medición propia de Lighthouse todavía | La mejora 4 (`vercel.json`) está en la rama de vista previa y la 5 (Cloudflare) se **descartó**: las imágenes ya se cachean. La clave de PageSpeed ya está; falta medir |
-| 71 | Menos campos obligatorios al crear clientes | — | **Hecho y probado**: el alta desde el panel pide usuario, correo y contraseña | **Hecha y probada**: nombre, apellido, DNI y teléfono opcionales; nombres tolerantes a datos faltantes | Comparativa en [campos-de-clientes-comparativa-2026-11-09.md](./requerimientos/campos-de-clientes-comparativa-2026-11-09.md); 2 preguntas abiertas |
+| 70 | Rendimiento (prioridad máxima) | — | — | **Investigación hecha** ([rendimiento-investigacion-2026-11-09.md](../requerimientos/rendimiento-investigacion-2026-11-09.md)); **Hechas** las mejoras 1 (`preconnect`), 2 (portada en una llamada, 8 a 1) y 3 (`Cache-Control` de 60 s en el catálogo público). Sin medición propia de Lighthouse todavía | La mejora 4 (`vercel.json`) está en la rama de vista previa y la 5 (Cloudflare) se **descartó**: las imágenes ya se cachean. La clave de PageSpeed ya está; falta medir |
+| 71 | Menos campos obligatorios al crear clientes | — | **Hecho y probado**: el alta desde el panel pide usuario, correo y contraseña | **Hecha y probada**: nombre, apellido, DNI y teléfono opcionales; nombres tolerantes a datos faltantes | Comparativa en [campos-de-clientes-comparativa-2026-11-09.md](../requerimientos/campos-de-clientes-comparativa-2026-11-09.md); 2 preguntas abiertas |
 
 ## Qué está verificado y cómo
 
@@ -48,7 +48,7 @@ Se sirvieron **las funciones en local** (`supabase functions serve`, con un arch
 
 ## Orden de despliegue (importante)
 
-**Los comandos exactos, el orden y la reversa están en [despliegue-discusiones-2026-11-09.md](./despliegue-discusiones-2026-11-09.md).** Resumen: migraciones, luego todas las funciones y al final el push, porque un push a `main` despliega `fe/` a producción solo (Vercel). `npm run db:push` aplicaría también las `20261107…` de multi-tenant: hay que apartarlas un momento. Lo corrés vos; yo no escribo en producción.
+**Los comandos exactos, el orden y la reversa están en [despliegue-discusiones-2026-11-09.md](../despliegue/despliegue-discusiones-2026-11-09.md).** Resumen: migraciones, luego todas las funciones y al final el push, porque un push a `main` despliega `fe/` a producción solo (Vercel). `npm run db:push` aplicaría también las `20261107…` de multi-tenant: hay que apartarlas un momento. Lo corrés vos; yo no escribo en producción.
 
 ## Lo que sigue
 

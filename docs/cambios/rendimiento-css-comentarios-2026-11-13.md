@@ -1,6 +1,6 @@
 # Rendimiento, CSS sin uso y comentarios (2026-11-13)
 
-Tres trabajos sobre el sistema actual (`fe/` y las Edge Functions), en la rama `mejora-de-rendimiento`: mejoras de rendimiento que parten de [rendimiento-investigacion-2026-11-09.md](./requerimientos/rendimiento-investigacion-2026-11-09.md), eliminación del CSS sin uso y revisión de comentarios según la política de `CLAUDE.md`. Todo el trabajo es local: no se compiló, no se sirvió y no se commiteó nada. `be/` quedó fuera de alcance.
+Tres trabajos sobre el sistema actual (`fe/` y las Edge Functions), en la rama `mejora-de-rendimiento`: mejoras de rendimiento que parten de [rendimiento-investigacion-2026-11-09.md](../requerimientos/rendimiento-investigacion-2026-11-09.md), eliminación del CSS sin uso y revisión de comentarios según la política de `CLAUDE.md`. Todo el trabajo es local: no se compiló, no se sirvió y no se commiteó nada. `be/` quedó fuera de alcance.
 
 ## Estado
 
