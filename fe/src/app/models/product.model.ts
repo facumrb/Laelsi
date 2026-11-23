@@ -1,10 +1,11 @@
 import { IApiCategory } from './category.model';
-import { IApiProductPhoto } from './photo.model';
+import { IApiProductPhoto, IUiPhoto } from './photo.model';
 import { IPaginatedResult } from './pagination.model';
+import { IApiUser } from './user.model';
 
 // Estados de publicación (ID 54 de docs/requerimientos/discusiones.md):
 //   Activo   se ve en la tienda y se puede comprar.
-//   Pausado  SE VE en la tienda como "no disponible por ahora"; no se puede comprar. El stock no cambia.
+//   Pausado  SE VE en la tienda como "no disponible por ahora"; no se puede comprar.
 //   Inactivo NO aparece en la tienda.
 export enum ProductState {
   Activo = 'Activo',
@@ -20,43 +21,47 @@ export interface IApiPrice {
   isCurrent: boolean;
 }
 
+/*
+ En la ficha completa (detalle y panel admin) `photos` trae toda la galería.
+ En las tarjetas de la tienda (listados, búsqueda, portada) trae solo la primera foto, sin `order` ni `productId`, y no viene `description`.
+*/
 export interface IApiProduct {
   id: number;
   name: string;
   description: string;
-  prices: IApiPrice[];
+  prices: IApiPrice[]; // Solo el precio vigente: el historial de precios no se envía
   brand: string;
   totalSold: number;
   state: ProductState;
   stock: number;
-  photos: IApiProductPhoto[]; // Array de URLs de las fotos del producto
+  photos: IApiProductPhoto[];
   category: IApiCategory;
   createdAt: string;
   updatedAt: string;
   deletedAt?: string | null;
 }
 
-/**
- * Página de productos de la tienda. `brands` trae TODAS las marcas del resultado (no solo las de
- * esta página) para el filtro; el servidor la manda en la búsqueda y en los productos de una categoría.
- */
+/*
+ Página de productos de la tienda. `brands` trae TODAS las marcas del resultado (no solo las de
+ esta página) para el filtro; el servidor la manda en la búsqueda y en los productos de una categoría.
+*/
 export interface IPaginatedProducts extends IPaginatedResult<IApiProduct> {
   brands?: string[];
 }
 
-/**
- * La portada de la tienda en una sola llamada (GET /products/home): los más vendidos y, de las primeras
- * categorías con productos, sus más vendidos. Las categorías sin más vendidos no vienen.
+/*
+ La portada de la tienda en una sola llamada (GET /products/home): los más vendidos y, de las primeras
+ categorías con productos, sus más vendidos. Las categorías sin más vendidos no vienen.
  */
 export interface IHome {
   bestSellers: IApiProduct[];
   categories: { category: IApiCategory; products: IApiProduct[] }[];
 }
 
-/**
- * Resumen de un producto dentro de una categoría (GET /categories, panel admin). Es lo justo para
- * contarlos y listarlos con su miniatura: no trae precio, stock ni descripción.
- */
+/*
+ Resumen de un producto dentro de una categoría (GET /categories, panel admin). Es lo justo para
+ contarlos y listarlos con su miniatura: no trae precio, stock ni descripción.
+*/
 export interface IProductSummary {
   id: number;
   name: string;
@@ -82,6 +87,25 @@ export interface IBulkPriceResult {
   errors: { productId: number; name: string; error: string }[];
 }
 
+// Tipo de ajuste del cambio masivo de precios: monto fijo o porcentaje.
+export type BulkAdjustmentType = 'fixed' | 'percentage';
+
+// Un lote del historial de cambios masivos de precios (GET /bulk-prices/history)
+export interface IBulkPriceBatch {
+  id: number;
+  adjustmentType: BulkAdjustmentType;
+  adjustmentValue: number;
+  roundingRule: string | null;
+  isReverted: boolean;
+  user: Pick<
+    IApiUser,
+    'id' | 'name' | 'lastName' | 'username' | 'email' | 'role'
+  > | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
 export type ICreateProduct = Omit<
   IApiProduct,
   | 'id'
@@ -98,7 +122,7 @@ export type ICreateProduct = Omit<
 
 export type IUpdateProduct = Partial<ICreateProduct>;
 
-// Las siguientes son interfaces para almacenar el estado de un producto en edición
+// Borrador del formulario de producto mientras se crea una categoría desde él (ProductDraftService)
 export interface IProductDraftForm {
   name?: string | null;
   description?: string | null;
@@ -118,7 +142,7 @@ export interface IProductDraft {
   formValue: IProductDraftForm;
   isEditMode: boolean;
   productId: number | null;
-  photos: IApiProductPhoto[] | any[];
+  photos: IUiPhoto[];
   photosToDeleteIds: number[];
   returnUrl: string;
 }

@@ -1,16 +1,21 @@
-// Clase abstracta 'Photo' del backend
 export interface IApiBasePhoto {
   id: number;
   fileName: string; // Ej: "a1b2-c3d4-fdsf-sdfds.webp"
 }
 
-// FOTO DE PRODUCTO
 export interface IApiProductPhoto extends IApiBasePhoto {
-  order: number; // Para ordenar las fotos del producto dentro del carrousel
-  productId: number; // ID del producto al que pertenece
+  order: number; // Posición dentro de la galería del producto
+  productId: number;
 }
 
-// FOTO DE USUARIO
-export interface IApiUserPhoto extends IApiBasePhoto {
-  userId: number; // ID del usuario dueño de la foto
+// El servidor solo envía id y fileName de la foto de perfil
+export type IApiUserPhoto = IApiBasePhoto;
+
+// Foto de la galería del formulario de producto: una ya guardada (originalId) o una nueva todavía sin subir (file)
+export interface IUiPhoto {
+  uiId: string;
+  src: string;
+  file?: File;
+  originalId?: number;
+  isNew: boolean;
 }

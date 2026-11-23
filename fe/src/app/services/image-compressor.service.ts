@@ -1,27 +1,27 @@
 import { Injectable } from '@angular/core';
 
-/** Ancho máximo de las fotos de producto (en píxeles). */
+// Ancho máximo de las fotos de producto (en píxeles).
 export const PRODUCT_IMAGE_MAX_WIDTH = 1200;
-/** Ancho máximo de las fotos de perfil (en píxeles). */
+// Ancho máximo de las fotos de perfil (en píxeles).
 export const USER_IMAGE_MAX_WIDTH = 400;
 
 const WEBP_MIME_TYPE = 'image/webp';
 const WEBP_QUALITY = 0.8; // 80%
 
-/**
- * Convierte y comprime imágenes a WebP EN EL NAVEGADOR, antes de subirlas.
- *
- * Las imágenes viajan directo del navegador a Cloudflare R2, así que no hay un
- * servidor en el medio que las optimice: lo hace el propio cliente con la Canvas API.
- */
+/*
+ Convierte y comprime imágenes a WebP EN EL NAVEGADOR, antes de subirlas.
+
+ Las imágenes viajan directo del navegador a Cloudflare R2, así que no hay un
+ servidor en el medio que las optimice: lo hace el propio cliente con la Canvas API.
+*/
 @Injectable({
   providedIn: 'root',
 })
 export class ImageCompressorService {
-  /**
-   * Devuelve la imagen convertida a WebP y achicada a `maxWidth` como máximo.
-   * Las imágenes más chicas que `maxWidth` no se agrandan.
-   */
+  /*
+   Devuelve la imagen convertida a WebP y achicada a `maxWidth` como máximo.
+   Las imágenes más chicas que `maxWidth` no se agrandan.
+  */
   async compressToWebP(file: File, maxWidth: number): Promise<Blob> {
     const bitmap = await this.decode(file);
 
@@ -39,6 +39,8 @@ export class ImageCompressorService {
       if (!context) {
         throw new Error('No se pudo procesar la imagen en este navegador');
       }
+      // Suavizado de alta calidad: al achicar mucho en un solo paso, el valor por defecto deja bordes dentados
+      context.imageSmoothingQuality = 'high';
       context.drawImage(bitmap, 0, 0, width, height);
 
       const blob = await new Promise<Blob | null>((resolve) =>

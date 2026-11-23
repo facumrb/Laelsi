@@ -2,7 +2,9 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import {
+  BulkAdjustmentType,
   IApiProduct,
+  IBulkPriceBatch,
   IBulkPricePreviewItem,
   IBulkPriceResult,
   ICreateProduct,
@@ -11,9 +13,17 @@ import {
   IUpdateProduct,
   ProductState,
 } from '@models/product.model';
-import { IPaginatedResult } from '../../models/pagination.model';
+import { IPaginatedResult } from '@models/pagination.model';
 import { environment } from 'src/environments/environment';
-import { contextoPublico } from '../../interceptors/peticion-publica';
+import { contextoPublico } from '@interceptor/peticion-publica';
+import { IApiResponse } from '@models/api-response.model';
+
+// Filtros de los listados de la tienda (búsqueda y productos de una categoría)
+interface IStoreFilters {
+  brand?: string;
+  priceOrder?: string;
+  popularityOrder?: string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -45,10 +55,7 @@ export class ApiProductService {
       params = params.set('stockFilter', filters.stockFilter);
 
     return this.http
-      .get<{
-        message: string;
-        data: IPaginatedResult<IApiProduct>;
-      }>(this.apiUrl, { params })
+      .get<IApiResponse<IPaginatedResult<IApiProduct>>>(this.apiUrl, { params })
       .pipe(map((response) => response.data));
   }
 
@@ -58,53 +65,48 @@ export class ApiProductService {
   ): Observable<IPaginatedProducts> {
     const params = new HttpParams().set('page', page).set('limit', limit);
     return this.http
-      .get<{
-        message: string;
-        data: IPaginatedProducts;
-      }>(`${this.apiUrl}/active`, { params, context: contextoPublico() })
+      .get<
+        IApiResponse<IPaginatedProducts>
+      >(`${this.apiUrl}/active`, { params, context: contextoPublico() })
       .pipe(map((response) => response.data));
   }
 
+  // Este método no se utiliza actualmente
   getProductsPage(
     page: number = 1,
     limit: number = 16,
   ): Observable<IPaginatedResult<IApiProduct>> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('limit', limit.toString());
+    const params = new HttpParams().set('page', page).set('limit', limit);
 
     return this.http
-      .get<{
-        message: string;
-        data: IPaginatedResult<IApiProduct>;
-      }>(`${this.apiUrl}/page`, { params })
+      .get<
+        IApiResponse<IPaginatedResult<IApiProduct>>
+      >(`${this.apiUrl}/page`, { params })
       .pipe(map((response) => response.data));
   }
 
+  // publico = true para la tienda: sale sin credenciales. El panel usa el valor por defecto
   getProductById(id: number, publico = false): Observable<IApiProduct> {
     return this.http
-      .get<{ message: string; data: IApiProduct }>(`${this.apiUrl}/${id}`, {
+      .get<IApiResponse<IApiProduct>>(`${this.apiUrl}/${id}`, {
         context: publico ? contextoPublico() : undefined,
       })
       .pipe(map((response) => response.data));
   }
 
+  // Este método no se utiliza actualmente
   // Obtener un producto activo por ID (uso público)
   getActiveProductById(id: number): Observable<IApiProduct> {
     return this.http
-      .get<{
-        message: string;
-        data: IApiProduct;
-      }>(`${this.apiUrl}/active/${id}`)
+      .get<IApiResponse<IApiProduct>>(`${this.apiUrl}/active/${id}`)
       .pipe(map((response) => response.data));
   }
 
   getHome(): Observable<IHome> {
     return this.http
-      .get<{
-        message: string;
-        data: IHome;
-      }>(`${this.apiUrl}/home`, { context: contextoPublico() })
+      .get<
+        IApiResponse<IHome>
+      >(`${this.apiUrl}/home`, { context: contextoPublico() })
       .pipe(map((response) => response.data));
   }
 
@@ -115,10 +117,9 @@ export class ApiProductService {
   getAvailability(ids: number[]): Observable<Record<number, ProductState>> {
     const params = new HttpParams().set('ids', ids.join(','));
     return this.http
-      .get<{
-        message: string;
-        data: Record<number, ProductState>;
-      }>(`${this.apiUrl}/availability`, { params, context: contextoPublico() })
+      .get<
+        IApiResponse<Record<number, ProductState>>
+      >(`${this.apiUrl}/availability`, { params, context: contextoPublico() })
       .pipe(map((response) => response.data));
   }
 
@@ -127,30 +128,23 @@ export class ApiProductService {
     query: string,
     page: number = 1,
     limit: number = 16,
-    filters: {
-      brand?: string;
-      priceOrder?: string;
-      popularityOrder?: string;
-    } = {},
+    filters: IStoreFilters = {},
   ): Observable<IPaginatedProducts> {
-    let params = new HttpParams()
-      .set('query', query)
-      .set('page', page)
-      .set('limit', limit);
-    if (filters.brand && filters.brand !== 'Todas')
-      params = params.set('brand', filters.brand);
-    if (filters.priceOrder && filters.priceOrder !== 'Defecto')
-      params = params.set('priceOrder', filters.priceOrder);
-    if (filters.popularityOrder && filters.popularityOrder !== 'Defecto')
-      params = params.set('popularityOrder', filters.popularityOrder);
+    const params = this.withStoreFilters(
+      new HttpParams()
+        .set('query', query)
+        .set('page', page)
+        .set('limit', limit),
+      filters,
+    );
     return this.http
-      .get<{
-        message: string;
-        data: IPaginatedProducts;
-      }>(`${this.apiUrl}/search`, { params, context: contextoPublico() })
+      .get<
+        IApiResponse<IPaginatedProducts>
+      >(`${this.apiUrl}/search`, { params, context: contextoPublico() })
       .pipe(map((response) => response.data));
   }
 
+  // Este método no se utiliza actualmente
   getProductsByCategory(
     categoryId: number,
     page: number = 1,
@@ -158,10 +152,9 @@ export class ApiProductService {
   ): Observable<IPaginatedResult<IApiProduct>> {
     const params = new HttpParams().set('page', page).set('limit', limit);
     return this.http
-      .get<{
-        message: string;
-        data: IPaginatedResult<IApiProduct>;
-      }>(`${this.apiUrl}/category/${categoryId}`, { params })
+      .get<
+        IApiResponse<IPaginatedResult<IApiProduct>>
+      >(`${this.apiUrl}/category/${categoryId}`, { params })
       .pipe(map((response) => response.data));
   }
 
@@ -169,63 +162,50 @@ export class ApiProductService {
     categoryId: number,
     page: number = 1,
     limit: number = 16,
-    filters: {
-      brand?: string;
-      priceOrder?: string;
-      popularityOrder?: string;
-    } = {},
+    filters: IStoreFilters = {},
   ): Observable<IPaginatedProducts> {
-    let params = new HttpParams().set('page', page).set('limit', limit);
-    if (filters.brand && filters.brand !== 'Todas')
-      params = params.set('brand', filters.brand);
-    if (filters.priceOrder && filters.priceOrder !== 'Defecto')
-      params = params.set('priceOrder', filters.priceOrder);
-    if (filters.popularityOrder && filters.popularityOrder !== 'Defecto')
-      params = params.set('popularityOrder', filters.popularityOrder);
+    const params = this.withStoreFilters(
+      new HttpParams().set('page', page).set('limit', limit),
+      filters,
+    );
     return this.http
-      .get<{
-        message: string;
-        data: IPaginatedProducts;
-      }>(`${this.apiUrl}/active/category/${categoryId}`, {
-        params,
-        context: contextoPublico(),
-      })
+      .get<IApiResponse<IPaginatedProducts>>(
+        `${this.apiUrl}/active/category/${categoryId}`,
+        {
+          params,
+          context: contextoPublico(),
+        },
+      )
       .pipe(map((response) => response.data));
   }
 
   // Crea un nuevo producto (solo datos, las fotos se suben desde el api-photo.service)
   addProduct(product: ICreateProduct): Observable<IApiProduct> {
     return this.http
-      .post<{ message: string; data: IApiProduct }>(this.apiUrl, product)
+      .post<IApiResponse<IApiProduct>>(this.apiUrl, product)
       .pipe(map((response) => response.data));
   }
 
   updateProduct(id: number, product: IUpdateProduct): Observable<IApiProduct> {
     return this.http
-      .patch<{
-        message: string;
-        data: IApiProduct;
-      }>(`${this.apiUrl}/${id}`, product)
+      .patch<IApiResponse<IApiProduct>>(`${this.apiUrl}/${id}`, product)
       .pipe(map((response) => response.data));
   }
 
   deleteProduct(id: number): Observable<void> {
     return this.http
-      .delete<{ message: string }>(`${this.apiUrl}/${id}`)
+      .delete<IApiResponse<null>>(`${this.apiUrl}/${id}`)
       .pipe(map(() => void 0));
   }
 
   previewBulkPriceChange(
     productIds: number[],
-    adjustmentType: string,
+    adjustmentType: BulkAdjustmentType,
     adjustmentValue: number,
     roundingRule?: string,
   ): Observable<IBulkPricePreviewItem[]> {
     return this.http
-      .post<{
-        message: string;
-        data: IBulkPricePreviewItem[];
-      }>(`${this.bulkUrl}/preview`, {
+      .post<IApiResponse<IBulkPricePreviewItem[]>>(`${this.bulkUrl}/preview`, {
         productIds,
         adjustmentType,
         adjustmentValue,
@@ -236,15 +216,12 @@ export class ApiProductService {
 
   applyBulkPriceChange(
     productIds: number[],
-    adjustmentType: string,
+    adjustmentType: BulkAdjustmentType,
     adjustmentValue: number,
     roundingRule?: string,
   ): Observable<IBulkPriceResult> {
     return this.http
-      .post<{
-        message: string;
-        data: IBulkPriceResult;
-      }>(`${this.bulkUrl}/apply`, {
+      .post<IApiResponse<IBulkPriceResult>>(`${this.bulkUrl}/apply`, {
         productIds,
         adjustmentType,
         adjustmentValue,
@@ -253,41 +230,58 @@ export class ApiProductService {
       .pipe(map((res) => res.data));
   }
 
+  // Este método no se utiliza actualmente
   rollbackBulkPriceChange(batchId: number): Observable<void> {
     return this.http
-      .post<{ message: string }>(`${this.bulkUrl}/rollback/${batchId}`, {})
+      .post<IApiResponse<null>>(`${this.bulkUrl}/rollback/${batchId}`, {})
       .pipe(map(() => void 0));
   }
 
-  getBulkHistory(): Observable<any[]> {
+  // Este método no se utiliza actualmente
+  getBulkHistory(): Observable<IBulkPriceBatch[]> {
     return this.http
-      .get<{ message: string; data: any[] }>(`${this.bulkUrl}/history`)
+      .get<IApiResponse<IBulkPriceBatch[]>>(`${this.bulkUrl}/history`)
       .pipe(map((res) => res.data));
   }
 
+  // Este método no se utiliza actualmente
   getBestSellers(limit: number = 10): Observable<IApiProduct[]> {
-    const params = new HttpParams().set('limit', limit.toString());
+    const params = new HttpParams().set('limit', limit);
     return this.http
-      .get<{
-        message: string;
-        data: IApiProduct[];
-      }>(`${this.apiUrl}/best-sellers`, { params, context: contextoPublico() })
+      .get<
+        IApiResponse<IApiProduct[]>
+      >(`${this.apiUrl}/best-sellers`, { params, context: contextoPublico() })
       .pipe(map((response) => response.data));
   }
 
+  // Este método no se utiliza actualmente
   getBestSellersByCategory(
     categoryId: number,
     limit: number = 10,
   ): Observable<IApiProduct[]> {
-    const params = new HttpParams().set('limit', limit.toString());
+    const params = new HttpParams().set('limit', limit);
     return this.http
-      .get<{
-        message: string;
-        data: IApiProduct[];
-      }>(`${this.apiUrl}/best-sellers/category/${categoryId}`, {
-        params,
-        context: contextoPublico(),
-      })
+      .get<IApiResponse<IApiProduct[]>>(
+        `${this.apiUrl}/best-sellers/category/${categoryId}`,
+        {
+          params,
+          context: contextoPublico(),
+        },
+      )
       .pipe(map((response) => response.data));
+  }
+
+  // 'Todas' y 'Defecto' son los valores de la interfaz para "sin filtro": no se envían
+  private withStoreFilters(
+    params: HttpParams,
+    filters: IStoreFilters,
+  ): HttpParams {
+    if (filters.brand && filters.brand !== 'Todas')
+      params = params.set('brand', filters.brand);
+    if (filters.priceOrder && filters.priceOrder !== 'Defecto')
+      params = params.set('priceOrder', filters.priceOrder);
+    if (filters.popularityOrder && filters.popularityOrder !== 'Defecto')
+      params = params.set('popularityOrder', filters.popularityOrder);
+    return params;
   }
 }

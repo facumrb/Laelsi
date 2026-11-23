@@ -8,8 +8,9 @@ import {
   UserState,
   UserStateFilter,
 } from '@models/user.model';
-import { IPaginatedResult } from '../../models/pagination.model';
+import { IPaginatedResult } from '@models/pagination.model';
 import { environment } from 'src/environments/environment';
+import { IApiResponse } from '@models/api-response.model';
 
 @Injectable({
   providedIn: 'root',
@@ -29,16 +30,13 @@ export class ApiAdminService {
       params = params.set('state', state);
     }
     return this.http
-      .get<{
-        message: string;
-        data: IPaginatedResult<IApiAdmin>;
-      }>(this.apiUrl, { params })
+      .get<IApiResponse<IPaginatedResult<IApiAdmin>>>(this.apiUrl, { params })
       .pipe(map((response) => response.data));
   }
 
   getAdminById(id: number): Observable<IApiAdmin> {
     return this.http
-      .get<{ message: string; data: IApiAdmin }>(`${this.apiUrl}/${id}`)
+      .get<IApiResponse<IApiAdmin>>(`${this.apiUrl}/${id}`)
       .pipe(map((response) => response.data));
   }
 
@@ -57,40 +55,37 @@ export class ApiAdminService {
       params = params.set('state', state);
     }
     return this.http
-      .get<{
-        message: string;
-        data: IPaginatedResult<IApiAdmin>;
-      }>(`${this.apiUrl}/search`, { params })
+      .get<
+        IApiResponse<IPaginatedResult<IApiAdmin>>
+      >(`${this.apiUrl}/search`, { params })
       .pipe(map((response) => response.data));
   }
 
   addAdmin(admin: ICreateAdmin): Observable<IApiAdmin> {
     return this.http
-      .post<{ message: string; data: IApiAdmin }>(this.apiUrl, admin)
+      .post<IApiResponse<IApiAdmin>>(this.apiUrl, admin)
       .pipe(map((response) => response.data));
   }
 
   updateAdmin(id: number, admin: IUpdateAdmin): Observable<IApiAdmin> {
     return this.http
-      .patch<{
-        message: string;
-        data: IApiAdmin;
-      }>(`${this.apiUrl}/${id}`, admin)
+      .patch<IApiResponse<IApiAdmin>>(`${this.apiUrl}/${id}`, admin)
       .pipe(map((response) => response.data));
   }
 
+  // Este método no se utiliza actualmente
   // Desde el ID 65 el servidor ya no borra administradores: DELETE los DESACTIVA. Se conserva por
   // compatibilidad; el panel usa setAdminState, que sirve también para reactivar.
   deleteAdmin(id: number): Observable<void> {
     return this.http
-      .delete<{ message: string }>(`${this.apiUrl}/${id}`)
+      .delete<IApiResponse<null>>(`${this.apiUrl}/${id}`)
       .pipe(map(() => void 0));
   }
 
   // Desactiva o reactiva un administrador (no se puede desactivar a uno mismo ni al último activo)
   setAdminState(id: number, state: UserState): Observable<void> {
     return this.http
-      .patch<{ message: string }>(`${this.apiUrl}/${id}/state`, { state })
+      .patch<IApiResponse<null>>(`${this.apiUrl}/${id}/state`, { state })
       .pipe(map(() => void 0));
   }
 }

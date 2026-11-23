@@ -1,16 +1,30 @@
-import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
+import {
+  afterNextRender,
+  Component,
+  computed,
+  effect,
+  inject,
+  Injector,
+  OnInit,
+  signal,
+  untracked,
+  ViewChild,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Location } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { GoBackButtonComponent } from '@shared/components/buttons/go-back-button/go-back-button.component';
-import { ApiCategoryService } from '@services/api-services/api-category.service';
 import { IApiCategory } from '@models/category.model';
 import { ProductDraftService } from '@services/product-draft.service';
 import { FormUtils } from '@shared/validators/form-utils';
 import { ApiProductService } from '@services/api-services/api-product.service';
 import { AlertService } from '@services/alert.service';
-import { ICreateProduct, ProductState } from '@models/product.model';
+import {
+  ICreateProduct,
+  IProductDraft,
+  ProductState,
+} from '@models/product.model';
 import { PhotoManagerComponent } from './components/photo-manager/photo-manager.component';
 import { ProductCategorySelectComponent } from './components/product-category-select/product-category-select.component';
 import { IApiProductPhoto } from '@models/photo.model';
@@ -27,6 +41,7 @@ import { AuditInfoComponent } from '@admin/components/audit-info/audit-info.comp
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
 import { injectInvalidateCatalog } from '@services/queries/catalog-cache';
+import { injectAllCategoriesQuery } from '@services/queries/category-queries';
 
 @Component({
   selector: 'app-products-form',
@@ -57,12 +72,22 @@ export class ProductsFormComponent implements OnInit {
   private router = inject(Router);
   private routeActive = inject(ActivatedRoute);
   location = inject(Location);
-  private categoryService = inject(ApiCategoryService);
+  private injector = inject(Injector);
   private productService = inject(ApiProductService);
   private alertService = inject(AlertService);
   private draftService = inject(ProductDraftService);
   private http = inject(HttpClient);
   private invalidateCatalog = injectInvalidateCatalog();
+  private categoriesQuery = injectAllCategoriesQuery();
+
+  // Borrador de esta misma ruta, pendiente de aplicar
+  private draft: IProductDraft | null = null;
+
+  // Id de la categoría recién creada que se selecciona al volver de crearla
+  private pendingNewCategoryId: number | null = this.readNewCategoryId();
+
+  // true cuando el formulario ya tiene sus valores iniciales (producto del servidor y borrador)
+  private formReady = signal(false);
 
   formUtils = FormUtils;
 
@@ -74,7 +99,7 @@ export class ProductsFormComponent implements OnInit {
   initialPhotos = signal<IApiProductPhoto[]>([]);
 
   // Estados
-  categories = signal<IApiCategory[]>([]);
+  categories = computed(() => this.categoriesQuery.data() ?? []);
   isEditMode = signal(false);
   productId = signal<number | null>(null);
 
@@ -137,62 +162,82 @@ export class ProductsFormComponent implements OnInit {
     photos: [[]], // array vacío por defecto por si no se cargan fotos
   });
 
-  ngOnInit() {
-    this.loadCategories();
-    this.checkEditMode();
-    this.restoreDraftIfAny();
-  }
+  constructor() {
+    /*
+    Selecciona una sola vez la categoría recién creada. Espera a que el formulario tenga sus
+    valores iniciales (si no, el borrador o el producto la pisarían) y a que termine el pedido
+    de categorías: al volver de crearla, la caché tiene la lista vieja, sin la nueva.
+    */
+    effect(() => {
+      const id = this.pendingNewCategoryId;
+      if (id === null || !this.formReady()) return;
 
-  restoreDraftIfAny() {
-    if (this.draftService.hasDraft()) {
-      const draft = this.draftService.getDraft()!;
-      this.isEditMode.set(draft.isEditMode);
-      this.productId.set(draft.productId);
+      const data = this.categoriesQuery.data();
+      const settled =
+        (!this.categoriesQuery.isFetching() && data !== undefined) ||
+        this.categoriesQuery.isError();
+      if (!settled) return;
 
-      const { photos, ...formValueWithoutPhotos } = draft.formValue;
-      this.formProduct.patchValue(formValueWithoutPhotos);
-
-      // Restaurar fotos después de que el componente hijo esté disponible
-      setTimeout(() => {
-        if (this.photoManager) {
-          this.photoManager.restoreState({
-            gallery: draft.photos as any[],
-            photosToDeleteIds: draft.photosToDeleteIds,
-          });
-        }
-      }, 0);
-
-      this.draftService.clearDraft();
-    }
-  }
-
-  // 1. Cargar categorías para el desplegable
-  loadCategories() {
-    this.categoryService.getAllCategories().subscribe((data) => {
-      this.categories.set(data);
-
-      // Verificamos si hay una nueva categoría para seleccionar automáticamente
-      const newCatId =
-        this.routeActive.snapshot.queryParamMap.get('newCategoryId');
-      if (newCatId) {
-        const cat = data.find((c) => c.id === +newCatId);
-        if (cat) {
-          this.formProduct.patchValue({ category: cat });
-          this.alertService.toast(
-            `Categoría "${cat.name}" seleccionada`,
-            'success',
-          );
-        }
-        // Limpiar el query param para que no se seleccione de nuevo al recargar
-        this.router.navigate([], {
-          queryParams: { newCategoryId: null },
-          queryParamsHandling: 'merge',
-        });
-      }
+      this.pendingNewCategoryId = null;
+      untracked(() => this.selectNewCategory(id, data ?? []));
     });
   }
 
-  // 2. Verificar si venimos a Editar (por URL)
+  ngOnInit() {
+    this.draft = this.draftService.takeDraftFor(this.router.url);
+    this.checkEditMode();
+    // En edición, el borrador se aplica cuando llega el producto
+    if (!this.isEditMode()) this.restoreDraftIfAny();
+  }
+
+  // Aplica el borrador (si lo hay) y marca el formulario como listo
+  restoreDraftIfAny() {
+    const draft = this.draft;
+    this.draft = null;
+
+    if (draft) {
+      const { photos, ...formValueWithoutPhotos } = draft.formValue;
+      this.formProduct.patchValue(formValueWithoutPhotos);
+
+      // Después del render, para que photo-manager ya haya procesado initialPhotos y no pise la galería
+      afterNextRender(
+        () => {
+          this.photoManager?.restoreState({
+            gallery: draft.photos,
+            photosToDeleteIds: draft.photosToDeleteIds,
+          });
+        },
+        { injector: this.injector },
+      );
+    }
+
+    this.formReady.set(true);
+  }
+
+  // Id de ?newCategoryId=, o null si no viene
+  private readNewCategoryId(): number | null {
+    const id = this.routeActive.snapshot.queryParamMap.get('newCategoryId');
+    return id ? +id : null;
+  }
+
+  // Selecciona la categoría recién creada (si está en la lista) y limpia el parámetro de la URL
+  private selectNewCategory(id: number, categories: IApiCategory[]) {
+    const cat = categories.find((c) => c.id === id);
+    if (cat) {
+      this.formProduct.patchValue({ category: cat });
+      this.alertService.toast(
+        `Categoría "${cat.name}" seleccionada`,
+        'success',
+      );
+    }
+    // Limpiar el query param para que no se seleccione de nuevo al recargar
+    this.router.navigate([], {
+      queryParams: { newCategoryId: null },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  // Verificar si venimos a Editar (por URL)
   checkEditMode() {
     const id = this.routeActive.snapshot.paramMap.get('id');
     if (id) {
@@ -233,6 +278,9 @@ export class ProductsFormComponent implements OnInit {
           if (product.photos) {
             this.initialPhotos.set(product.photos);
           }
+
+          // El borrador va después de los datos del servidor, para que no lo pisen
+          this.restoreDraftIfAny();
         },
       });
     } else {

@@ -21,7 +21,10 @@ import {
   bootstrapCheckLg,
 } from '@ng-icons/bootstrap-icons';
 import { ApiProductService } from '@services/api-services/api-product.service';
-import { IBulkPricePreviewItem } from '@models/product.model';
+import {
+  BulkAdjustmentType,
+  IBulkPricePreviewItem,
+} from '@models/product.model';
 import { AlertService } from '@services/alert.service';
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
 import { ListboxDirective } from '@shared/directives/listbox.directive';
@@ -58,7 +61,7 @@ export class BulkPriceModalComponent implements OnDestroy {
   close = output<void>();
   success = output<void>();
 
-  adjustmentType = signal<'percentage' | 'fixed'>('percentage');
+  adjustmentType = signal<BulkAdjustmentType>('percentage');
   adjustmentValue = signal<number>(0);
   roundingRule = signal<string>('none');
 
@@ -120,7 +123,7 @@ export class BulkPriceModalComponent implements OnDestroy {
     this._valueSub.unsubscribe();
   }
 
-  setAdjustmentType(type: 'percentage' | 'fixed') {
+  setAdjustmentType(type: BulkAdjustmentType) {
     this.adjustmentType.set(type);
   }
 
@@ -141,7 +144,12 @@ export class BulkPriceModalComponent implements OnDestroy {
     this.showRoundingOptions.set(false);
   }
 
-  private getPreview(ids: number[], type: string, val: number, rule: string) {
+  private getPreview(
+    ids: number[],
+    type: BulkAdjustmentType,
+    val: number,
+    rule: string,
+  ) {
     this.loadingPreview.set(true);
     this.apiService.previewBulkPriceChange(ids, type, val, rule).subscribe({
       next: (data) => {

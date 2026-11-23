@@ -15,7 +15,7 @@ import { FieldErrorComponent } from '@shared/validators/field-error/field-error.
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
 import { PasswordToggleButtonComponent } from '@shared/components/buttons/password-toggle-button/password-toggle-button.component';
 import { LogoComponent } from '@shared/components/logo/logo.component';
-import { injectAccessDraft } from '@services/access-draft';
+import { injectAccessDraft } from '@shared/utils/access-draft';
 
 @Component({
   selector: 'app-login-page',

@@ -10,7 +10,7 @@ import {
 } from '@ng-icons/bootstrap-icons';
 import { AuthService } from '@services/auth.service';
 import { AlertService } from '@services/alert.service';
-import { injectAccessDraft, readAccessDraft } from '@services/access-draft';
+import { injectAccessDraft, readAccessDraft } from '@shared/utils/access-draft';
 import { FormUtils } from '@shared/validators/form-utils';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { GoBackButtonComponent } from '@shared/components/buttons/go-back-button/go-back-button.component';

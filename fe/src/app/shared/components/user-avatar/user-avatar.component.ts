@@ -8,8 +8,8 @@ import { environment } from 'src/environments/environment';
 })
 export class UserAvatarComponent {
   photo = input<IApiUserPhoto | null | undefined>(null);
-  name = input<string>('');
-  lastName = input<string>('');
+  name = input<string | null>('');
+  lastName = input<string | null>('');
   // 'xs' = 8 (32px) | 'sm' = 10 (40px) | 'md' = 16 (64px) | 'lg' = 32 (128px)
   size = input<'xs' | 'sm' | 'md' | 'lg'>('sm');
 

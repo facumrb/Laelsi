@@ -24,7 +24,9 @@
 
   @if (clientToDelete()) {
     <app-confirm-delete-modal
-      [entityName]="clientToDelete()!.name + ' ' + clientToDelete()!.lastName"
+      [entityName]="
+        clientToDelete()! | nombrePersona: clientToDelete()!.username
+      "
       entityType="cliente"
       [canDeactivate]="true"
       [allowPermanentDelete]="false"

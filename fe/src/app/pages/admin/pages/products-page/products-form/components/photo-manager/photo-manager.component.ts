@@ -6,7 +6,7 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { IApiProductPhoto } from '@models/photo.model';
+import { IApiProductPhoto, IUiPhoto } from '@models/photo.model';
 import { ApiPhotoService } from '@services/api-services/api-photo.service';
 import { ProductImageComponent } from '@shared/components/product-image/product-image.component';
 import { forkJoin, Observable, of } from 'rxjs';
@@ -18,14 +18,6 @@ import {
   bootstrapChevronLeft,
   bootstrapChevronRight,
 } from '@ng-icons/bootstrap-icons';
-
-interface IUiPhoto {
-  uiId: string;
-  src: string;
-  file?: File;
-  originalId?: number;
-  isNew: boolean;
-}
 
 @Component({
   selector: 'app-photo-manager',

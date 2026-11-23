@@ -13,6 +13,7 @@ import { FiscalConditionFilter } from './clients-toolbar/components/clients-filt
 import { ClientsListComponent } from './clients-list/clients-list.component';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { ConfirmDeleteModalComponent } from '@admin/components/confirm-delete-modal/confirm-delete-modal.component';
+import { NombrePersonaPipe } from '@shared/pipes/nombre-persona.pipe';
 import {
   injectAllClientsQuery,
   injectSetClientStateMutation,
@@ -25,6 +26,7 @@ import {
     ClientsToolbarComponent,
     PaginationComponent,
     ConfirmDeleteModalComponent,
+    NombrePersonaPipe,
   ],
   templateUrl: './clients-page.component.html',
 })

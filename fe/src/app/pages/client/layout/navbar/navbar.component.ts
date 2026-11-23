@@ -10,7 +10,7 @@ import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { IApiCategory } from '@models/category.model';
-import { ApiCategoryService } from '@services/api-services/api-category.service';
+import { injectCategoryTreeQuery } from '@services/queries/category-queries';
 import { AuthService } from '@services/auth.service';
 import { CartService } from '@services/cart.service';
 import { NavbarTopBarComponent } from './navbar-top-bar/navbar-top-bar.component';
@@ -28,7 +28,6 @@ import { NavbarMobileSidebarComponent } from './navbar-mobile-sidebar/navbar-mob
 })
 export class NavbarComponent implements OnInit {
   authService = inject(AuthService);
-  private apiCategoryService = inject(ApiCategoryService);
   private cartService = inject(CartService);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
@@ -36,7 +35,11 @@ export class NavbarComponent implements OnInit {
   cartSignal = this.cartService.totalItems;
   showSideMenu = signal(false);
 
-  categories = signal<IApiCategory[]>([]);
+  // Árbol de categorías activas desde la caché: mientras siga fresco (staleTime de 10 minutos),
+  private categoryTreeQuery = injectCategoryTreeQuery('Activo');
+  categories = computed<IApiCategory[]>(
+    () => this.categoryTreeQuery.data() ?? [],
+  );
   currentUser = this.authService.currentUser;
 
   private activeCategoryId = signal<number | null>(null);
@@ -52,10 +55,6 @@ export class NavbarComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.apiCategoryService.getCategoryTree('Activo').subscribe({
-      next: (data) => this.categories.set(data),
-    });
-
     this.extractCategoryIdFromUrl(this.router.url);
 
     this.router.events

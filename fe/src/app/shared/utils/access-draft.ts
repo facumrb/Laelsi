@@ -2,11 +2,11 @@ import { DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormGroup } from '@angular/forms';
 
-/** Pantallas de acceso que conservan lo que la persona escribió. */
+// Pantallas de acceso que conservan lo que la persona escribió.
 export type AccessScreen = 'login' | 'register' | 'recover-password';
 
 export interface AccessDraft {
-  /** Descarta el borrador. Se llama cuando la pantalla se envió correctamente. */
+  // Descarta el borrador. Se llama cuando la pantalla se envió correctamente.
   clear(): void;
 }
 
@@ -27,7 +27,7 @@ function getStorage(): Storage | null {
   }
 }
 
-/** Lee el borrador guardado de una pantalla ({} si no hay). */
+// Lee el borrador guardado de una pantalla ({} si no hay).
 export function readAccessDraft(screen: AccessScreen): Record<string, string> {
   try {
     const raw = getStorage()?.getItem(STORAGE_PREFIX + screen);

@@ -6,8 +6,8 @@ import {
   QueryClient,
 } from '@tanstack/angular-query-experimental';
 import { firstValueFrom } from 'rxjs';
-import { ApiClientService } from '../api-services/api-client.service';
-import { UserState, UserStateFilter } from '../../models/user.model';
+import { ApiClientService } from '@services/api-services/api-client.service';
+import { UserState, UserStateFilter } from '@models/user.model';
 
 export interface IClientQueryFilters {
   query: string;
@@ -57,10 +57,7 @@ export function injectAllClientsQuery(
   });
 }
 
-/**
- * Devuelve una función que invalida los listados de clientes. La usa el formulario de
- * alta/edición, que escribe llamando a la API directamente.
- */
+// Devuelve una función que invalida los listados de clientes. La usa el formulario de alta/edición, que escribe llamando a la API directamente.
 export function injectInvalidateClients(): () => void {
   const queryClient = inject(QueryClient);
   return () => {
@@ -68,9 +65,7 @@ export function injectInvalidateClients(): () => void {
   };
 }
 
-/**
- * Mutación para desactivar o reactivar un cliente
- */
+// Mutación para desactivar o reactivar un cliente
 export function injectSetClientStateMutation() {
   const apiClientService = inject(ApiClientService);
   const invalidateClients = injectInvalidateClients();

@@ -17,7 +17,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { AlertService } from '@services/alert.service';
 import { finalize } from 'rxjs';
 import { IClientRegister } from '@models/auth.model';
-import { injectAccessDraft } from '@services/access-draft';
+import { injectAccessDraft } from '@shared/utils/access-draft';
 import { LEGAL_INFO } from '@client/pages/footer-pages/legal-info';
 
 @Component({

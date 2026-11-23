@@ -4,8 +4,12 @@ import {
   injectQuery,
 } from '@tanstack/angular-query-experimental';
 import { firstValueFrom } from 'rxjs';
-import { ApiCategoryService } from '../api-services/api-category.service';
-import { ICreateCategory, IUpdateCategory } from '../../models/category.model';
+import { ApiCategoryService } from '@services/api-services/api-category.service';
+import {
+  CategoryState,
+  ICreateCategory,
+  IUpdateCategory,
+} from '@models/category.model';
 import { injectInvalidateCatalog } from './catalog-cache';
 
 /**
@@ -23,9 +27,8 @@ export function injectAllCategoriesQuery() {
   }));
 }
 
-/**
- * Query reactiva de las categorías activas (Tienda pública)
- */
+// Este método no se utiliza actualmente
+// Query reactiva de las categorías activas (Tienda pública)
 export function injectActiveCategoriesQuery() {
   const apiCategoryService = inject(ApiCategoryService);
 
@@ -43,7 +46,7 @@ export function injectActiveCategoriesQuery() {
  * y NO incluye los productos. Para un listado plano con el contador de
  * productos hay que usar injectAllCategoriesQuery().
  */
-export function injectCategoryTreeQuery(state?: string) {
+export function injectCategoryTreeQuery(state?: `${CategoryState}`) {
   const apiCategoryService = inject(ApiCategoryService);
 
   return injectQuery(() => ({
@@ -53,9 +56,7 @@ export function injectCategoryTreeQuery(state?: string) {
   }));
 }
 
-/**
- * Query reactiva para el detalle de una categoría
- */
+// Query reactiva para el detalle de una categoría
 export function injectCategoryDetailQuery(idSignal: Signal<number>) {
   const apiCategoryService = inject(ApiCategoryService);
 
@@ -63,16 +64,16 @@ export function injectCategoryDetailQuery(idSignal: Signal<number>) {
     const id = idSignal();
     return {
       queryKey: ['categories', 'detail', id],
-      queryFn: () => firstValueFrom(apiCategoryService.getCategoryById(id, true)),
+      queryFn: () =>
+        firstValueFrom(apiCategoryService.getCategoryById(id, true)),
       enabled: id > 0,
       staleTime: 1000 * 60 * 15, // 15 minutos
     };
   });
 }
 
-/**
- * Mutación para crear una categoría
- */
+// Este método no se utiliza actualmente
+// Mutación para crear una categoría
 export function injectAddCategoryMutation() {
   const apiCategoryService = inject(ApiCategoryService);
   const invalidateCatalog = injectInvalidateCatalog();
@@ -86,9 +87,7 @@ export function injectAddCategoryMutation() {
   }));
 }
 
-/**
- * Mutación para actualizar una categoría
- */
+// Mutación para actualizar una categoría
 export function injectUpdateCategoryMutation() {
   const apiCategoryService = inject(ApiCategoryService);
   const invalidateCatalog = injectInvalidateCatalog();
@@ -102,9 +101,7 @@ export function injectUpdateCategoryMutation() {
   }));
 }
 
-/**
- * Mutación para eliminar una categoría
- */
+// Mutación para eliminar una categoría
 export function injectDeleteCategoryMutation() {
   const apiCategoryService = inject(ApiCategoryService);
   const invalidateCatalog = injectInvalidateCatalog();

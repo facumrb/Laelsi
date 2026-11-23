@@ -60,7 +60,9 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(() => {
       inject(NavigationHistoryService);
       inject(SeoService);
+
       // Pregunta si actualizar cuando hay una versión nueva del sitio (si no, el navegador sigue mostrando la vieja)
+      // y obliga a recargar si la pestaña quedó en un estado irrecuperable
       inject(AppUpdateService).iniciar();
     }),
   ],

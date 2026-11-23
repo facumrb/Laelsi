@@ -12,6 +12,7 @@ import { AdminsListComponent } from './admins-list/admins-list.component';
 import { AdminsToolbarComponent } from './admins-toolbar/admins-toolbar.component';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { ConfirmDeleteModalComponent } from '@admin/components/confirm-delete-modal/confirm-delete-modal.component';
+import { NombrePersonaPipe } from '@shared/pipes/nombre-persona.pipe';
 import { AdminSelfDeleteBlockedModalComponent } from './admins-list/components/admin-self-delete-blocked-modal/admin-self-delete-blocked-modal.component';
 import { AuthService } from '@services/auth.service';
 import {
@@ -26,6 +27,7 @@ import {
     AdminsToolbarComponent,
     PaginationComponent,
     ConfirmDeleteModalComponent,
+    NombrePersonaPipe,
     AdminSelfDeleteBlockedModalComponent,
   ],
   templateUrl: './admins-page.component.html',

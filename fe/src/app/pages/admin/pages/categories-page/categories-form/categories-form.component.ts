@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -26,6 +26,7 @@ import { FieldErrorComponent } from '@shared/validators/field-error/field-error.
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
 import { CategoryParentSelectComponent } from './components/category-parent-select/category-parent-select.component';
 import { injectInvalidateCatalog } from '@services/queries/catalog-cache';
+import { injectAllCategoriesQuery } from '@services/queries/category-queries';
 
 @Component({
   selector: 'app-categories-form',
@@ -70,7 +71,10 @@ export class CategoriesFormComponent implements OnInit {
   auditUpdatedAt = signal<string | null>(null);
   auditStatusDate = signal<string | null>(null);
 
-  allCategories = signal<IApiCategory[]>([]);
+  private categoriesQuery = injectAllCategoriesQuery();
+
+  // Lista de categorías para el selector de padre (desde la caché de TanStack Query)
+  allCategories = computed(() => this.categoriesQuery.data() ?? []);
 
   // UI State
   showStateMenu = signal(false);
@@ -107,15 +111,6 @@ export class CategoriesFormComponent implements OnInit {
 
   ngOnInit() {
     this.checkEditMode();
-    this.loadAllCategories();
-  }
-
-  loadAllCategories() {
-    this.categoryService.getAllCategories().subscribe({
-      next: (categories) => {
-        this.allCategories.set(categories);
-      },
-    });
   }
 
   checkEditMode() {

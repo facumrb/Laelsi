@@ -2,12 +2,14 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import {
+  CategoryState,
   IApiCategory,
   ICreateCategory,
   IUpdateCategory,
 } from '@models/category.model';
 import { environment } from 'src/environments/environment';
 import { contextoPublico } from '@interceptor/peticion-publica';
+import { IApiResponse } from '@models/api-response.model';
 
 @Injectable({
   providedIn: 'root',
@@ -19,42 +21,39 @@ export class ApiCategoryService {
   // Obtener todas las categorías
   getAllCategories(): Observable<IApiCategory[]> {
     return this.http
-      .get<{ message: string; data: IApiCategory[] }>(this.apiUrl)
+      .get<IApiResponse<IApiCategory[]>>(this.apiUrl)
       .pipe(map((response) => response.data));
   }
 
+  // Este método no se utiliza actualmente
   // Obtener todas las categorías ACTIVAS
   getActiveCategories(): Observable<IApiCategory[]> {
     return this.http
-      .get<{ message: string; data: IApiCategory[] }>(`${this.apiUrl}/active`)
+      .get<IApiResponse<IApiCategory[]>>(`${this.apiUrl}/active`)
       .pipe(map((response) => response.data));
   }
 
+  // publico = true para la tienda: sale sin credenciales. El panel usa el valor por defecto
   getCategoryById(id: number, publico = false): Observable<IApiCategory> {
     return this.http
-      .get<{ message: string; data: IApiCategory }>(`${this.apiUrl}/${id}`, {
+      .get<IApiResponse<IApiCategory>>(`${this.apiUrl}/${id}`, {
         context: publico ? contextoPublico() : undefined,
       })
       .pipe(map((response) => response.data));
   }
 
+  // Este método no se utiliza actualmente
   // Buscar categorías por nombre o descripción
   searchCategories(query: string): Observable<IApiCategory[]> {
     const params = new HttpParams().set('query', query);
     return this.http
-      .get<{
-        message: string;
-        data: IApiCategory[];
-      }>(`${this.apiUrl}/search`, { params })
+      .get<IApiResponse<IApiCategory[]>>(`${this.apiUrl}/search`, { params })
       .pipe(map((response) => response.data));
   }
 
   addCategory(category: ICreateCategory): Observable<IApiCategory> {
     return this.http
-      .post<{
-        message: string;
-        data: IApiCategory;
-      }>(this.apiUrl, category)
+      .post<IApiResponse<IApiCategory>>(this.apiUrl, category)
       .pipe(map((response) => response.data));
   }
 
@@ -63,27 +62,21 @@ export class ApiCategoryService {
     category: IUpdateCategory,
   ): Observable<IApiCategory> {
     return this.http
-      .patch<{
-        message: string;
-        data: IApiCategory;
-      }>(`${this.apiUrl}/${id}`, category)
+      .patch<IApiResponse<IApiCategory>>(`${this.apiUrl}/${id}`, category)
       .pipe(map((response) => response.data));
   }
 
   deleteCategory(id: number): Observable<void> {
     return this.http
-      .delete<{ message: string }>(`${this.apiUrl}/${id}`)
+      .delete<IApiResponse<null>>(`${this.apiUrl}/${id}`)
       .pipe(map(() => void 0));
   }
 
-  getCategoryTree(state?: string): Observable<IApiCategory[]> {
-    let params = {};
-    if (state) {
-      params = { state };
-    }
+  getCategoryTree(state?: `${CategoryState}`): Observable<IApiCategory[]> {
+    const params = state ? new HttpParams().set('state', state) : undefined;
 
     return this.http
-      .get<{ message: string; data: IApiCategory[] }>(`${this.apiUrl}/tree`, {
+      .get<IApiResponse<IApiCategory[]>>(`${this.apiUrl}/tree`, {
         params,
         // Sin estado el servidor distingue al administrador, por eso solo el árbol 'Activo' es público
         context: state === 'Activo' ? contextoPublico() : undefined,
@@ -91,12 +84,10 @@ export class ApiCategoryService {
       .pipe(map((response) => response.data));
   }
 
+  // Este método no se utiliza actualmente
   getCategoryChildren(id: number): Observable<IApiCategory[]> {
     return this.http
-      .get<{
-        message: string;
-        data: IApiCategory[];
-      }>(`${this.apiUrl}/${id}/children`)
+      .get<IApiResponse<IApiCategory[]>>(`${this.apiUrl}/${id}/children`)
       .pipe(map((response) => response.data));
   }
 
@@ -105,7 +96,7 @@ export class ApiCategoryService {
     updates: { id: number; order: number; parentId: number | null }[],
   ): Observable<void> {
     return this.http
-      .patch<{ message: string }>(`${this.apiUrl}/reorder`, { updates })
+      .patch<IApiResponse<null>>(`${this.apiUrl}/reorder`, { updates })
       .pipe(map(() => void 0));
   }
 }

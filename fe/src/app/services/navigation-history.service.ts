@@ -2,27 +2,27 @@ import { Injectable, inject } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
-// Registra las rutas visitadas para que el botón "Volver" sepa si hay una anterior a la que ir.
+// Cuenta las navegaciones dentro de la app para que el botón "Volver" sepa si hay una ruta anterior a la que ir.
 @Injectable({
   providedIn: 'root',
 })
 export class NavigationHistoryService {
   private router = inject(Router);
 
-  private history: string[] = [];
+  private visitedCount = 0;
 
   constructor() {
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe({
-        next: (event: NavigationEnd) => {
-          this.history.push(event.urlAfterRedirects);
+        next: () => {
+          this.visitedCount++;
         },
       });
   }
 
-  // Si history_length > 1, significa que existe una ruta anterior registrada internamente
+  // Con más de una navegación registrada, existe una ruta anterior dentro de la app
   public hasPreviousRoute(): boolean {
-    return this.history.length > 1;
+    return this.visitedCount > 1;
   }
 }
