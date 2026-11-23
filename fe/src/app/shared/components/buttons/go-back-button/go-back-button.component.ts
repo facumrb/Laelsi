@@ -23,7 +23,15 @@ export class GoBackButtonComponent {
   // Valor por defecto la raíz del e-commerce
   fallbackUrl = input<string>('/');
 
+  // Destino fijo: si se indica, se navega siempre ahí, sin usar el historial
+  url = input<string | null>(null);
+
   goBack() {
+    const url = this.url();
+    if (url) {
+      this.router.navigateByUrl(url);
+      return;
+    }
     if (this.navHistory.hasPreviousRoute()) {
       // Si navegó dentro de la app, usamos Location (va a la previa)
       this.location.back();

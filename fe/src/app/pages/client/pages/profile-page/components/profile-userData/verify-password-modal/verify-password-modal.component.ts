@@ -1,15 +1,13 @@
 import {
   Component,
-  computed,
   inject,
   input,
   output,
   signal,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '@services/auth.service';
-import { PasswordToggleButtonComponent } from '@shared/components/buttons/password-toggle-button/password-toggle-button.component';
+import { PasswordInputComponent } from '@shared/components/inputs/password/password-input/password-input.component';
 import {
   ModalDescriptionDirective,
   ModalShellComponent,
@@ -23,7 +21,7 @@ import {
     ModalShellComponent,
     ModalDescriptionDirective,
     ModalSubtitleDirective,
-    PasswordToggleButtonComponent,
+    PasswordInputComponent,
   ],
   templateUrl: './verify-password-modal.component.html',
 })
@@ -40,12 +38,6 @@ export class VerifyPasswordModalComponent {
   private password = this.form.controls.password;
   verifying = signal(false);
   errorMessage = signal('');
-  passwordVisible = signal(false);
-
-  private passwordValue = toSignal(this.password.valueChanges, {
-    initialValue: '',
-  });
-  showEyeIcon = computed(() => this.passwordValue().length > 0);
 
   constructor() {
     this.password.valueChanges.subscribe(() => this.errorMessage.set(''));

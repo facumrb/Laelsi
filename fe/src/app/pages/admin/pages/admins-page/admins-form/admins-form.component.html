@@ -1,13 +1,9 @@
 <div class="animate-fadeIn max-w-4xl mx-auto page-container-adaptive">
-  <div class="mb-5 flex items-center justify-between">
-    <div>
-      <h1 class="page-title">
-        {{ isEditMode() ? "Editar Administrador" : "Nuevo Administrador" }}
-      </h1>
-    </div>
-
-    <app-go-back-button></app-go-back-button>
-  </div>
+  <app-form-page-header
+    class="mb-5"
+    [title]="isEditMode() ? 'Editar Administrador' : 'Nuevo Administrador'"
+    backUrl="/admin/admins"
+  />
 
   <div class="form-card">
     <form [formGroup]="formAdmin" (ngSubmit)="onSubmit()" class="form-body">
@@ -155,40 +151,15 @@
                 <span class="text-red-500">*</span>
               }
             </label>
-            <div
-              class="password-field rounded-lg border border-gray-300 shadow-sm focus-within:[outline:auto]"
-            >
-              <input
-                [type]="passwordVisible() ? 'text' : 'password'"
-                id="password"
-                name="password"
-                formControlName="password"
-                maxlength="100"
-                autocomplete="new-password"
-                aria-describedby="password-hint"
-                class="password-field-input p-2.5 text-sm text-gray-900"
-                placeholder="•••••••••••••••••"
-              />
-
-              <app-password-toggle-button
-                [(visible)]="passwordVisible"
-                [show]="showEyeIcon()"
-              />
-            </div>
-            <div class="min-h-8">
-              <p
-                id="password-hint"
-                class="mt-1 text-xs font-medium"
-                [class.text-red-600]="passwordHintError()"
-                [class.text-gray-500]="!passwordHintError()"
-              >
-                @if (showKeepPasswordHint()) {
-                  Dejar vacío para mantener la actual.
-                } @else {
-                  {{ passwordRule }}
-                }
-              </p>
-            </div>
+            <app-password-input
+              [control]="formAdmin.controls.password"
+              inputId="password"
+              describedBy="password-hint"
+            />
+            <app-password-rule-hint
+              [control]="formAdmin.controls.password"
+              [keepHint]="isEditMode()"
+            />
           </div>
 
           <div>
@@ -198,29 +169,13 @@
                 <span class="text-red-500">*</span>
               }
             </label>
-            <div
-              class="password-field rounded-lg border border-gray-300 shadow-sm focus-within:[outline:auto]"
-            >
-              <input
-                [type]="confirmPasswordVisible() ? 'text' : 'password'"
-                id="confirmPassword"
-                name="confirmPassword"
-                formControlName="confirmPassword"
-                maxlength="100"
-                autocomplete="new-password"
-                class="password-field-input p-2.5 text-sm text-gray-900"
-                placeholder="{{
-                  isEditMode()
-                    ? 'Repetir nueva contraseña'
-                    : 'Repetir contraseña'
-                }}"
-              />
-
-              <app-password-toggle-button
-                [(visible)]="confirmPasswordVisible"
-                [show]="showConfirmEyeIcon()"
-              />
-            </div>
+            <app-password-input
+              [control]="formAdmin.controls.confirmPassword"
+              inputId="confirmPassword"
+              [placeholder]="
+                isEditMode() ? 'Repetir nueva contraseña' : 'Repetir contraseña'
+              "
+            />
             <div class="min-h-8">
               <app-field-error [control]="formAdmin.controls.confirmPassword" />
             </div>
@@ -230,7 +185,7 @@
             <div class="w-full">
               <app-photo-manager
                 [currentPhoto]="currentPhoto()"
-                [userFullName]="fullName"
+                [userFullName]="fullName()"
               ></app-photo-manager>
             </div>
           </div>
@@ -246,19 +201,11 @@
         />
       }
 
-      <div class="form-footer">
-        <button type="button" routerLink="/admin/admins" class="btn-secondary">
-          Cancelar
-        </button>
-
-        <button
-          type="submit"
-          [disabled]="!formAdmin.valid || !hasRealChanges"
-          class="btn-primary px-8"
-        >
-          {{ isEditMode() ? "Guardar Cambios" : "Crear Administrador" }}
-        </button>
-      </div>
+      <app-form-actions
+        cancelUrl="/admin/admins"
+        [submitLabel]="isEditMode() ? 'Guardar Cambios' : 'Crear Administrador'"
+        [submitDisabled]="!formAdmin.valid || !hasRealChanges() || saving()"
+      />
     </form>
   </div>
 </div>

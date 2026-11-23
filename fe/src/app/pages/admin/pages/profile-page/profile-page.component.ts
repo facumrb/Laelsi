@@ -1,12 +1,4 @@
-import {
-  Component,
-  computed,
-  inject,
-  OnInit,
-  signal,
-  viewChild,
-} from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { EMPTY, of, switchMap } from 'rxjs';
@@ -20,8 +12,9 @@ import { CurrentPasswordService } from '@services/current-password.service';
 import { FormUtils } from '@shared/validators/form-utils';
 import { PhotoManagerComponent } from '@shared/components/photo-manager/photo-manager.component';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
-import { GoBackButtonComponent } from '@shared/components/buttons/go-back-button/go-back-button.component';
-import { PasswordToggleButtonComponent } from '@shared/components/buttons/password-toggle-button/password-toggle-button.component';
+import { FormPageHeaderComponent } from '@admin/components/form-page-header/form-page-header.component';
+import { FormActionsComponent } from '@admin/components/form-actions/form-actions.component';
+import { PasswordInputComponent } from '@shared/components/inputs/password/password-input/password-input.component';
 import { NumericInputDirective } from '@shared/directives/numeric-input.directive';
 import { PhoneInputDirective } from '@shared/directives/phone-input.directive';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
@@ -33,8 +26,9 @@ import { injectInvalidateAdmins } from '@services/queries/admin-queries';
     ReactiveFormsModule,
     PhotoManagerComponent,
     FieldErrorComponent,
-    GoBackButtonComponent,
-    PasswordToggleButtonComponent,
+    FormPageHeaderComponent,
+    FormActionsComponent,
+    PasswordInputComponent,
     NumericInputDirective,
     PhoneInputDirective,
     TrimInputDirective,
@@ -128,19 +122,6 @@ export class ProfilePageComponent implements OnInit {
       ],
     },
   );
-
-  passwordVisible = signal(false);
-  confirmPasswordVisible = signal(false);
-
-  private passwordValue = toSignal(
-    this.formEditProfile.controls.password.valueChanges,
-  );
-  private confirmPasswordValue = toSignal(
-    this.formEditProfile.controls.confirmPassword.valueChanges,
-  );
-
-  showEyeIcon = computed(() => !!this.passwordValue());
-  showConfirmEyeIcon = computed(() => !!this.confirmPasswordValue());
 
   ngOnInit(): void {
     this.fetchAdmin(this.authService.currentUser()!.id);

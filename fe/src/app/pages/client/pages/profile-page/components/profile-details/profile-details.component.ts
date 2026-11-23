@@ -119,7 +119,7 @@ export class ProfileDetailsComponent {
     ],
     fiscalCondition: [FiscalCondition.ConsumidorFinal],
     street: ['', FormUtils.maxLength(100)],
-    streetNumber: [0],
+    streetNumber: [''],
     city: ['', FormUtils.maxLength(100)],
     province: ['', FormUtils.maxLength(100)],
     postalCode: ['', FormUtils.maxLength(10)],
@@ -170,7 +170,8 @@ export class ProfileDetailsComponent {
       fiscalCondition:
         fullUser.fiscalCondition || FiscalCondition.ConsumidorFinal,
       street: fullUser.street || '',
-      streetNumber: fullUser.streetNumber || 0,
+      streetNumber:
+        fullUser.streetNumber != null ? String(fullUser.streetNumber) : '',
       city: fullUser.city || '',
       province: fullUser.province || '',
       postalCode: fullUser.postalCode || '',
@@ -232,9 +233,10 @@ export class ProfileDetailsComponent {
       cuit: rawValue.cuit,
       fiscalCondition: rawValue.fiscalCondition as FiscalCondition,
       street: rawValue.street,
+      // Vacía se manda null para que el servidor la borre
       streetNumber: rawValue.streetNumber
         ? Number(rawValue.streetNumber)
-        : undefined,
+        : null,
       city: rawValue.city,
       province: rawValue.province,
       postalCode: rawValue.postalCode,

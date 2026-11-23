@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '@services/auth.service';
@@ -9,11 +9,10 @@ import {
 } from '@ng-icons/bootstrap-icons';
 import { FormUtils } from '@shared/validators/form-utils';
 import { AlertService } from '@services/alert.service';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { GoBackButtonComponent } from '@shared/components/buttons/go-back-button/go-back-button.component';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
-import { PasswordToggleButtonComponent } from '@shared/components/buttons/password-toggle-button/password-toggle-button.component';
+import { PasswordInputComponent } from '@shared/components/inputs/password/password-input/password-input.component';
 import { LogoComponent } from '@shared/components/logo/logo.component';
 import { injectAccessDraft } from '@shared/utils/access-draft';
 
@@ -26,7 +25,7 @@ import { injectAccessDraft } from '@shared/utils/access-draft';
     GoBackButtonComponent,
     FieldErrorComponent,
     TrimInputDirective,
-    PasswordToggleButtonComponent,
+    PasswordInputComponent,
     LogoComponent,
   ],
   viewProviders: [
@@ -46,7 +45,6 @@ export class LoginPageComponent {
 
   // Signals para el estado de la UI
   loading = signal(false);
-  passwordVisible = signal(false);
 
   formLogin = this.fb.group({
     // Acepta nombre de usuario o email (el backend resuelve la cuenta por cualquiera
@@ -67,17 +65,6 @@ export class LoginPageComponent {
   // Conserva el usuario ingresado si la persona sale de la pantalla y vuelve.
   // La contraseña no se guarda: la completa el navegador o el gestor de contraseñas.
   private draft = injectAccessDraft('login', this.formLogin, ['username']);
-
-  // Lógica UI para el input de contraseña
-  private passwordValue = toSignal(
-    this.formLogin.get('password')!.valueChanges,
-    { initialValue: '' },
-  );
-
-  showEyeIcon = computed(() => {
-    const val = this.passwordValue();
-    return val ? val.length > 0 : false;
-  });
 
   // Inicio de sesión con Google: redirige a Google y vuelve a la tienda con la sesión iniciada
   loginWithGoogle() {

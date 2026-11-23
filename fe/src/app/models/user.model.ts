@@ -84,7 +84,11 @@ export type ICreateClient = Omit<IApiClient, OmitAutoFields> & {
 // MODELOS DE ACTUALIZACIÓN (UPDATE / PUT / PATCH)
 // ==========================================================
 
-export type IUpdateClient = Partial<Omit<IApiClient, OmitAutoFields>> & {
+export type IUpdateClient = Partial<
+  Omit<IApiClient, OmitAutoFields | 'streetNumber'>
+> & {
+  // null borra la altura guardada
+  streetNumber?: number | null;
   password?: string;
   // La contraseña ACTUAL: el servidor la exige para que una persona cambie su propio email o contraseña
   currentPassword?: string;

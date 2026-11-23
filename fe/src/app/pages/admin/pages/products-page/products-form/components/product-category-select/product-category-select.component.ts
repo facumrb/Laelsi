@@ -1,4 +1,11 @@
-import { Component, input, computed, signal, output } from '@angular/core';
+import {
+  Component,
+  input,
+  computed,
+  signal,
+  output,
+  effect,
+} from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { IApiCategory, MAX_CATEGORY_DEPTH } from '@models/category.model';
 import { aplanarCategorias } from '@shared/utils/category-tree';
@@ -44,11 +51,21 @@ export class ProductCategorySelectComponent {
     aplanarCategorias(this.categories(), MAX_CATEGORY_DEPTH),
   );
 
+  // Categoría elegida, sincronizada con el control (así se redibuja aunque el padre sea OnPush)
+  value = signal<IApiCategory | null>(null);
+
   // Nombre de la categoria seleccionada
-  get selectedCategoryName() {
-    const cat = this.control().value;
-    if (!cat) return 'Seleccione una categoría';
-    return cat.name;
+  selectedCategoryName = computed(
+    () => this.value()?.name ?? 'Seleccione una categoría',
+  );
+
+  constructor() {
+    effect((onCleanup) => {
+      const ctrl = this.control();
+      this.value.set(ctrl.value);
+      const sub = ctrl.valueChanges.subscribe((v) => this.value.set(v));
+      onCleanup(() => sub.unsubscribe());
+    });
   }
 
   toggleMenu() {

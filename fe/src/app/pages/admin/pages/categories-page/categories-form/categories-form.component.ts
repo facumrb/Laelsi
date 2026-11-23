@@ -1,10 +1,19 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { GoBackButtonComponent } from '@shared/components/buttons/go-back-button/go-back-button.component';
+import { FormPageHeaderComponent } from '@admin/components/form-page-header/form-page-header.component';
+import { FormActionsComponent } from '@admin/components/form-actions/form-actions.component';
 import { ApiCategoryService } from '@services/api-services/api-category.service';
 import {
   ICreateCategory,
@@ -14,39 +23,27 @@ import {
 import { ProductDraftService } from '@services/product-draft.service';
 import { AlertService } from '@services/alert.service';
 import { FormUtils } from '@shared/validators/form-utils';
-import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
-import { ListboxDirective } from '@shared/directives/listbox.directive';
-import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import {
-  bootstrapChevronDown,
-  bootstrapCheckLg,
-} from '@ng-icons/bootstrap-icons';
 import { AuditInfoComponent } from '@admin/components/audit-info/audit-info.component';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
 import { CategoryParentSelectComponent } from './components/category-parent-select/category-parent-select.component';
 import { injectInvalidateCatalog } from '@services/queries/catalog-cache';
 import { injectAllCategoriesQuery } from '@services/queries/category-queries';
+import { StateSelectComponent } from '@admin/components/state-select/state-select.component';
 
 @Component({
   selector: 'app-categories-form',
   imports: [
     ReactiveFormsModule,
-    ClickOutsideDirective,
     TrimInputDirective,
-    NgIconComponent,
     AuditInfoComponent,
-    GoBackButtonComponent,
+    FormPageHeaderComponent,
+    FormActionsComponent,
     FieldErrorComponent,
     CategoryParentSelectComponent,
-    ListboxDirective,
+    StateSelectComponent,
   ],
-  viewProviders: [
-    provideIcons({
-      bootstrapChevronDown,
-      bootstrapCheckLg,
-    }),
-  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './categories-form.component.html',
 })
 export class CategoriesFormComponent implements OnInit {
@@ -63,6 +60,8 @@ export class CategoriesFormComponent implements OnInit {
   // Estados
   isEditMode = signal(false);
   categoryId = signal<number | null>(null);
+  // Hay un guardado en curso: evita el doble envío
+  saving = signal(false);
   initialFormValue = signal<string>(''); // Para hasRealChanges
   initialState = signal<string>('Activo'); // Para AuditInfoComponent
 
@@ -76,10 +75,10 @@ export class CategoriesFormComponent implements OnInit {
   // Lista de categorías para el selector de padre (desde la caché de TanStack Query)
   allCategories = computed(() => this.categoriesQuery.data() ?? []);
 
-  // UI State
-  showStateMenu = signal(false);
+  // Estados que se ofrecen, en el orden en que se muestran
+  readonly stateOptions = Object.values(CategoryState);
 
-  formCategory = this.fb.group({
+  formCategory = this.fb.nonNullable.group({
     name: [
       '',
       [
@@ -95,19 +94,13 @@ export class CategoriesFormComponent implements OnInit {
     parentId: [null as number | null],
   });
 
-  // Seguimiento reactivo del parentId del formulario
-  // initialValue: null asegura que en el estado inicial (sin emisiones aún) el valor sea null (raíz)
-  currentParentId = toSignal(
-    this.formCategory.get('parentId')!.valueChanges.pipe(takeUntilDestroyed()),
-    { initialValue: null as number | null },
-  );
+  // Valor actual del formulario como señal
+  private formValue = toSignal(this.formCategory.valueChanges, {
+    initialValue: this.formCategory.getRawValue(),
+  });
 
-  // Form control values mapping
-  get parentIdControl() {
-    return this.formCategory.get(
-      'parentId',
-    ) as import('@angular/forms').FormControl<number | null>;
-  }
+  // Categoría madre elegida (null = raíz)
+  currentParentId = computed(() => this.formValue().parentId ?? null);
 
   ngOnInit() {
     this.checkEditMode();
@@ -159,60 +152,45 @@ export class CategoriesFormComponent implements OnInit {
     });
   }
 
-  // Lógica de "Cambios Reales"
-  get hasRealChanges(): boolean {
+  // Lógica de "Cambios Reales": al crear siempre; al editar, si cambió el formulario
+  hasRealChanges = computed(() => {
     if (!this.isEditMode()) return true;
-    const currentJson = JSON.stringify(this.formCategory.getRawValue());
-    return currentJson !== this.initialFormValue();
-  }
+    return JSON.stringify(this.formValue()) !== this.initialFormValue();
+  });
 
-  // UI Methods
-  toggleStateMenu() {
-    this.showStateMenu.update((v) => !v);
-  }
-
-  selectState(state: string) {
-    this.formCategory.patchValue({ state: state as CategoryState });
-    this.showStateMenu.set(false);
-  }
-
-  onCancel() {
+  // Destino de "Cancelar" y "Volver": el producto si se vino desde él (con borrador), si no el listado
+  cancelUrl(): string {
     const fromProduct =
       this.routeActive.snapshot.queryParamMap.get('fromProduct');
     const draft = this.draftService.getDraft();
-
-    if (fromProduct === 'true' && draft) {
-      this.router.navigateByUrl(draft.returnUrl);
-    } else {
-      this.router.navigate(['/admin/categories']);
-    }
+    return fromProduct === 'true' && draft
+      ? draft.returnUrl
+      : '/admin/categories';
   }
 
   onSubmit() {
+    if (this.saving()) return;
     if (!this.formCategory.valid) {
       this.formCategory.markAllAsTouched();
       return;
     }
+    this.saving.set(true);
 
     const formValue = this.formCategory.getRawValue();
     const categoryData: ICreateCategory = {
-      name: formValue.name!,
+      name: formValue.name,
       description: formValue.description || null,
-      state: formValue.state!,
+      state: formValue.state,
       parentId: formValue.parentId || null,
     };
 
-    let request$;
-    if (this.isEditMode() && this.categoryId()) {
-      request$ = this.categoryService.updateCategory(
-        this.categoryId()!,
-        categoryData,
-      );
-    } else {
-      request$ = this.categoryService.addCategory(categoryData);
-    }
+    const categoryId = this.categoryId();
+    const request$ =
+      this.isEditMode() && categoryId
+        ? this.categoryService.updateCategory(categoryId, categoryData)
+        : this.categoryService.addCategory(categoryData);
 
-    request$.subscribe({
+    request$.pipe(finalize(() => this.saving.set(false))).subscribe({
       next: (response: IApiCategory) => {
         // La categoría cambió: invalidamos el caché para que los listados se recarguen
         this.invalidateCatalog();
@@ -236,6 +214,8 @@ export class CategoriesFormComponent implements OnInit {
 
         this.router.navigate(['/admin/categories']);
       },
+      // El aviso del error lo muestra el interceptor
+      error: () => undefined,
     });
   }
 }

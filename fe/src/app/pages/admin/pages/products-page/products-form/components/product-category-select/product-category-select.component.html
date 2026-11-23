@@ -11,8 +11,8 @@
     aria-haspopup="listbox"
     class="select-trigger focus:border-gray-900 focus:ring-1 focus:ring-gray-900 w-full"
   >
-    <span class="block truncate" [class.text-gray-500]="!control().value">
-      {{ selectedCategoryName }}
+    <span class="block truncate" [class.text-gray-500]="!value()">
+      {{ selectedCategoryName() }}
     </span>
     <span class="select-chevron-wrapper">
       <ng-icon
@@ -37,7 +37,7 @@
           <div
             role="option"
             tabindex="-1"
-            [attr.aria-selected]="control().value?.id === cat.id"
+            [attr.aria-selected]="value()?.id === cat.id"
             (click)="selectCategory(cat)"
             class="relative cursor-pointer select-none py-2 pr-9 text-gray-900 hover:bg-gray-100 transition-colors"
             [style.padding-left.rem]="0.75 + cat.depth * 1"
@@ -50,13 +50,13 @@
               }
               <span
                 class="block wrap-break-word"
-                [class.text-[#3d4494]]="control().value?.id === cat.id"
+                [class.text-[#3d4494]]="value()?.id === cat.id"
               >
                 {{ cat.name }}
               </span>
             </div>
 
-            @if (control().value?.id === cat.id) {
+            @if (value()?.id === cat.id) {
               <span
                 class="absolute inset-y-0 right-0 flex items-center pr-4 text-[#3d4494]"
               >

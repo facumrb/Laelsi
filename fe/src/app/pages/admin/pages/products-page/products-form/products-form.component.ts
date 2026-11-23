@@ -1,5 +1,6 @@
 import {
   afterNextRender,
+  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -8,13 +9,15 @@ import {
   OnInit,
   signal,
   untracked,
-  ViewChild,
+  viewChild,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, finalize, of, switchMap, tap } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Location } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { GoBackButtonComponent } from '@shared/components/buttons/go-back-button/go-back-button.component';
+import { FormPageHeaderComponent } from '@admin/components/form-page-header/form-page-header.component';
+import { FormActionsComponent } from '@admin/components/form-actions/form-actions.component';
 import { IApiCategory } from '@models/category.model';
 import { ProductDraftService } from '@services/product-draft.service';
 import { FormUtils } from '@shared/validators/form-utils';
@@ -29,49 +32,34 @@ import { PhotoManagerComponent } from './components/photo-manager/photo-manager.
 import { ProductCategorySelectComponent } from './components/product-category-select/product-category-select.component';
 import { IApiProductPhoto } from '@models/photo.model';
 import { NumericInputDirective } from '@shared/directives/numeric-input.directive';
-import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
-import { ListboxDirective } from '@shared/directives/listbox.directive';
-import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import {
-  bootstrapChevronDown,
-  bootstrapCheckLg,
-  bootstrapPlusLg,
-} from '@ng-icons/bootstrap-icons';
 import { AuditInfoComponent } from '@admin/components/audit-info/audit-info.component';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
 import { injectInvalidateCatalog } from '@services/queries/catalog-cache';
 import { injectAllCategoriesQuery } from '@services/queries/category-queries';
+import { StateSelectComponent } from '@admin/components/state-select/state-select.component';
 
 @Component({
   selector: 'app-products-form',
   imports: [
     ReactiveFormsModule,
     NumericInputDirective,
-    ClickOutsideDirective,
     PhotoManagerComponent,
-    NgIconComponent,
     AuditInfoComponent,
-    GoBackButtonComponent,
+    FormPageHeaderComponent,
+    FormActionsComponent,
     FieldErrorComponent,
     TrimInputDirective,
     ProductCategorySelectComponent,
-    ListboxDirective,
+    StateSelectComponent,
   ],
-  viewProviders: [
-    provideIcons({
-      bootstrapChevronDown,
-      bootstrapCheckLg,
-      bootstrapPlusLg,
-    }),
-  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './products-form.component.html',
 })
 export class ProductsFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private routeActive = inject(ActivatedRoute);
-  location = inject(Location);
   private injector = inject(Injector);
   private productService = inject(ApiProductService);
   private alertService = inject(AlertService);
@@ -92,8 +80,7 @@ export class ProductsFormComponent implements OnInit {
   formUtils = FormUtils;
 
   // Acceso al hijo para llamar a su método de guardar
-  @ViewChild(PhotoManagerComponent)
-  photoManager!: PhotoManagerComponent;
+  photoManager = viewChild.required(PhotoManagerComponent);
 
   // Fotos iniciales para pasar al hijo
   initialPhotos = signal<IApiProductPhoto[]>([]);
@@ -103,9 +90,19 @@ export class ProductsFormComponent implements OnInit {
   isEditMode = signal(false);
   productId = signal<number | null>(null);
 
+  // Hay un guardado en curso: evita el doble envío
+  saving = signal(false);
+
   // Señal para guardar el estado inicial del formulario
   initialFormValue = signal<string>('');
   initialState = signal<string>('Activo');
+
+  // Estados que se ofrecen, en el orden en que se muestran
+  readonly stateOptions = [
+    ProductState.Activo,
+    ProductState.Pausado,
+    ProductState.Inactivo,
+  ];
 
   // Auditoría (signals de auditoria solo lectura)
   auditCreatedAt = signal<string | null>(null);
@@ -113,7 +110,7 @@ export class ProductsFormComponent implements OnInit {
   auditStatusDate = signal<string | null>(null);
 
   // Formulario
-  formProduct = this.fb.group({
+  formProduct = this.fb.nonNullable.group({
     name: [
       '',
       [
@@ -136,11 +133,19 @@ export class ProductsFormComponent implements OnInit {
       null as number | null,
       [
         Validators.required,
-        Validators.min(0),
+        // El servidor y la base exigen un precio mayor a 0
+        Validators.min(1),
         Validators.pattern(FormUtils.numberPattern),
       ],
     ],
-    brand: ['', [Validators.required, FormUtils.notOnlyWhiteSpace]],
+    brand: [
+      '',
+      [
+        Validators.required,
+        FormUtils.maxLength(100),
+        FormUtils.notOnlyWhiteSpace,
+      ],
+    ],
     totalSold: [
       0,
       [
@@ -159,7 +164,20 @@ export class ProductsFormComponent implements OnInit {
     ],
     state: [ProductState.Activo, [Validators.required]],
     category: [null as IApiCategory | null, [Validators.required]],
-    photos: [[]], // array vacío por defecto por si no se cargan fotos
+    photos: [[] as unknown[]], // array vacío por defecto por si no se cargan fotos
+  });
+
+  // Valor actual del formulario como señal
+  private formValue = toSignal(this.formProduct.valueChanges, {
+    initialValue: this.formProduct.getRawValue(),
+  });
+
+  // Indica si hay algo para guardar: al crear siempre; al editar, si cambió el formulario o las fotos
+  hasRealChanges = computed(() => {
+    if (!this.isEditMode()) return true;
+    const formHasChanges =
+      JSON.stringify(this.formValue()) !== this.initialFormValue();
+    return formHasChanges || this.photoManager().hasChanges();
   });
 
   constructor() {
@@ -197,12 +215,16 @@ export class ProductsFormComponent implements OnInit {
 
     if (draft) {
       const { photos, ...formValueWithoutPhotos } = draft.formValue;
-      this.formProduct.patchValue(formValueWithoutPhotos);
+      this.formProduct.patchValue(
+        formValueWithoutPhotos as Partial<
+          ReturnType<typeof this.formProduct.getRawValue>
+        >,
+      );
 
       // Después del render, para que photo-manager ya haya procesado initialPhotos y no pise la galería
       afterNextRender(
         () => {
-          this.photoManager?.restoreState({
+          this.photoManager().restoreState({
             gallery: draft.photos,
             photosToDeleteIds: draft.photosToDeleteIds,
           });
@@ -282,6 +304,9 @@ export class ProductsFormComponent implements OnInit {
           // El borrador va después de los datos del servidor, para que no lo pisen
           this.restoreDraftIfAny();
         },
+        error: () => {
+          this.router.navigate(['/admin/products']);
+        },
       });
     } else {
       // Validación async para creación
@@ -291,21 +316,9 @@ export class ProductsFormComponent implements OnInit {
     }
   }
 
-  // UI States
-  showStateMenu = signal(false);
-
-  // --- Lógica de Menús de acordeon ---
-  toggleStateMenu() {
-    this.showStateMenu.update((v) => !v);
-  }
-  selectState(state: string) {
-    this.formProduct.patchValue({ state: state as ProductState });
-    this.showStateMenu.set(false);
-  }
-
   goToCreateCategory() {
     // Guardar borrador
-    const photoState = this.photoManager.getCurrentState();
+    const photoState = this.photoManager().getCurrentState();
     this.draftService.setDraft({
       formValue: this.formProduct.getRawValue(),
       isEditMode: this.isEditMode(),
@@ -321,76 +334,83 @@ export class ProductsFormComponent implements OnInit {
     });
   }
 
-  get hasRealChanges(): boolean {
-    if (!this.isEditMode()) return true;
+  onSubmit() {
+    if (this.saving()) return;
+    if (!this.formProduct.valid) {
+      this.formProduct.markAllAsTouched();
+      return;
+    }
 
-    // Comparamos el JSON actual completo contra el inicial
-    const currentJson = JSON.stringify(this.formProduct.getRawValue());
-    const formHasChanges = currentJson !== this.initialFormValue();
+    const formValue = this.formProduct.getRawValue();
 
-    // Verificar fotos
-    const photosHaveChanges = this.photoManager?.hasChanges() ?? false;
+    if (!formValue.category || !formValue.category.id) {
+      this.alertService.toast('Debe seleccionar una categoría válida', 'error');
+      return;
+    }
+    this.saving.set(true);
 
-    return formHasChanges || photosHaveChanges;
+    const productJson: ICreateProduct = {
+      name: formValue.name,
+      description: formValue.description,
+      brand: formValue.brand,
+      totalSold: Number(formValue.totalSold),
+      price: Number(formValue.price),
+      stock: Number(formValue.stock),
+      state: formValue.state,
+      category: formValue.category.id,
+    };
+
+    // GUARDAR/ACTUALIZAR PRODUCTO (PADRE)
+    const productId = this.productId();
+    const productObs =
+      this.isEditMode() && productId
+        ? this.productService.updateProduct(productId, productJson)
+        : this.productService.addProduct(productJson);
+
+    // Si fallan las fotos se muestra solo el aviso: sweetalert2 muestra un toast por vez
+    let photosFailed = false;
+
+    productObs
+      .pipe(
+        // El producto ya se guardó: invalidamos el caché para que los listados
+        // se recarguen (aunque después falle la subida de las fotos)
+        tap(() => this.invalidateCatalog()),
+        // DELEGAR FOTOS AL HIJO
+        switchMap((responseProduct) =>
+          this.savePhotosOrWarn(
+            this.isEditMode() ? productId! : responseProduct.id,
+            () => (photosFailed = true),
+          ),
+        ),
+        finalize(() => this.saving.set(false)),
+      )
+      .subscribe({
+        next: () => {
+          // Las fotos también forman parte de los datos en caché del producto
+          this.invalidateCatalog();
+          if (!photosFailed) {
+            this.alertService.toast('Guardado exitosamente', 'success');
+          }
+          this.router.navigate(['/admin/products']);
+        },
+        // El aviso del error lo muestra el interceptor
+        error: () => undefined,
+      });
   }
 
-  onSubmit() {
-    if (this.formProduct.valid) {
-      const formValue = this.formProduct.getRawValue();
-
-      if (!formValue.category || !formValue.category.id) {
-        this.alertService.toast(
-          'Debe seleccionar una categoría válida',
-          'error',
-        );
-        return;
-      }
-
-      const productJson: ICreateProduct = {
-        name: formValue.name!,
-        description: formValue.description!,
-        brand: formValue.brand!,
-        totalSold: Number(formValue.totalSold),
-        price: Number(formValue.price),
-        stock: Number(formValue.stock),
-        state: formValue.state!,
-        category: formValue.category.id,
-      };
-
-      // GUARDAR/ACTUALIZAR PRODUCTO (PADRE)
-      let productObs;
-      if (this.isEditMode() && this.productId()) {
-        productObs = this.productService.updateProduct(
-          this.productId()!,
-          productJson,
-        );
-      } else {
-        productObs = this.productService.addProduct(productJson);
-      }
-
-      productObs.subscribe({
-        next: (responseProduct) => {
-          // El producto ya se guardó: invalidamos el caché para que los listados
-          // se recarguen (aunque después falle la subida de las fotos)
-          this.invalidateCatalog();
-
-          const finalId = this.isEditMode()
-            ? this.productId()!
-            : responseProduct.id;
-
-          // DELEGAR FOTOS AL HIJO
-          this.photoManager.saveChanges(finalId).subscribe({
-            next: () => {
-              // Las fotos también forman parte de los datos en caché del producto
-              this.invalidateCatalog();
-              this.alertService.toast('Guardado exitosamente', 'success');
-              this.router.navigate(['/admin/products']);
-            },
-          });
-        },
-      });
-    } else {
-      this.formProduct.markAllAsTouched();
-    }
+  // Guarda las fotos. Si falla, el producto ya quedó guardado: se avisa, se llama a onFail y se sigue igual.
+  private savePhotosOrWarn(productId: number, onFail: () => void) {
+    return this.photoManager()
+      .saveChanges(productId)
+      .pipe(
+        catchError(() => {
+          onFail();
+          this.alertService.toast(
+            'Se guardó, pero no se pudieron actualizar las fotos',
+            'warning',
+          );
+          return of(null);
+        }),
+      );
   }
 }

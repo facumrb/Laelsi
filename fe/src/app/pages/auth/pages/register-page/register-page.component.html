@@ -84,37 +84,17 @@
               Contraseña <span class="text-red-500">*</span>
             </label>
 
-            <div
-              class="password-field rounded-lg border border-gray-300 shadow-sm focus-within:border-[#3d4494] focus-within:ring-1 focus-within:ring-[#3d4494]"
-            >
-              <input
-                [type]="passwordVisible() ? 'text' : 'password'"
-                id="password"
-                name="password"
-                formControlName="password"
-                maxlength="100"
-                autocomplete="new-password"
-                aria-describedby="password-hint"
-                class="password-field-input p-3 text-sm text-gray-900"
-                placeholder="•••••••••••••••••"
-              />
+            <app-password-input
+              [control]="formRegister.controls.password"
+              inputId="password"
+              describedBy="password-hint"
+              fieldClass="rounded-lg border border-gray-300 shadow-sm focus-within:border-[#3d4494] focus-within:ring-1 focus-within:ring-[#3d4494]"
+              inputClass="p-3 text-sm text-gray-900"
+            />
 
-              <app-password-toggle-button
-                [(visible)]="passwordVisible"
-                [show]="showEyeIcon()"
-              />
-            </div>
-
-            <div class="min-h-8">
-              <p
-                id="password-hint"
-                class="mt-1 text-xs font-medium"
-                [class.text-red-600]="passwordHintError()"
-                [class.text-gray-500]="!passwordHintError()"
-              >
-                {{ passwordRule }}
-              </p>
-            </div>
+            <app-password-rule-hint
+              [control]="formRegister.controls.password"
+            />
           </div>
 
           <div>
@@ -125,25 +105,13 @@
               Confirmar Contraseña <span class="text-red-500">*</span>
             </label>
 
-            <div
-              class="password-field rounded-lg border border-gray-300 shadow-sm focus-within:border-[#3d4494] focus-within:ring-1 focus-within:ring-[#3d4494]"
-            >
-              <input
-                [type]="confirmPasswordVisible() ? 'text' : 'password'"
-                id="confirmPassword"
-                name="confirmPassword"
-                formControlName="confirmPassword"
-                maxlength="100"
-                autocomplete="new-password"
-                class="password-field-input p-3 text-sm text-gray-900"
-                placeholder="Repetí tu contraseña"
-              />
-
-              <app-password-toggle-button
-                [(visible)]="confirmPasswordVisible"
-                [show]="showConfirmEyeIcon()"
-              />
-            </div>
+            <app-password-input
+              [control]="formRegister.controls.confirmPassword"
+              inputId="confirmPassword"
+              placeholder="Repetí tu contraseña"
+              fieldClass="rounded-lg border border-gray-300 shadow-sm focus-within:border-[#3d4494] focus-within:ring-1 focus-within:ring-[#3d4494]"
+              inputClass="p-3 text-sm text-gray-900"
+            />
 
             <div class="min-h-8">
               <app-field-error

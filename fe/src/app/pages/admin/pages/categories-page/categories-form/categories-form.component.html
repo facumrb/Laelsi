@@ -1,13 +1,9 @@
 <div class="animate-fadeIn max-w-3xl mx-auto">
-  <div class="mb-6 flex items-center justify-between">
-    <div>
-      <h1 class="page-title">
-        {{ isEditMode() ? "Editar Categoría" : "Nueva Categoría" }}
-      </h1>
-    </div>
-
-    <app-go-back-button></app-go-back-button>
-  </div>
+  <app-form-page-header
+    class="mb-6"
+    [title]="isEditMode() ? 'Editar Categoría' : 'Nueva Categoría'"
+    [backUrl]="cancelUrl()"
+  />
 
   <div class="form-card">
     <form [formGroup]="formCategory" (ngSubmit)="onSubmit()" class="form-body">
@@ -33,7 +29,7 @@
         </div>
 
         <app-category-parent-select
-          [control]="parentIdControl"
+          [control]="formCategory.controls.parentId"
           [categories]="allCategories()"
           [currentCategoryId]="categoryId()"
           [currentParentId]="currentParentId()"
@@ -58,86 +54,11 @@
           />
         </div>
 
-        <div class="relative w-full" (clickOutside)="showStateMenu.set(false)">
-          <label for="state" class="form-label">
-            Estado <span class="text-red-500">*</span>
-          </label>
-
-          <button
-            type="button"
-            id="state"
-            (click)="toggleStateMenu()"
-            aria-haspopup="listbox"
-            [attr.aria-expanded]="showStateMenu()"
-            class="select-trigger focus:ring-1"
-          >
-            <span class="flex items-center gap-3">
-              <span
-                class="h-2.5 w-2.5 rounded-full"
-                [class]="
-                  formCategory.get('state')?.value === 'Activo'
-                    ? 'bg-green-500'
-                    : 'bg-red-500'
-                "
-              ></span>
-              <span class="block truncate">{{
-                formCategory.get("state")?.value
-              }}</span>
-            </span>
-            <span class="select-chevron-wrapper">
-              <ng-icon
-                name="bootstrapChevronDown"
-                class="text-gray-400 transition-transform duration-200"
-                [class.rotate-180]="showStateMenu()"
-              ></ng-icon>
-            </span>
-          </button>
-
-          @if (showStateMenu()) {
-            <ul
-              class="select-dropdown"
-              appListbox
-              (closed)="showStateMenu.set(false)"
-            >
-              @for (option of ["Activo", "Inactivo"]; track option) {
-                <li
-                  role="option"
-                  tabindex="-1"
-                  [attr.aria-selected]="formCategory.get('state')?.value === option"
-                  (click)="selectState(option)"
-                  class="select-option"
-                >
-                  <div class="flex items-center">
-                    <span
-                      class="h-2.5 w-2.5 rounded-full mr-2"
-                      [class]="
-                        option === 'Activo' ? 'bg-green-500' : 'bg-red-500'
-                      "
-                    ></span>
-                    <span
-                      [class.font-semibold]="
-                        formCategory.get('state')?.value === option
-                      "
-                    >
-                      {{ option }}
-                    </span>
-                  </div>
-                  @if (formCategory.get("state")?.value === option) {
-                    <span
-                      class="absolute inset-y-0 right-0 flex items-center pr-4"
-                    >
-                      <ng-icon
-                        name="bootstrapCheckLg"
-                        class="text-lg"
-                      ></ng-icon>
-                    </span>
-                  }
-                </li>
-              }
-            </ul>
-          }
-          <app-field-error [control]="formCategory.controls.state" />
-        </div>
+        <app-state-select
+          [control]="formCategory.controls.state"
+          [options]="stateOptions"
+          triggerClass="focus:ring-1"
+        />
       </div>
 
       @if (isEditMode()) {
@@ -149,18 +70,12 @@
         />
       }
 
-      <div class="form-footer">
-        <button type="button" (click)="onCancel()" class="btn-secondary">
-          Cancelar
-        </button>
-        <button
-          type="submit"
-          [disabled]="!formCategory.valid || !hasRealChanges"
-          class="btn-primary"
-        >
-          {{ isEditMode() ? "Guardar Cambios" : "Crear Categoría" }}
-        </button>
-      </div>
+      <app-form-actions
+        [cancelUrl]="cancelUrl()"
+        submitClass=""
+        [submitLabel]="isEditMode() ? 'Guardar Cambios' : 'Crear Categoría'"
+        [submitDisabled]="!formCategory.valid || !hasRealChanges() || saving()"
+      />
     </form>
   </div>
 </div>

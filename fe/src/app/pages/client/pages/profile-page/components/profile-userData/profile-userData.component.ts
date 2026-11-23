@@ -22,7 +22,8 @@ import { switchMap, of, EMPTY } from 'rxjs';
 import { AuthService } from '@services/auth.service';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
-import { PasswordToggleButtonComponent } from '@shared/components/buttons/password-toggle-button/password-toggle-button.component';
+import { PasswordInputComponent } from '@shared/components/inputs/password/password-input/password-input.component';
+import { PasswordRuleHintComponent } from '@shared/components/inputs/password/password-rule-hint/password-rule-hint.component';
 import { VerifyPasswordModalComponent } from './verify-password-modal/verify-password-modal.component';
 
 @Component({
@@ -33,7 +34,8 @@ import { VerifyPasswordModalComponent } from './verify-password-modal/verify-pas
     PhotoManagerComponent,
     FieldErrorComponent,
     TrimInputDirective,
-    PasswordToggleButtonComponent,
+    PasswordInputComponent,
+    PasswordRuleHintComponent,
     VerifyPasswordModalComponent,
   ],
   viewProviders: [provideIcons({ bootstrapShieldLock })],
@@ -87,30 +89,6 @@ export class ProfileUserComponent {
     },
   );
 
-  passwordVisible = signal(false);
-  confirmPasswordVisible = signal(false);
-
-  private passwordValue = toSignal(
-    this.formUsuario.controls.password.valueChanges,
-  );
-  private confirmPasswordValue = toSignal(
-    this.formUsuario.controls.confirmPassword.valueChanges,
-  );
-
-  private passwordControl = this.formUsuario.controls.password;
-  private passwordEvents = toSignal(this.passwordControl.events);
-
-  readonly passwordRule = FormUtils.passwordRule;
-
-  // La regla de la contraseña se muestra siempre (reserva su espacio) y pasa a rojo cuando no se cumple
-  passwordHintError = computed(() => {
-    this.passwordEvents();
-    return this.passwordControl.touched && this.passwordControl.invalid;
-  });
-
-  showEyeIcon = computed(() => !!this.passwordValue());
-  showConfirmEyeIcon = computed(() => !!this.confirmPasswordValue());
-
   // Valores con los que se cargó el formulario: sirven para saber si hay cambios y para descartarlos
   private initialValue = signal<string | null>(null);
   private formValue = toSignal(this.formUsuario.valueChanges);
@@ -159,8 +137,6 @@ export class ProfileUserComponent {
     this.photoManager().reset();
     this.isChangePasswordMode.set(false);
     this.verifiedCurrentPassword = null;
-    this.passwordVisible.set(false);
-    this.confirmPasswordVisible.set(false);
   }
 
   startPasswordChange() {
