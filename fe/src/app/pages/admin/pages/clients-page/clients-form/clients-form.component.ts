@@ -30,6 +30,10 @@ import { of } from 'rxjs';
 import { PhotoManagerComponent } from '@shared/components/photo-manager/photo-manager.component';
 import { AlertService } from '@services/alert.service';
 import { FormUtils } from '@shared/validators/form-utils';
+import {
+  LARGO_MAXIMO_TELEFONO,
+  LARGO_MINIMO_TELEFONO,
+} from '@shared/utils/telefono';
 import { NumericInputDirective } from '@shared/directives/numeric-input.directive';
 import { AuditInfoComponent } from '@admin/components/audit-info/audit-info.component';
 import { PhoneInputDirective } from '@shared/directives/phone-input.directive';
@@ -113,8 +117,8 @@ export class ClientsFormComponent implements OnInit {
       phone: [
         '',
         [
-          FormUtils.minLength(7),
-          FormUtils.maxLength(20),
+          FormUtils.minLength(LARGO_MINIMO_TELEFONO),
+          FormUtils.maxLength(LARGO_MAXIMO_TELEFONO),
           Validators.pattern(FormUtils.phonePattern),
         ],
       ],

@@ -3,6 +3,7 @@
     <div class="pagination-controls">
       <!-- Botón Anterior -->
       <button
+        type="button"
         (click)="onPageChange(currentPage() - 1)"
         [disabled]="currentPage() === 1"
         class="pagination-btn"
@@ -14,6 +15,7 @@
       <!-- Números de Página -->
       @for (page of visiblePages(); track page) {
         <button
+          type="button"
           (click)="onPageChange(page)"
           [attr.aria-current]="page === currentPage() ? 'page' : null"
           [attr.aria-label]="'Ir a la página ' + page"
@@ -27,6 +29,7 @@
 
       <!-- Botón Siguiente -->
       <button
+        type="button"
         (click)="onPageChange(currentPage() + 1)"
         [disabled]="currentPage() === totalPages()"
         class="pagination-btn"

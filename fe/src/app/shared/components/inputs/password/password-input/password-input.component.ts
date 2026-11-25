@@ -38,12 +38,12 @@ export class PasswordInputComponent {
   // Dentro de un modal, marca el input para que reciba el foco al abrirse (cdkTrapFocusAutoCapture busca el atributo)
   focusInitial = input<boolean>(false);
 
-  // Clases del contenedor (borde, foco); siempre se suma password-field
+  // Clases del contenedor (borde, foco). Siempre se suma password-field
   fieldClass = input<string>(
     'rounded-lg border border-gray-300 shadow-sm focus-within:[outline:auto]',
   );
 
-  // Clases del input (relleno, texto); siempre se suma password-field-input
+  // Clases del input (relleno, texto). Siempre se suma password-field-input
   inputClass = input<string>('p-2.5 text-sm text-gray-900');
 
   // Indica si la contraseña se ve como texto

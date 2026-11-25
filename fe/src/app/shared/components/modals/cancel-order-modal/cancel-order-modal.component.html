@@ -1,21 +1,30 @@
-<app-modal-shell [title]="titulo()" size="lg" (close)="onClose()">
+<app-modal-shell
+  [title]="titulo()"
+  size="lg"
+  [busy]="enviando()"
+  (close)="onClose()"
+>
   @if (variant() === "client") {
     <p class="text-sm text-gray-600 leading-relaxed">
-      ¿Estás seguro de que deseas cancelar tu pedido? Ten en cuenta que esta
+      ¿Estás seguro de que querés cancelar tu pedido? Tené en cuenta que esta
       acción no se puede deshacer.<br />
       Ocurrirán los siguientes cambios:
     </p>
 
     <ul class="space-y-2.5">
       <li class="flex items-start gap-2.5 text-sm text-gray-700">
-        <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
+        <span
+          class="mt-1.5 w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"
+        ></span>
         <span
           >El estado de tu pedido pasará a
           <span class="font-semibold text-gray-900">Cancelado</span>.</span
         >
       </li>
       <li class="flex items-start gap-2.5 text-sm text-gray-700">
-        <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
+        <span
+          class="mt-1.5 w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"
+        ></span>
         <span
           >Los artículos reservados serán
           <span class="font-semibold text-gray-900"
@@ -24,17 +33,19 @@
         >
       </li>
       <li class="flex items-start gap-2.5 text-sm text-gray-700">
-        <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
         <span
-          >Si ya realizaste el pago por transferencia o tenés consultas,
-          podés comunicarte con nosotros por WhatsApp.</span
+          class="mt-1.5 w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"
+        ></span>
+        <span
+          >Si ya realizaste el pago por transferencia o tenés consultas, podés
+          comunicarte con nosotros por WhatsApp.</span
         >
       </li>
     </ul>
   } @else {
     <p class="text-sm text-gray-600 leading-relaxed">
-      ¿Estás seguro que deseas continuar? Ten en cuenta que esta acción no se
-      puede deshacer.<br />
+      ¿Estás seguro de que querés continuar? Tené en cuenta que esta acción no
+      se puede deshacer.<br />
       Ocurrirán los siguientes cambios:
     </p>
 
@@ -59,14 +70,24 @@
   }
 
   <div modalFooter class="contents">
-    <button type="button" (click)="onClose()" class="btn-secondary w-full sm:w-auto">
+    <button
+      type="button"
+      (click)="onClose()"
+      [disabled]="enviando()"
+      class="btn-secondary w-full sm:w-auto"
+    >
       @if (variant() === "client") {
         No, conservar pedido
       } @else {
         No, conservar orden
       }
     </button>
-    <button type="button" (click)="onConfirm()" class="btn-danger w-full sm:w-auto">
+    <button
+      type="button"
+      (click)="onConfirm()"
+      [disabled]="enviando()"
+      class="btn-danger w-full sm:w-auto"
+    >
       @if (variant() === "client") {
         Sí, cancelar pedido
       } @else {

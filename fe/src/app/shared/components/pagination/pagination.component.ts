@@ -1,6 +1,8 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   ElementRef,
   inject,
   input,
@@ -12,8 +14,12 @@ import {
   bootstrapChevronRight,
 } from '@ng-icons/bootstrap-icons';
 
+// En los navegadores que no emiten 'scrollend', la página cambia pasado este tiempo
+const RESPALDO_FIN_DESPLAZAMIENTO_MS = 1000;
+
 @Component({
   selector: 'app-pagination',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgIconComponent],
   templateUrl: './pagination.component.html',
   viewProviders: [
@@ -24,7 +30,14 @@ import {
   ],
 })
 export class PaginationComponent {
-  private el = inject(ElementRef);
+  private el = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  // Deshace la espera del cambio de página pendiente (listener de 'scrollend' y respaldo)
+  private cancelarPendiente: (() => void) | null = null;
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => this.cancelarPendiente?.());
+  }
 
   currentPage = input.required<number>();
   totalPages = input.required<number>();
@@ -70,12 +83,23 @@ export class PaginationComponent {
         ? scrollTarget.scrollY
         : scrollTarget.scrollTop;
 
+    this.cancelarPendiente?.();
+
     if (scrollPos > 0) {
-      scrollTarget.addEventListener(
-        'scrollend',
-        () => this.pageChange.emit(page),
-        { once: true },
-      );
+      const emitir = () => {
+        this.cancelarPendiente?.();
+        this.pageChange.emit(page);
+      };
+      const respaldo =
+        'onscrollend' in window
+          ? undefined
+          : setTimeout(emitir, RESPALDO_FIN_DESPLAZAMIENTO_MS);
+      scrollTarget.addEventListener('scrollend', emitir, { once: true });
+      this.cancelarPendiente = () => {
+        clearTimeout(respaldo);
+        scrollTarget.removeEventListener('scrollend', emitir);
+        this.cancelarPendiente = null;
+      };
       scrollTarget.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       this.pageChange.emit(page);

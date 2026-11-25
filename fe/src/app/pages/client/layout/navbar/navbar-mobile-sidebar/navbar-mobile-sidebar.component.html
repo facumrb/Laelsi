@@ -1,6 +1,6 @@
-<!-- Backdrop -->
+<!-- Fondo oscuro -->
 <div
-  class="fixed inset-0 bg-black/60 backdrop-blur-sm z-60 transition-all duration-300 ease-in-out barra-hover:hidden"
+  class="fixed inset-0 bg-black/60 backdrop-blur-sm z-60 transition-all duration-300 ease-in-out starting:opacity-0 barra-hover:hidden"
   [class.opacity-0]="!isOpen()"
   [class.opacity-100]="isOpen()"
   [class.invisible]="!isOpen()"
@@ -9,10 +9,9 @@
   aria-hidden="true"
 ></div>
 
-<!-- Sidebar -->
 <div
   #panel
-  class="fixed inset-y-0 left-0 w-72 bg-white z-70 shadow-2xl flex flex-col transition-all duration-300 ease-in-out barra-hover:hidden"
+  class="fixed inset-y-0 left-0 w-72 bg-white z-70 shadow-2xl flex flex-col transition-[translate,visibility] duration-300 ease-in-out will-change-[translate] starting:-translate-x-full barra-hover:hidden"
   [class.-translate-x-full]="!isOpen()"
   [class.translate-x-0]="isOpen()"
   [class.invisible]="!isOpen()"
@@ -23,20 +22,17 @@
   [attr.inert]="!isOpen() ? '' : null"
   [cdkTrapFocus]="isOpen()"
   [cdkTrapFocusAutoCapture]="isOpen()"
+  (keydown.escape)="close()"
 >
   <!-- Header con logo -->
-  <div class="flex items-center justify-center p-4 bg-[#3d4494] shadow-sm">
-    <app-logo
-      [width]="128"
-      [height]="48"
-      customClass="h-12 w-auto object-contain"
-    />
+  <div class="flex items-center justify-center p-4 bg-brand shadow-sm">
+    <app-logo [width]="128" customClass="block h-12 w-auto object-contain" />
   </div>
 
   <!-- Contenido scrolleable: categorías en acordeón + links estáticos -->
   <div class="flex-1 overflow-y-auto overscroll-contain pb-2">
     <nav class="flex flex-col" aria-label="Menú móvil de categorías">
-      <!-- Menu Principal -->
+      <!-- Menú Principal -->
       <div
         class="flex items-center hover:bg-gray-100 transition-colors w-full cursor-pointer border-b border-gray-100/80"
         routerLinkActive=""
@@ -47,11 +43,11 @@
           routerLink="/"
           (click)="close()"
           class="flex-1 py-3 pl-6 font-bold flex items-center gap-2"
-          [style.color]="mainLink?.isActive ? '#5a2a8a' : null"
-          [class.text-gray-700]="!mainLink?.isActive"
+          [style.color]="mainLink.isActive ? '#5a2a8a' : null"
+          [class.text-gray-700]="!mainLink.isActive"
         >
           <ng-icon name="bootstrapHouse" class="text-lg"></ng-icon>
-          Menu Principal
+          Menú Principal
         </a>
       </div>
 
@@ -65,7 +61,7 @@
         />
       }
 
-      <!-- Categorías estáticas (misma estética que categorías estáticas nivel 1) -->
+      <!-- Categorías estáticas (misma estética que las de nivel 1) -->
       <div
         class="flex items-center hover:bg-gray-100 transition-colors w-full cursor-pointer border-b border-gray-100/80"
         routerLinkActive=""
@@ -75,8 +71,8 @@
           routerLink="/impresiones"
           (click)="close()"
           class="flex-1 py-3 pl-6 font-bold block"
-          [style.color]="impLink?.isActive ? '#5a2a8a' : null"
-          [class.text-gray-700]="!impLink?.isActive"
+          [style.color]="impLink.isActive ? '#5a2a8a' : null"
+          [class.text-gray-700]="!impLink.isActive"
         >
           Impresiones
         </a>
@@ -90,8 +86,8 @@
           routerLink="/disenio"
           (click)="close()"
           class="flex-1 py-3 pl-6 font-bold block"
-          [style.color]="disLink?.isActive ? '#5a2a8a' : null"
-          [class.text-gray-700]="!disLink?.isActive"
+          [style.color]="disLink.isActive ? '#5a2a8a' : null"
+          [class.text-gray-700]="!disLink.isActive"
         >
           Diseño Gráfico
         </a>
@@ -105,8 +101,8 @@
           routerLink="/sellos"
           (click)="close()"
           class="flex-1 py-3 pl-6 font-bold block"
-          [style.color]="selLink?.isActive ? '#5a2a8a' : null"
-          [class.text-gray-700]="!selLink?.isActive"
+          [style.color]="selLink.isActive ? '#5a2a8a' : null"
+          [class.text-gray-700]="!selLink.isActive"
         >
           Sellos
         </a>
@@ -114,7 +110,7 @@
     </nav>
   </div>
 
-  <!-- Footer: auth section -->
+  <!-- Pie: sección de autenticación -->
   <div class="border-t border-gray-100 p-4 bg-gray-50">
     @if (isLoggedIn()) {
       @if (isAdmin()) {
@@ -153,7 +149,7 @@
       <a
         routerLink="/auth/login"
         (click)="close()"
-        class="block w-full text-center bg-[#3d4494] text-white py-3 rounded-lg font-bold shadow-md hover:bg-[#2d336b] transition"
+        class="block w-full text-center bg-brand text-white py-3 rounded-lg font-bold shadow-md hover:bg-[#2d336b] transition"
       >
         Iniciar Sesión
       </a>

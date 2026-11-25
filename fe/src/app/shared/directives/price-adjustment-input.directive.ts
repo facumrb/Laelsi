@@ -1,7 +1,12 @@
-import { Directive, ElementRef, HostListener, inject } from '@angular/core';
+import { Directive, ElementRef, inject } from '@angular/core';
 
+// Campo de ajuste de precios: un número con signo opcional y coma decimal, al tipear y al pegar
 @Directive({
   selector: '[appPriceAdjustmentInput]',
+  host: {
+    '(keydown)': 'onKeyDown($event)',
+    '(paste)': 'onPaste()',
+  },
 })
 export class PriceAdjustmentInputDirective {
   private el = inject(ElementRef);
@@ -21,20 +26,15 @@ export class PriceAdjustmentInputDirective {
   // Regex permisiva con coma como decimal (formato europeo/argentino): acepta "-", "1,"
   private readonly VALID_NUMBER_REGEX = /^-?\d*,?\d*$/;
 
-  @HostListener('keydown', ['$event'])
-  onKeyDown(event: KeyboardEvent) {
+  // Bloquea las teclas que dejarían un número inválido y convierte el punto en coma
+  protected onKeyDown(event: KeyboardEvent) {
     if (this.specialKeys.includes(event.key)) return;
 
     // Permitir todas las teclas no imprimibles (F1-F12, Shift, Alt, CapsLock, etc.)
     if (event.key.length > 1) return;
 
-    // Permitir Ctrl/Cmd + a, c, v, x, z
-    if (
-      (event.ctrlKey || event.metaKey) &&
-      ['a', 'c', 'v', 'x', 'z'].includes(event.key.toLowerCase())
-    ) {
-      return;
-    }
+    // Permitir los atajos con Ctrl/Cmd. Con Alt además es AltGr, que escribe caracteres (por ejemplo @)
+    if ((event.ctrlKey || event.metaKey) && !event.altKey) return;
 
     const input = this.el.nativeElement as HTMLInputElement;
     const start = input.selectionStart ?? 0;
@@ -61,11 +61,13 @@ export class PriceAdjustmentInputDirective {
     }
   }
 
-  @HostListener('paste')
-  onPaste() {
-    // No se llama a preventDefault() para cumplir con las buenas prácticas de accesibilidad.
-    // La sanitización se aplica sobre el valor resultante en el siguiente tick del event loop.
-    // El debounce de 500ms del componente garantiza que la API nunca reciba el valor crudo.
+  // Limpia lo pegado y lo deja con el formato del campo
+  protected onPaste() {
+    /*
+    No se llama a preventDefault() para cumplir con las buenas prácticas de accesibilidad.
+    La sanitización se aplica sobre el valor resultante en el siguiente tick del event loop.
+    El debounce de 500ms del componente garantiza que la API nunca reciba el valor crudo.
+    */
     setTimeout(() => {
       const input = this.el.nativeElement as HTMLInputElement;
       const sanitized = this.sanitize(input.value);
@@ -76,6 +78,7 @@ export class PriceAdjustmentInputDirective {
     }, 0);
   }
 
+  // Convierte un número pegado (con separadores de miles y decimales en cualquier formato) al formato del campo
   private sanitize(text: string): string {
     let result = text.trim();
 
@@ -95,9 +98,11 @@ export class PriceAdjustmentInputDirective {
       // Solo coma: separador decimal → reemplazar por punto (temporal)
       result = result.replace(',', '.');
     } else if (lastDot !== -1) {
-      // Solo punto, sin coma: el punto es separador de miles.
-      // Si hay exactamente 3 dígitos después del último punto → miles → eliminar todos los puntos.
-      // Si hay distinta cantidad → decimal → mantener (se convertirá a coma al final).
+      /*
+      Solo punto, sin coma: es ambiguo.
+      Si hay exactamente 3 dígitos después del último punto, se toma como separador de miles y se eliminan todos los puntos.
+      Si hay otra cantidad, se toma como decimal y se mantiene (se convierte a coma al final).
+      */
       const afterLastDot = result.substring(lastDot + 1);
       if (/^\d{3}$/.test(afterLastDot)) {
         result = result.replace(/\./g, '');
@@ -105,7 +110,9 @@ export class PriceAdjustmentInputDirective {
     }
     // Si no hay ningún separador → número entero, sin ambigüedad
 
-    result = result.replace(/[^-\d.]/g, '');
+    // El signo menos solo vale al inicio: se extrae, se limpia el resto y se repone si corresponde
+    const isNegative = result.startsWith('-');
+    result = (isNegative ? '-' : '') + result.replace(/[^\d.]/g, '');
 
     // Colapsar múltiples puntos residuales (caso de seguridad)
     const parts = result.split('.');

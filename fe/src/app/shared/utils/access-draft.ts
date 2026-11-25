@@ -15,10 +15,10 @@ const STORAGE_PREFIX = 'laelsi:borrador-acceso:';
 // Los campos de contraseña nunca se guardan, se llamen como se llamen
 const PASSWORD_FIELD = /password|contrase/i;
 
-/**
- * sessionStorage puede no estar disponible (modo privado estricto, almacenamiento
- * bloqueado). El borrador es una comodidad: si falla, la pantalla funciona igual.
- */
+/*
+sessionStorage puede no estar disponible (modo privado estricto, almacenamiento
+bloqueado). El borrador es una comodidad: si falla, la pantalla funciona igual.
+*/
 function getStorage(): Storage | null {
   try {
     return globalThis.sessionStorage ?? null;
@@ -45,20 +45,20 @@ export function readAccessDraft(screen: AccessScreen): Record<string, string> {
   }
 }
 
-/**
- * Conserva el identificador que la persona escribió en una pantalla de acceso
- * (nombre de usuario, email...) para que no tenga que volver a tipearlo si sale
- * de la pantalla y vuelve.
- *
- * - Se guarda en sessionStorage: dura lo que dura la sesión de navegación de esa
- *   pestaña y se borra sola al cerrarla.
- * - Solo se guardan los campos indicados en `fields`. La contraseña NUNCA se
- *   guarda: de recordarla se ocupa el navegador o el gestor de contraseñas,
- *   mediante los atributos `autocomplete` de cada input.
- * - Cuando la pantalla se envía bien hay que llamar a `clear()`.
- *
- * Debe llamarse en un contexto de inyección (inicializador de campo o constructor).
- */
+/*
+Conserva el identificador que la persona escribió en una pantalla de acceso
+(nombre de usuario, email...) para que no tenga que volver a tipearlo si sale
+de la pantalla y vuelve.
+
+- Se guarda en sessionStorage: dura lo que dura la sesión de navegación de esa
+  pestaña y se borra sola al cerrarla.
+- Solo se guardan los campos indicados en `fields`. La contraseña NUNCA se
+  guarda: de recordarla se ocupa el navegador o el gestor de contraseñas,
+  mediante los atributos `autocomplete` de cada input.
+- Cuando la pantalla se envía bien hay que llamar a `clear()`.
+
+Debe llamarse en un contexto de inyección (inicializador de campo o constructor).
+*/
 export function injectAccessDraft(
   screen: AccessScreen,
   form: FormGroup,
@@ -82,8 +82,10 @@ export function injectAccessDraft(
     const value = saved[field];
 
     if (control && value) {
-      // Se marca como modificado ANTES de asignar el valor: las validaciones
-      // asíncronas (ej: "usuario disponible") ignoran los campos sin tocar.
+      /*
+      Se marca como modificado ANTES de asignar el valor: las validaciones
+      asíncronas (ej: "usuario disponible") ignoran los campos sin tocar.
+      */
       control.markAsDirty();
       control.setValue(value);
     }

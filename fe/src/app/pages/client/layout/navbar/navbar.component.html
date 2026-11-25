@@ -1,9 +1,10 @@
-<header class="sticky top-0 z-(--z-header) shadow-md">
+<header class="sticky top-0 z-(--z-header) bg-brand shadow-md">
   <app-navbar-top-bar
     [cartCount]="cartSignal()"
     [currentUser]="currentUser()"
     [isLoggedIn]="authService.isLoggedIn()"
     [isAdmin]="authService.isAdmin()"
+    [menuOpen]="showSideMenu()"
     (menuToggled)="toggleMobileMenu()"
     (logoutRequested)="handleLogout()"
   />

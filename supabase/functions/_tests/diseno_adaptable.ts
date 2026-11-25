@@ -51,7 +51,8 @@ export function encontrarProblemasDeDiseno(plantilla: string): HallazgoDiseno[] 
     const etiqueta = m[0];
     if (!/\bcdkTrapFocus\b/.test(etiqueta)) continue;
     const clases = etiqueta.match(/\bclass="([^"]*)"/)?.[1] ?? '';
-    if (/\belsi-modal-overlay\b/.test(clases)) continue; // su tope está en styles.css (lo comprueba otra prueba)
+    // La tarjeta de app-modal-shell toma su tope de ALTOS en modal-shell.component.ts (lo comprueba otra prueba)
+    if (/\[class\]="clasesTarjeta\(\)"/.test(etiqueta)) continue;
     if (!TOPE_DE_ALTO.test(clases)) {
       agregar('dialogo-sin-alto-maximo', m.index!, etiqueta);
     } else if (!/\binset-y-0\b/.test(clases) && !tieneScrollInterno) {

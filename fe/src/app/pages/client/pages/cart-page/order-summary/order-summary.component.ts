@@ -25,6 +25,7 @@ import { AlertService } from '@services/alert.service';
 import { injectInvalidateCatalog } from '@services/queries/catalog-cache';
 import { TurnstileComponent } from '@shared/components/turnstile/turnstile.component';
 import { environment } from 'src/environments/environment';
+import { DATOS_TIENDA, enlaceWhatsappTienda } from '@shared/utils/datos-tienda';
 
 @Component({
   selector: 'app-order-summary',
@@ -64,7 +65,7 @@ export class OrderSummaryComponent {
       this.shippingMethod() === DeliveryMethod.Envio || this.hasUnavailable(),
   );
   paymentMethod = signal<PaymentMethod>(PaymentMethod.Transferencia);
-  mpAlias = 'laelsi.libreria.mp';
+  protected readonly mpAlias = DATOS_TIENDA.aliasMercadoPago;
 
   // Verificación anti-bots (Cloudflare Turnstile). Solo se exige si hay una clave configurada.
   turnstileEnabled = !!environment.turnstileSiteKey;
@@ -187,14 +188,14 @@ export class OrderSummaryComponent {
                 {
                   datos: [
                     {
-                      etiqueta: 'Realiza el pago al alias',
+                      etiqueta: 'Realizá el pago al alias',
                       valor: this.mpAlias,
                       destacado: true,
                     },
                     {
                       etiqueta:
-                        'Recuerda enviar el comprobante a nuestro Whatsapp',
-                      valor: '+54 9 3417121860',
+                        'Recordá enviar el comprobante a nuestro WhatsApp',
+                      valor: DATOS_TIENDA.whatsapp,
                       destacado: true,
                     },
                   ],
@@ -228,6 +229,6 @@ export class OrderSummaryComponent {
         style: 'currency',
         currency: 'ARS',
       })}`;
-    return `https://wa.me/5493417121860?text=${encodeURIComponent(message)}`;
+    return enlaceWhatsappTienda(message);
   });
 }

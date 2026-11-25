@@ -1,6 +1,17 @@
 @if (aviso(); as d) {
-  <app-modal-shell [title]="d.titulo" [icon]="icono()" [tone]="tono()" size="md" (close)="descartar()">
-    <p modalDescription class="text-sm leading-relaxed whitespace-pre-line text-gray-600">{{ d.mensaje }}</p>
+  <app-modal-shell
+    [title]="d.titulo"
+    [icon]="icono()"
+    [tone]="tono()"
+    size="md"
+    (close)="descartar()"
+  >
+    <p
+      modalDescription
+      class="text-sm leading-relaxed whitespace-pre-line text-gray-600"
+    >
+      {{ d.mensaje }}
+    </p>
     @if (d.detalle?.datos?.length) {
       <div
         data-dialogo-detalle
@@ -10,7 +21,9 @@
           <p class="wrap-break-word">
             {{ dato.etiqueta }}:
             @if (dato.destacado) {
-              <strong class="rounded bg-blue-100 px-2 py-0.5 text-blue-900">{{ dato.valor }}</strong>
+              <strong class="rounded bg-blue-100 px-2 py-0.5 text-blue-900">{{
+                dato.valor
+              }}</strong>
             } @else {
               <span class="font-semibold">{{ dato.valor }}</span>
             }
@@ -18,17 +31,38 @@
         }
       </div>
     }
-    <button modalFooter type="button" cdkFocusInitial class="btn-primary w-full sm:w-auto" (click)="confirmar()">
+    <button
+      modalFooter
+      type="button"
+      cdkFocusInitial
+      class="btn-primary w-full sm:w-auto"
+      (click)="confirmar()"
+    >
       {{ d.textoConfirmar }}
     </button>
   </app-modal-shell>
 }
 
 @if (confirmacion(); as d) {
-  <app-modal-shell [title]="d.titulo" [icon]="icono()" [tone]="tono()" size="md" (close)="descartar()">
-    <p modalDescription class="text-sm leading-relaxed whitespace-pre-line text-gray-600">{{ d.mensaje }}</p>
+  <app-modal-shell
+    [title]="d.titulo"
+    [icon]="icono()"
+    [tone]="tono()"
+    size="md"
+    (close)="descartar()"
+  >
+    <p
+      modalDescription
+      class="text-sm leading-relaxed whitespace-pre-line text-gray-600"
+    >
+      {{ d.mensaje }}
+    </p>
     <div modalFooter class="contents">
-      <button type="button" class="btn-secondary w-full sm:w-auto" (click)="descartar()">
+      <button
+        type="button"
+        class="btn-secondary w-full sm:w-auto"
+        (click)="descartar()"
+      >
         {{ d.textoCancelar }}
       </button>
       <button
@@ -46,10 +80,21 @@
 }
 
 @if (entrada(); as d) {
-  <app-modal-shell [title]="d.titulo" [icon]="icono()" [tone]="tono()" size="md" (close)="descartar()">
+  <app-modal-shell
+    [title]="d.titulo"
+    [icon]="icono()"
+    [tone]="tono()"
+    size="md"
+    (close)="descartar()"
+  >
     <form modalForm novalidate (submit)="$event.preventDefault(); enviar()">
       <div class="modal-body">
-        <p modalDescription class="text-sm leading-relaxed whitespace-pre-line text-gray-600">{{ d.mensaje }}</p>
+        <p
+          modalDescription
+          class="text-sm leading-relaxed whitespace-pre-line text-gray-600"
+        >
+          {{ d.mensaje }}
+        </p>
         <div>
           <label class="form-label" [for]="campoId">{{ d.etiqueta }}</label>
           <input
@@ -63,19 +108,32 @@
             [value]="valor()"
             [attr.autocomplete]="d.autocomplete"
             [attr.autocapitalize]="d.autocapitalize"
-            [attr.autocorrect]="d.autocorrect"            [attr.aria-invalid]="error() ? 'true' : null"
+            [attr.autocorrect]="d.autocorrect"
+            [attr.aria-invalid]="error() ? 'true' : null"
             [attr.aria-describedby]="errorId"
             (input)="alEscribir($event)"
             (keydown.enter)="$event.preventDefault(); enviar()"
           />
-          <p [id]="errorId" role="alert" class="mt-1 min-h-5 text-xs text-red-600">{{ error() }}</p>
+          <p
+            [id]="errorId"
+            role="alert"
+            class="mt-1 min-h-5 text-xs text-red-600"
+          >
+            {{ error() }}
+          </p>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn-secondary w-full sm:w-auto" (click)="descartar()">
+        <button
+          type="button"
+          class="btn-secondary w-full sm:w-auto"
+          (click)="descartar()"
+        >
           {{ d.textoCancelar }}
         </button>
-        <button type="submit" class="btn-primary w-full sm:w-auto">{{ d.textoConfirmar }}</button>
+        <button type="submit" class="btn-primary w-full sm:w-auto">
+          {{ d.textoConfirmar }}
+        </button>
       </div>
     </form>
   </app-modal-shell>

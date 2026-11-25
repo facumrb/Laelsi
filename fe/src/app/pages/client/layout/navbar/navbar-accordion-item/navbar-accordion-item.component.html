@@ -24,12 +24,16 @@
     </a>
 
     <!-- Botón acordeón: expandir/colapsar hijos -->
-    @if (hasChildren) {
+    @if (hasChildren()) {
       <button
         type="button"
         (click)="toggleExpand()"
         [attr.aria-expanded]="isExpanded()"
-        [attr.aria-label]="'Expandir subcategorías de ' + category().name"
+        [attr.aria-label]="
+          (isExpanded() ? 'Contraer' : 'Expandir') +
+          ' subcategorías de ' +
+          category().name
+        "
         class="cursor-pointer px-4 py-3 text-gray-400 hover:text-[#3d4494] transition-colors"
       >
         <ng-icon
@@ -42,7 +46,7 @@
   </div>
 
   <!-- Hijos del acordeón (recursivo) -->
-  @if (isExpanded() && hasChildren) {
+  @if (isExpanded() && hasChildren()) {
     <div
       class="bg-gray-50/50 border-t border-gray-100/50"
       role="group"

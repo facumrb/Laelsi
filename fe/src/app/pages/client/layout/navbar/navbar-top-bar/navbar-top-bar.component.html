@@ -8,6 +8,7 @@
       class="barra-hover:hidden h-10 w-10 flex items-center justify-center text-white cursor-pointer rounded-md hover:bg-white/10 transition-colors"
       (click)="menuToggled.emit()"
       aria-label="Abrir menú de navegación"
+      [attr.aria-expanded]="menuOpen()"
     >
       <ng-icon name="bootstrapList" class="text-3xl"></ng-icon>
     </button>
@@ -15,9 +16,8 @@
     <a routerLink="/" class="shrink-0 block" aria-label="Ir al inicio">
       <app-logo
         [width]="128"
-        [height]="48"
         loading="eager"
-        customClass="w-24 md:w-32 h-auto object-contain"
+        customClass="block h-12 md:h-16 w-auto object-contain"
       />
     </a>
   </div>
@@ -73,30 +73,20 @@
 
         @if (showUserMenu()) {
           <div
-            class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl ring-1 ring-black border border-black/5 z-50 animate-in fade-in slide-in-from-top-1 origin-top-right overflow-hidden"
+            class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl ring-1 ring-black/5 border border-black/5 z-50 animate-in fade-in slide-in-from-top-1 origin-top-right overflow-hidden"
           >
-            @if (isAdmin()) {
-              <a
-                routerLink="/admin/profile"
-                (click)="showUserMenu.set(false)"
-                class="flex items-center gap-3 px-4 pt-3 pb-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-              >
-                <ng-icon name="bootstrapPerson" class="text-xl"></ng-icon> Mi
-                Perfil
-              </a>
-            } @else {
-              <a
-                routerLink="/profile"
-                (click)="showUserMenu.set(false)"
-                class="flex items-center gap-3 px-4 pt-3 pb-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-              >
-                <ng-icon name="bootstrapPerson" class="text-lg"></ng-icon> Mi
-                Perfil
-              </a>
-            }
+            <a
+              [routerLink]="isAdmin() ? '/admin/profile' : '/profile'"
+              (click)="showUserMenu.set(false)"
+              class="flex items-center gap-3 px-4 pt-3 pb-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <ng-icon name="bootstrapPerson" class="text-lg"></ng-icon> Mi
+              Perfil
+            </a>
 
             <div class="border-t border-gray-100 hidden md:block"></div>
             <button
+              type="button"
               (click)="handleLogout()"
               class="cursor-pointer w-full text-left flex items-center gap-3 px-4 pt-2 pb-3 text-sm text-red-600 hover:bg-gray-100 transition-colors"
             >
@@ -123,7 +113,7 @@
       <a
         routerLink="/cart"
         class="relative flex items-center justify-center h-10 w-10 rounded-full bg-[#037971] text-white hover:bg-[#049A8F] hover:scale-105 transition-all shadow-sm border border-white/10"
-        aria-label="Ver carrito de compras"
+        [attr.aria-label]="etiquetaCarrito()"
       >
         <ng-icon name="bootstrapCart3" class="text-xl"></ng-icon>
         @if (cartCount() > 0) {

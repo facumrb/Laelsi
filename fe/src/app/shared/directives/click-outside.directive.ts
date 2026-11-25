@@ -1,13 +1,21 @@
-import { Directive, ElementRef, output, HostListener } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Directive, ElementRef, inject, output } from '@angular/core';
 
+// Avisa cuando se hace clic fuera del elemento o se presiona Escape. La usan los menús y desplegables para cerrarse
 @Directive({
   selector: '[clickOutside]',
+  host: {
+    '(document:mousedown)': 'onMouseDown($event)',
+    '(document:click)': 'onClick($event)',
+    '(document:keydown.escape)': 'onEscapeKey()',
+  },
 })
 export class ClickOutsideDirective {
+  private elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private document = inject(DOCUMENT);
+
   // Se emite al hacer clic fuera del elemento (menús, desplegables) y al presionar Escape.
   clickOutside = output<void>();
-
-  constructor(private elementRef: ElementRef) {}
 
   /*
   Solo emite si el clic no empezó dentro del elemento: al presionar adentro (por ejemplo, para seleccionar
@@ -15,15 +23,15 @@ export class ClickOutsideDirective {
   */
   private pressStartedInside = false;
 
-  @HostListener('document:mousedown', ['$event'])
-  public onMouseDown(event: MouseEvent): void {
+  // Recuerda si la presión empezó dentro del elemento
+  protected onMouseDown(event: MouseEvent): void {
     this.pressStartedInside = this.elementRef.nativeElement.contains(
       event.target as Node,
     );
   }
 
-  @HostListener('document:click', ['$event'])
-  public onClick(event: MouseEvent): void {
+  // Emite si el clic terminó afuera y no había empezado adentro
+  protected onClick(event: MouseEvent): void {
     const pressStartedInside = this.pressStartedInside;
     this.pressStartedInside = false;
 
@@ -41,9 +49,8 @@ export class ClickOutsideDirective {
   }
 
   // Lógica para la tecla Escape
-  @HostListener('document:keydown.escape')
-  public onEscapeKey(): void {
-    const activo = document.activeElement;
+  protected onEscapeKey(): void {
+    const activo = this.document.activeElement;
     if (
       activo instanceof HTMLElement &&
       this.elementRef.nativeElement.contains(activo)

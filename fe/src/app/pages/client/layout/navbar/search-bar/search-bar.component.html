@@ -1,13 +1,11 @@
-<div class="relative w-full z-50 pt-1" (clickOutside)="showResults.set(false)">
+<div class="relative w-full z-50 pt-1" (clickOutside)="cerrarSugerencias()">
   <div
     class="flex items-center w-full bg-white border border-gray-300 rounded-xl overflow-hidden transition-all duration-200 focus-within:ring-2 focus-within:ring-[#049A8F] focus-within:border-[#049A8F] shadow-sm hover:shadow-md"
     role="search"
   >
-    <label for="search-input" class="sr-only">Buscar productos</label>
-
     <input
       #campo
-      id="search-input"
+      aria-label="Buscar productos"
       type="text"
       maxlength="80"
       [value]="query()"
@@ -43,15 +41,13 @@
     >
       <div class="p-2">
         @for (product of results(); track product.id) {
-          <div
+          <button
+            type="button"
             (click)="goToProduct(product.id)"
-            class="flex items-center gap-3 p-2.5 hover:bg-gray-50 cursor-pointer rounded-lg transition-colors group focus-within:bg-gray-50"
-            role="button"
-            tabindex="0"
-            (keyup.enter)="goToProduct(product.id)"
+            class="flex w-full items-center gap-3 p-2.5 text-left hover:bg-gray-50 cursor-pointer rounded-lg transition-colors group focus-visible:bg-gray-50"
           >
-            <div
-              class="w-10 h-10 shrink-0 rounded-md overflow-hidden border border-gray-200 bg-gray-100"
+            <span
+              class="block w-10 h-10 shrink-0 rounded-md overflow-hidden border border-gray-200 bg-gray-100"
             >
               <app-product-image
                 [imageUrl]="
@@ -62,8 +58,8 @@
                 [altText]="product.name"
                 containerClass="w-full h-full bg-transparent"
               />
-            </div>
-            <div class="flex flex-col overflow-hidden">
+            </span>
+            <span class="flex flex-col overflow-hidden">
               <span
                 class="text-sm font-bold text-gray-700 group-hover:text-[#3d4494] truncate"
                 >{{ product.name }}</span
@@ -71,7 +67,7 @@
                 class="text-xs uppercase tracking-wide text-gray-400 truncate font-semibold"
                 >{{ product.brand }}</span
               >
-            </div>
+            </span>
             <span
               class="ml-auto text-sm font-bold text-[#037971] whitespace-nowrap bg-[#037971]/10 px-2 py-0.5 rounded-md"
               >{{
@@ -79,7 +75,7 @@
                   | currency: getProductCurrency(product) : "symbol" : "1.0-0"
               }}</span
             >
-          </div>
+          </button>
         }
         <button
           (click)="handleFullSearch()"

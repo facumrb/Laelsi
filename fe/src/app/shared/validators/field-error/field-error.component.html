@@ -9,6 +9,10 @@
           ></ng-icon>
           Verificando...
         </span>
+      } @else if (isUnverified()) {
+        <span class="text-gray-500">
+          No se pudo verificar ahora. Se va a revisar al guardar.
+        </span>
       } @else if (isAvailable()) {
         <span class="text-emerald-600 flex items-center gap-1">
           <ng-icon name="bootstrapCheckCircleFill"></ng-icon>

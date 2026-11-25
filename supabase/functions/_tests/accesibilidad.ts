@@ -117,9 +117,12 @@ export function encontrarProblemas(plantilla: string): Hallazgo[] {
     if (/\bhidden\b|type="hidden"/.test(t)) continue;
     if (/type="(checkbox|radio)"/.test(t) && /sr-only|peer/.test(t)) continue;
     const id = t.match(/\bid="([^"]+)"/)?.[1];
+    // id enlazado ([id]="expresion"): cuenta si un label usa la misma expresión en [for]
+    const idEnlazado = t.match(/\[id\]="([^"]+)"/)?.[1];
     const etiquetado =
-      /aria-label|\[attr\.aria-label\]|aria-labelledby|placeholder=/.test(t) ||
-      (id !== undefined && new RegExp(`for="${id}"|\\[for\\]="'${id}'"`).test(html));
+      /aria-label|\[attr\.aria-label\]|aria-labelledby|placeholder=|\[placeholder\]=/.test(t) ||
+      (id !== undefined && new RegExp(`for="${id}"|\\[for\\]="'${id}'"`).test(html)) ||
+      (idEnlazado !== undefined && html.includes(`[for]="${idEnlazado}"`));
     if (!etiquetado) {
       hallazgos.push({ regla: 'campo-sin-etiqueta', linea: lineaDe(html, m.index!), detalle: compacto(t) });
     }

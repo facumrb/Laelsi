@@ -349,7 +349,7 @@
     [order]="order"
     [showClientInfo]="true"
     (close)="closeOrderModal()"
-    (onCancel)="orderIdToCancel.set($event)"
+    (cancelRequested)="orderIdToCancel.set($event)"
   />
 }
 

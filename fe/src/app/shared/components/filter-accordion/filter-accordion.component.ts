@@ -1,4 +1,11 @@
-import { Component, input, model, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  model,
+  signal,
+} from '@angular/core';
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
 import { ListboxDirective } from '@shared/directives/listbox.directive';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -6,6 +13,8 @@ import {
   bootstrapChevronDown,
   bootstrapCheckLg,
 } from '@ng-icons/bootstrap-icons';
+
+let siguienteId = 0;
 
 export interface FilterOption {
   value: string;
@@ -16,6 +25,7 @@ export interface FilterOption {
   selector: 'app-filter-accordion',
   imports: [ClickOutsideDirective, ListboxDirective, NgIconComponent],
   viewProviders: [provideIcons({ bootstrapChevronDown, bootstrapCheckLg })],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './filter-accordion.component.html',
 })
 export class FilterAccordionComponent {
@@ -31,11 +41,16 @@ export class FilterAccordionComponent {
   // Estado interno: si el dropdown está abierto
   isOpen = signal(false);
 
+  // ids del título y del valor elegido: juntos forman el nombre accesible del botón
+  private readonly n = ++siguienteId;
+  protected readonly labelId = `filter-accordion-${this.n}-titulo`;
+  protected readonly valueId = `filter-accordion-${this.n}-valor`;
+
   // Devuelve el label de la opción seleccionada actualmente
-  selectedLabel(): string {
+  selectedLabel = computed(() => {
     const opt = this.options().find((o) => o.value === this.selected());
     return opt ? opt.label : this.selected();
-  }
+  });
 
   // Selecciona una opción y cierra el dropdown
   select(value: string): void {

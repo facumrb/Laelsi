@@ -26,16 +26,16 @@
         Información de Pago
       </h3>
       <p class="text-blue-700 font-medium text-sm relative z-10 max-w-lg">
-        Realiza el pago al alias
+        Realizá el pago al alias
         <strong class="bg-blue-100 px-2 py-0.5 rounded">{{ mpAlias }}</strong>
         <br />
-        Recuerda enviar el comprobante a nuestro Whatsapp:
+        Recordá enviar el comprobante a nuestro Whatsapp:
         <a
-          [href]="getStoreWhatsappLink('comprobante')"
+          [href]="storeReceiptLink()"
           target="_blank"
           rel="noopener noreferrer"
           class="font-bold hover:underline cursor-pointer"
-          >+54 9 3417121860</a
+          >{{ storeWhatsappText }}</a
         >
       </p>
     </div>
@@ -67,7 +67,7 @@
         </div>
         <div class="flex items-center md:justify-center">
           <a
-            [href]="getClientEmailLink()"
+            [href]="clientEmailLink()"
             class="inline-flex items-center gap-2 group cursor-pointer"
             title="Enviar correo"
           >
@@ -80,7 +80,7 @@
           </a>
         </div>
         <div class="flex items-center md:justify-end">
-          @if (getClientWhatsappLink(); as whatsappLink) {
+          @if (clientWhatsappLink(); as whatsappLink) {
             <a
               [href]="whatsappLink"
               target="_blank"
@@ -123,11 +123,7 @@
           class="w-20 h-20 shrink-0 bg-gray-50 rounded-xl overflow-hidden border border-gray-200/60 flex items-center justify-center p-1"
         >
           <app-product-image
-            [imageUrl]="
-              $any(item.product).photos && $any(item.product).photos.length > 0
-                ? $any(item.product).photos[0].fileName
-                : null
-            "
+            [imageUrl]="item.product.photos?.[0]?.fileName ?? null"
             [altText]="item.product.name"
             containerClass="w-full h-full bg-transparent"
             imageClass="rounded-lg"
@@ -203,7 +199,7 @@
       @if (order().status === OrderState.Pending) {
         <button
           type="button"
-          (click)="onCancel.emit(order().id)"
+          (click)="cancelRequested.emit(order().id)"
           class="px-5 py-2.5 rounded-xl border border-rose-300 text-rose-700 font-bold hover:bg-rose-50 transition-colors cursor-pointer mr-auto"
         >
           Cancelar pedido
@@ -211,19 +207,21 @@
       }
 
       @if (showClientInfo()) {
-        <a
-          [href]="getClientWhatsappLink()"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="px-5 py-2.5 rounded-xl bg-[#0F8477] text-white font-bold hover:bg-[#075E54] hover:shadow-md transition-all shadow-sm cursor-pointer flex items-center gap-2"
-          (click)="onClose()"
-        >
-          <ng-icon name="bootstrapWhatsapp" class="text-xl"></ng-icon>
-          Contactar cliente
-        </a>
+        @if (clientWhatsappLink(); as whatsappLink) {
+          <a
+            [href]="whatsappLink"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="px-5 py-2.5 rounded-xl bg-[#0F8477] text-white font-bold hover:bg-[#075E54] hover:shadow-md transition-all shadow-sm cursor-pointer flex items-center gap-2"
+            (click)="onClose()"
+          >
+            <ng-icon name="bootstrapWhatsapp" class="text-xl"></ng-icon>
+            Contactar cliente
+          </a>
+        }
       } @else {
         <a
-          [href]="getStoreWhatsappLink('consulta')"
+          [href]="storeQueryLink()"
           target="_blank"
           rel="noopener noreferrer"
           class="px-5 py-2.5 rounded-xl bg-[#0F8477] text-white font-bold hover:bg-[#075E54] hover:shadow-md transition-all shadow-sm cursor-pointer flex items-center gap-2"

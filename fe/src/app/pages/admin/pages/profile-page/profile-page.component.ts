@@ -10,6 +10,10 @@ import { AuthService } from '@services/auth.service';
 import { AlertService } from '@services/alert.service';
 import { CurrentPasswordService } from '@services/current-password.service';
 import { FormUtils } from '@shared/validators/form-utils';
+import {
+  LARGO_MAXIMO_TELEFONO,
+  LARGO_MINIMO_TELEFONO,
+} from '@shared/utils/telefono';
 import { PhotoManagerComponent } from '@shared/components/photo-manager/photo-manager.component';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { FormPageHeaderComponent } from '@admin/components/form-page-header/form-page-header.component';
@@ -75,8 +79,8 @@ export class ProfilePageComponent implements OnInit {
         '',
         [
           Validators.required,
-          FormUtils.minLength(7),
-          FormUtils.maxLength(20),
+          FormUtils.minLength(LARGO_MINIMO_TELEFONO),
+          FormUtils.maxLength(LARGO_MAXIMO_TELEFONO),
           Validators.pattern(FormUtils.phonePattern),
         ],
       ],
@@ -273,7 +277,7 @@ export class ProfilePageComponent implements OnInit {
           if ('photo' in sessionUpdates) {
             this.currentPhoto.set(sessionUpdates.photo);
           }
-          this.photoManager().reset();
+          this.photoManager().markSaved();
           this.formEditProfile.reset({
             ...formValue,
             password: '',

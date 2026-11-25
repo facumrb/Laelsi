@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import {
+  ChangeDetectionStrategy,
   Component,
   DestroyRef,
   ElementRef,
@@ -46,6 +47,7 @@ import { NavbarAccordionItemComponent } from '../navbar-accordion-item/navbar-ac
     }),
   ],
   templateUrl: './navbar-mobile-sidebar.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NavbarMobileSidebarComponent {
   categories = input.required<IApiCategory[]>();
@@ -63,10 +65,12 @@ export class NavbarMobileSidebarComponent {
   private readonly documento = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
 
-  /** Mientras el menú está abierto la página no se desplaza; el bloqueo lo gestiona `ScrollLockService`. */
+  // Mientras el menú está abierto la página no se desplaza, el bloqueo lo gestiona `ScrollLockService`.
   constructor() {
-    // Misma consulta que la variante `barra-hover` de styles.css: desde ese ancho el menú se oculta, así que se
-    // cierra para no dejar el bloqueo de scroll tomado sin nada visible.
+    /*
+    Misma consulta que la variante `barra-hover` de styles.css: desde ese ancho el menú se oculta, así que se
+    cierra para no dejar el bloqueo de scroll tomado sin nada visible.
+    */
     afterNextRender(() => {
       const consulta = this.documento.defaultView?.matchMedia?.(
         '(min-width: 68.75rem) and (hover: hover) and (pointer: fine)',
@@ -84,8 +88,13 @@ export class NavbarMobileSidebarComponent {
       const panel = this.panel()?.nativeElement;
       if (!this.isOpen() || !panel) return;
 
+      // Al cerrar, el foco vuelve a quien lo tenía al abrir (la hamburguesa): si no, queda dentro del panel inerte
+      const anterior = this.documento.activeElement as HTMLElement | null;
       const soltar = untracked(() => this.scrollLock.bloquear(() => panel));
-      onCleanup(soltar);
+      onCleanup(() => {
+        soltar();
+        if (anterior?.isConnected && !panel.contains(anterior)) anterior.focus();
+      });
     });
   }
 

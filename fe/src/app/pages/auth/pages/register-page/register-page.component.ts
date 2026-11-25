@@ -1,4 +1,11 @@
-import { Component, computed, inject, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '@services/auth.service';
@@ -7,11 +14,9 @@ import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { bootstrapArrowClockwise } from '@ng-icons/bootstrap-icons';
 import { FormUtils } from '@shared/validators/form-utils';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
-import { GoBackButtonComponent } from '@shared/components/buttons/go-back-button/go-back-button.component';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
 import { PasswordInputComponent } from '@shared/components/inputs/password/password-input/password-input.component';
 import { PasswordRuleHintComponent } from '@shared/components/inputs/password/password-rule-hint/password-rule-hint.component';
-import { LogoComponent } from '@shared/components/logo/logo.component';
 import { TurnstileComponent } from '@shared/components/turnstile/turnstile.component';
 import { environment } from 'src/environments/environment';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -20,19 +25,20 @@ import { finalize } from 'rxjs';
 import { IClientRegister } from '@models/auth.model';
 import { injectAccessDraft } from '@shared/utils/access-draft';
 import { LEGAL_INFO } from '@client/pages/footer-pages/legal-info';
+import { AuthShellComponent } from '@auth/components/auth-shell/auth-shell.component';
 
 @Component({
   selector: 'app-register-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     RouterLink,
     NgIconComponent,
     FieldErrorComponent,
-    GoBackButtonComponent,
     TrimInputDirective,
     PasswordInputComponent,
     PasswordRuleHintComponent,
-    LogoComponent,
+    AuthShellComponent,
     TurnstileComponent,
   ],
   viewProviders: [
@@ -154,19 +160,10 @@ export class RegisterPageComponent {
           // La pantalla se envió bien: el borrador ya no hace falta
           this.draft.clear();
           this.alertService.toast('¡Cuenta creada exitosamente!', 'success');
-          this.router.navigate(['/auth/login'], {
-            queryParams: { registered: 'true' },
-            replaceUrl: true,
-          });
+          this.router.navigate(['/auth/login'], { replaceUrl: true });
         },
-        error: (err) => {
-          // El token de Turnstile es de un solo uso: si el registro falla, se pide uno nuevo
-          this.turnstile()?.reset();
-          const message =
-            err.error?.message ||
-            'Ocurrió un error al intentar crear tu cuenta.';
-          this.alertService.toast(message, 'error');
-        },
+        // El aviso del error lo muestra errorInterceptor. El token de Turnstile es de un solo uso: se pide uno nuevo
+        error: () => this.turnstile()?.reset(),
       });
   }
 }

@@ -23,7 +23,11 @@ import {
   ModalShellComponent,
   ModalTone,
 } from '@shared/components/modals/modal-shell/modal-shell.component';
-import type { Dialogo, SalidaDialogo, TipoAviso } from '@services/ui/dialog.service';
+import type {
+  Dialogo,
+  SalidaDialogo,
+  TipoAviso,
+} from '@services/ui/dialog.service';
 
 const TONOS: Record<TipoAviso, ModalTone> = {
   success: 'success',
@@ -43,12 +47,12 @@ const ICONOS: Record<TipoAviso, string> = {
 
 let siguienteId = 0;
 
-/**
- * Un diálogo de DialogService pintado sobre app-modal-shell: aviso, confirmación o pedido de un dato. Lo usa solo
- * `<app-dialog-host>`, que lo carga de forma diferida.
- *
- * Foco inicial: el campo si pide un dato; si no, el botón de confirmar.
- */
+/*
+Un diálogo de DialogService pintado sobre app-modal-shell: aviso, confirmación o pedido de un dato. Lo usa solo
+`<app-dialog-host>`, que lo carga de forma diferida.
+
+Foco inicial: el campo, si pide un dato. Si no, el botón de confirmar.
+*/
 @Component({
   selector: 'app-dialog',
   imports: [ModalShellComponent, ModalDescriptionDirective],
@@ -99,7 +103,8 @@ export class DialogComponent {
   });
   protected readonly icono = computed(() => {
     const d = this.dialogo();
-    if (d.clase === 'entrada') return d.tipo === 'tel' ? 'bootstrapTelephone' : 'bootstrapShieldLock';
+    if (d.clase === 'entrada')
+      return d.tipo === 'tel' ? 'bootstrapTelephone' : 'bootstrapShieldLock';
     return ICONOS[d.icono];
   });
 
@@ -118,8 +123,14 @@ export class DialogComponent {
     let valor = filtro ? filtro(original) : original;
     if (largoMaximo != null) valor = valor.slice(0, largoMaximo);
     if (valor !== original) {
-      const antesDelCursor = original.slice(0, campo.selectionStart ?? original.length);
-      const cursor = Math.min(filtro ? filtro(antesDelCursor).length : antesDelCursor.length, valor.length);
+      const antesDelCursor = original.slice(
+        0,
+        campo.selectionStart ?? original.length,
+      );
+      const cursor = Math.min(
+        filtro ? filtro(antesDelCursor).length : antesDelCursor.length,
+        valor.length,
+      );
       campo.value = valor;
       campo.setSelectionRange(cursor, cursor);
     }

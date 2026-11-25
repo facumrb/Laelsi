@@ -29,7 +29,7 @@
     [order]="selectedOrderForModal()!"
     [showClientInfo]="true"
     (close)="closeOrderDetail()"
-    (onCancel)="handleCancel($event)"
+    (cancelRequested)="handleCancel($event)"
   />
 }
 

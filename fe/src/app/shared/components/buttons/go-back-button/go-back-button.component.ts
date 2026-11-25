@@ -1,4 +1,9 @@
-import { Component, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+} from '@angular/core';
 import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { NavigationHistoryService } from '@services/navigation-history.service';
@@ -7,6 +12,7 @@ import { bootstrapArrowLeft } from '@ng-icons/bootstrap-icons';
 
 @Component({
   selector: 'app-go-back-button',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgIconComponent],
   viewProviders: [
     provideIcons({
@@ -20,7 +26,7 @@ export class GoBackButtonComponent {
   private router = inject(Router);
   private navHistory = inject(NavigationHistoryService);
 
-  // Valor por defecto la raíz del e-commerce
+  // Valor por defecto: la raíz del e-commerce
   fallbackUrl = input<string>('/');
 
   // Destino fijo: si se indica, se navega siempre ahí, sin usar el historial

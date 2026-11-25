@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
@@ -11,12 +11,21 @@ export class NavigationHistoryService {
 
   private visitedCount = 0;
 
+  /*
+  Última página visitada fuera de las pantallas de acceso (/auth/...), con sus parámetros.
+  La usa el Volver del login para salir de /auth aunque la persona haya pasado por el registro
+  o por recuperar contraseña. Si todavía no visitó ninguna, es el inicio.
+  */
+  readonly lastUrlOutsideAuth = signal('/');
+
   constructor() {
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe({
-        next: () => {
+        next: (event) => {
           this.visitedCount++;
+          const url = event.urlAfterRedirects;
+          if (!/^\/auth(\/|\?|#|$)/.test(url)) this.lastUrlOutsideAuth.set(url);
         },
       });
   }

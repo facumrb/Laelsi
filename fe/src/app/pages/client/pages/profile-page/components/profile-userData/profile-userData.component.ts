@@ -204,6 +204,8 @@ export class ProfileUserComponent {
           this.isChangePasswordMode.set(false);
           // Ya se usó: no se guarda más tiempo del necesario (si el guardado falla se conserva para reintentar)
           this.verifiedCurrentPassword = null;
+          // La foto ya se guardó: sin esto el archivo queda pendiente y un segundo guardado lo vuelve a subir
+          this.photoManager().markSaved();
           this.alertService.toast('Datos de usuario actualizados', 'success');
           this.formUsuario.get('password')?.setValue('');
           this.formUsuario.get('confirmPassword')?.setValue('');

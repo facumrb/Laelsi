@@ -1,4 +1,10 @@
-import { Component, inject, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -13,27 +19,27 @@ import { AlertService } from '@services/alert.service';
 import { injectAccessDraft, readAccessDraft } from '@shared/utils/access-draft';
 import { FormUtils } from '@shared/validators/form-utils';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
-import { GoBackButtonComponent } from '@shared/components/buttons/go-back-button/go-back-button.component';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
-import { LogoComponent } from '@shared/components/logo/logo.component';
 import { TurnstileComponent } from '@shared/components/turnstile/turnstile.component';
 import { environment } from 'src/environments/environment';
+import { enlaceWhatsappTienda } from '@shared/utils/datos-tienda';
+import { AuthShellComponent } from '@auth/components/auth-shell/auth-shell.component';
 
-/**
- * Pantalla "Recuperar contraseña": la persona indica su email, DNI o nombre de
- * usuario y, si corresponde a una cuenta, recibe por email un enlace para
- * elegir una contraseña nueva.
- */
+/*
+Pantalla "Recuperar contraseña": la persona indica su email, DNI o nombre de
+usuario y, si corresponde a una cuenta, recibe por email un enlace para
+elegir una contraseña nueva.
+*/
 @Component({
   selector: 'app-recover-password-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     RouterLink,
     NgIconComponent,
     FieldErrorComponent,
-    GoBackButtonComponent,
     TrimInputDirective,
-    LogoComponent,
+    AuthShellComponent,
     TurnstileComponent,
   ],
   viewProviders: [
@@ -77,12 +83,9 @@ export class RecoverPasswordPageComponent {
   ]);
 
   // Ayuda para quien ya no tiene acceso a su email
-  private whatsappNumber = '5493417121860';
-  private whatsappMessage = 'Hola, necesito recuperar mi contraseña en Laelsi';
-
-  get whatsappLink(): string {
-    return `https://wa.me/${this.whatsappNumber}?text=${encodeURIComponent(this.whatsappMessage)}`;
-  }
+  readonly whatsappLink = enlaceWhatsappTienda(
+    'Hola, necesito recuperar mi contraseña en Laelsi',
+  );
 
   constructor() {
     // Si la persona venía del login y ya había escrito su usuario, se lo proponemos acá

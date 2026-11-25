@@ -1,5 +1,5 @@
 <div
-  class="bg-white rounded-2xl shadow-sm border border-neutral-200 p-4 sticky top-8"
+  class="bg-white rounded-2xl shadow-sm border border-neutral-200 p-3 sm:p-4 sticky top-8"
 >
   <h2 class="text-lg font-bold text-neutral-900 mb-3">Resumen del pedido</h2>
 
@@ -206,7 +206,7 @@
 
     @if (turnstileEnabled && isLoggedIn()) {
       <!-- Verificación anti-bots de Cloudflare Turnstile -->
-      <app-turnstile (tokenChange)="turnstileToken.set($event)" />
+      <app-turnstile class="mb-4" (tokenChange)="turnstileToken.set($event)" />
     }
 
     <button

@@ -27,6 +27,10 @@ import { NumericInputDirective } from '@shared/directives/numeric-input.directiv
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
 import { ListboxDirective } from '@shared/directives/listbox.directive';
 import { FormUtils } from '@shared/validators/form-utils';
+import {
+  LARGO_MAXIMO_TELEFONO,
+  LARGO_MINIMO_TELEFONO,
+} from '@shared/utils/telefono';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
 
@@ -104,8 +108,8 @@ export class ProfileDetailsComponent {
     phone: [
       '',
       [
-        FormUtils.minLength(7),
-        FormUtils.maxLength(20),
+        FormUtils.minLength(LARGO_MINIMO_TELEFONO),
+        FormUtils.maxLength(LARGO_MAXIMO_TELEFONO),
         Validators.pattern(FormUtils.phonePattern),
       ],
     ],

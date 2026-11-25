@@ -127,7 +127,7 @@
   <app-order-detail-modal
     [order]="selectedOrder()!"
     (close)="closeModal()"
-    (onCancel)="handleCancel($event)"
+    (cancelRequested)="handleCancel($event)"
   />
 }
 
@@ -139,4 +139,3 @@
     (close)="orderIdToCancel.set(null)"
   />
 }
-

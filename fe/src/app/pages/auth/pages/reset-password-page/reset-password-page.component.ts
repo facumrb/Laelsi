@@ -1,4 +1,10 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -13,17 +19,18 @@ import { FormUtils } from '@shared/validators/form-utils';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { PasswordInputComponent } from '@shared/components/inputs/password/password-input/password-input.component';
 import { PasswordRuleHintComponent } from '@shared/components/inputs/password/password-rule-hint/password-rule-hint.component';
-import { LogoComponent } from '@shared/components/logo/logo.component';
+import { AuthShellComponent } from '@auth/components/auth-shell/auth-shell.component';
 
 // checking: consultando si el enlace sirve | ready: se puede cargar la contraseña | invalid: enlace vencido o inexistente
 type ResetState = 'checking' | 'ready' | 'invalid';
 
-/**
- * Pantalla a la que lleva el enlace del correo de recuperación. Permite elegir
- * una contraseña nueva ("Contraseña" y "Confirmar contraseña").
- */
+/*
+Pantalla a la que lleva el enlace del correo de recuperación. Permite elegir
+una contraseña nueva ("Contraseña" y "Confirmar contraseña").
+*/
 @Component({
   selector: 'app-reset-password-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     RouterLink,
@@ -31,7 +38,7 @@ type ResetState = 'checking' | 'ready' | 'invalid';
     FieldErrorComponent,
     PasswordInputComponent,
     PasswordRuleHintComponent,
-    LogoComponent,
+    AuthShellComponent,
   ],
   viewProviders: [
     provideIcons({
@@ -96,7 +103,7 @@ export class ResetPasswordPageComponent implements OnInit {
     this.checkToken();
   }
 
-  /** Consulta al backend si el enlace sigue vigente (no lo gasta). */
+  // Consulta al backend si el enlace sigue vigente (no lo gasta)
   private checkToken(): void {
     this.authService.validateResetToken(this.token).subscribe({
       next: (status) => {

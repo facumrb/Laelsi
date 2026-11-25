@@ -21,6 +21,10 @@ import { IApiUserPhoto } from '@models/photo.model';
 import { AlertService } from '@services/alert.service';
 import { CurrentPasswordService } from '@services/current-password.service';
 import { FormUtils } from '@shared/validators/form-utils';
+import {
+  LARGO_MAXIMO_TELEFONO,
+  LARGO_MINIMO_TELEFONO,
+} from '@shared/utils/telefono';
 import { NumericInputDirective } from '@shared/directives/numeric-input.directive';
 import { PhotoManagerComponent } from '@shared/components/photo-manager/photo-manager.component';
 import { AuditInfoComponent } from '@admin/components/audit-info/audit-info.component';
@@ -112,8 +116,8 @@ export class AdminsFormComponent implements OnInit {
         '',
         [
           Validators.required,
-          FormUtils.minLength(7),
-          FormUtils.maxLength(20),
+          FormUtils.minLength(LARGO_MINIMO_TELEFONO),
+          FormUtils.maxLength(LARGO_MAXIMO_TELEFONO),
           Validators.pattern(FormUtils.phonePattern),
         ],
       ],

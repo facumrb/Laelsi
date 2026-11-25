@@ -1,9 +1,15 @@
-import { Component, input, model } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  model,
+} from '@angular/core';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { bootstrapEye, bootstrapEyeSlash } from '@ng-icons/bootstrap-icons';
 
 @Component({
   selector: 'app-password-toggle-button',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgIconComponent],
   viewProviders: [
     provideIcons({
@@ -19,7 +25,6 @@ import { bootstrapEye, bootstrapEyeSlash } from '@ng-icons/bootstrap-icons';
 })
 export class PasswordToggleButtonComponent {
   // Indica si la contraseña está actualmente visible (texto) o no (password).
-
   visible = model.required<boolean>();
 
   // Determina si se debe mostrar el botón. Útil para ocultarlo si el campo de contraseña está vacío.

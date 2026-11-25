@@ -19,7 +19,7 @@
     </div>
 
     <label
-      for="fileUploadInput"
+      [for]="inputId"
       class="absolute bottom-1 right-1 bg-[#3d4494] text-white p-2 rounded-full cursor-pointer shadow-lg hover:bg-[#2d336b] transition-all hover:scale-110 flex items-center justify-center"
       title="Cambiar foto"
     >
@@ -31,11 +31,11 @@
       ></ng-icon>
       <input
         #fileInput
-        id="fileUploadInput"
+        [id]="inputId"
         name="profilePhoto"
         type="file"
         class="sr-only"
-        accept="image/*"
+        [accept]="formatosPermitidos"
         (click)="$event.stopPropagation(); fileInput.value = ''"
         (change)="onFileSelected($event)"
       />

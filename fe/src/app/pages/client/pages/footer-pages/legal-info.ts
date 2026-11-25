@@ -1,3 +1,5 @@
+import { DATOS_TIENDA, enlaceWhatsappTienda } from '@shared/utils/datos-tienda';
+
 export interface LegalInfo {
   brand: string;
   siteUrl: string;
@@ -56,8 +58,8 @@ export const LEGAL_INFO: LegalInfo = {
   brand: 'Laelsi',
   siteUrl: 'https://laelsi.com.ar',
   address: '9 de Julio 2325, Rosario (2000), Santa Fe, Argentina',
-  whatsappUrl: 'https://wa.me/5493417121860',
-  whatsappLabel: '+54 9 341 712-1860',
+  whatsappUrl: enlaceWhatsappTienda(),
+  whatsappLabel: DATOS_TIENDA.whatsapp,
   instagramUrl: 'https://www.instagram.com/laelsi.ros/',
   version: LEGAL_VERSION,
   lastUpdate: formatLongDate(LEGAL_VERSION),

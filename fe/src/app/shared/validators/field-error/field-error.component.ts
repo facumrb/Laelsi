@@ -1,5 +1,9 @@
 import { Component, computed, input, signal, effect } from '@angular/core';
-import { AbstractControl } from '@angular/forms';
+import {
+  AbstractControl,
+  FormControlStatus,
+  ValidationErrors,
+} from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   bootstrapArrowClockwise,
@@ -9,8 +13,9 @@ import {
 import { FormUtils } from '@shared/validators/form-utils';
 
 /*
-  Componente reutilizable para mostrar errores de validación de campos.
-  Soporta validación síncrona, asíncrona (spinner/éxito) y contador de caracteres.
+Componente reutilizable para mostrar errores de validación de campos.
+Soporta validación síncrona, asíncrona (spinner, éxito o aviso de que no se pudo verificar) y el aviso
+de "Límite alcanzado." cuando el valor llega a maxLength.
 */
 @Component({
   selector: 'app-field-error',
@@ -28,19 +33,20 @@ export class FieldErrorComponent {
   control = input.required<AbstractControl>();
 
   /*
-   Texto que se muestra cuando el control es válido y no está vacío.
-   Ejemplo: validLabel="Email disponible"
+  Texto que se muestra cuando el control es válido y no está vacío.
+  Ejemplo: validLabel="Email disponible"
   */
   validLabel = input<string>();
 
-  // Longitud máxima permitida para activar el contador de caracteres. Si no se provee, el contador no se muestra.
+  // Longitud máxima permitida. Al alcanzarla se muestra "Límite alcanzado.". Si no se provee, no se controla
   maxLength = input<number>();
 
-  private status = signal('VALID');
-  private value = signal<any>(null);
+  private status = signal<FormControlStatus>('VALID');
+  private value = signal<unknown>(null);
   private touched = signal(false);
   private pristine = signal(true);
-  private controlErrors = signal<Record<string, any> | null>(null);
+  private controlErrors = signal<ValidationErrors | null>(null);
+  private verificacionFallida = signal(false);
 
   constructor() {
     effect((onCleanup) => {
@@ -48,7 +54,7 @@ export class FieldErrorComponent {
 
       this.syncState(ctrl);
 
-      // Suscribirse a TODOS los eventos del control (Touch, StatusChange, ValueChange, etc)
+      // Suscribirse a todos los eventos del control (Touch, StatusChange, ValueChange, etc)
       const sub = ctrl.events.subscribe(() => this.syncState(ctrl));
 
       onCleanup(() => sub.unsubscribe());
@@ -61,6 +67,7 @@ export class FieldErrorComponent {
     this.touched.set(ctrl.touched);
     this.pristine.set(ctrl.pristine);
     this.controlErrors.set(ctrl.errors);
+    this.verificacionFallida.set(FormUtils.verificacionPendiente(ctrl));
   }
 
   // Determina si el componente debe mostrar feedback de validación asíncrona.
@@ -73,8 +80,18 @@ export class FieldErrorComponent {
 
   isPending = computed(() => this.status() === 'PENDING');
 
+  // El valor es válido pero la verificación en el servidor no pudo hacerse
+  isUnverified = computed(
+    () =>
+      this.status() === 'VALID' && !!this.value() && this.verificacionFallida(),
+  );
+
   isAvailable = computed(
-    () => this.status() === 'VALID' && !!this.value() && !this.pristine(),
+    () =>
+      this.status() === 'VALID' &&
+      !!this.value() &&
+      !this.pristine() &&
+      !this.verificacionFallida(),
   );
 
   isLimitReached = computed(() => {

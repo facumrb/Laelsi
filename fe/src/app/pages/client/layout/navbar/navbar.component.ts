@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   DestroyRef,
@@ -25,6 +26,7 @@ import { NavbarMobileSidebarComponent } from './navbar-mobile-sidebar/navbar-mob
     NavbarMobileSidebarComponent,
   ],
   templateUrl: './navbar.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NavbarComponent implements OnInit {
   authService = inject(AuthService);
@@ -35,7 +37,7 @@ export class NavbarComponent implements OnInit {
   cartSignal = this.cartService.totalItems;
   showSideMenu = signal(false);
 
-  // Árbol de categorías activas desde la caché: mientras siga fresco (staleTime de 10 minutos),
+  // Árbol de categorías activas: mientras siga fresco (staleTime de 10 minutos) sale de la caché sin volver a pedirlo a la API
   private categoryTreeQuery = injectCategoryTreeQuery('Activo');
   categories = computed<IApiCategory[]>(
     () => this.categoryTreeQuery.data() ?? [],

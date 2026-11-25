@@ -1,11 +1,5 @@
 import { Component, inject, signal, viewChild } from '@angular/core';
-import {
-  AbstractControl,
-  FormBuilder,
-  ReactiveFormsModule,
-  ValidationErrors,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -18,6 +12,7 @@ import { ICreateRevocation } from '@models/revocation.model';
 import { ApiRevocationService } from '@services/api-services/api-revocation.service';
 import { AlertService } from '@services/alert.service';
 import { FormUtils } from '@shared/validators/form-utils';
+import { LARGO_MAXIMO_TELEFONO } from '@shared/utils/telefono';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
 import { PhoneInputDirective } from '@shared/directives/phone-input.directive';
@@ -74,13 +69,6 @@ export class RevocationPageComponent {
   turnstileToken = signal<string | null>(null);
   private turnstile = viewChild(TurnstileComponent);
 
-  // El email se valida en minúsculas con el patrón estándar: no tiene que trabar a quien ejerce un derecho
-  private emailPattern = Validators.pattern(FormUtils.emailPattern);
-  private emailValidator = (control: AbstractControl): ValidationErrors | null =>
-    this.emailPattern({
-      value: String(control.value ?? '').toLowerCase(),
-    } as AbstractControl);
-
   form = this.fb.nonNullable.group({
     firstName: [
       '',
@@ -105,13 +93,16 @@ export class RevocationPageComponent {
       [
         Validators.required,
         FormUtils.maxLength(255),
-        this.emailValidator,
+        Validators.pattern(FormUtils.emailPattern),
       ],
     ],
     // Opcionales
     phone: [
       '',
-      [FormUtils.maxLength(20), Validators.pattern(FormUtils.phonePattern)],
+      [
+        FormUtils.maxLength(LARGO_MAXIMO_TELEFONO),
+        Validators.pattern(FormUtils.phonePattern),
+      ],
     ],
     orderNumber: [
       '',
