@@ -8,7 +8,7 @@
               <input
                 type="checkbox"
                 aria-label="Seleccionar todos los productos"
-                class="peer appearance-none w-5 h-5 shrink-0 border-2 border-gray-300 rounded cursor-pointer transition-all checked:bg-[#3d4494] checked:border-white hover:border-white"
+                class="peer appearance-none w-5 h-5 shrink-0 border-2 border-gray-300 rounded cursor-pointer transition-all checked:bg-brand checked:border-white hover:border-white"
                 [checked]="isAllSelected()"
                 (change)="toggleSelectAll()"
               />
@@ -75,6 +75,7 @@
             <!-- Este checkbox es para la version de Listado -->
             <tr
               class="admin-table-row"
+              [class.admin-table-row-seleccionada]="isSelected(product.id)"
               [class.bg-indigo-50]="isSelected(product.id)"
               [class.lg:bg-indigo-50]="isSelected(product.id)"
             >

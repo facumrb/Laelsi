@@ -130,8 +130,17 @@ const clasesDe = (css: string, selector: string) => {
   return new Set(aplicadas.split(/\s+/).filter(Boolean));
 };
 
+// Los estilos globales: fe/src/styles.css más los parciales que importa desde fe/src/styles/
+const leerEstilos = async () => {
+  const raiz = new URL('../../../fe/src/', import.meta.url);
+  const partes = [await Deno.readTextFile(new URL('styles.css', raiz))];
+  const parciales = [...Deno.readDirSync(new URL('styles/', raiz))].map((e) => e.name).filter((n) => n.endsWith('.css')).sort();
+  for (const nombre of parciales) partes.push(await Deno.readTextFile(new URL('styles/' + nombre, raiz)));
+  return partes.join('\n');
+};
+
 Deno.test('las tarjetas del panel son una grilla de dos columnas por debajo de lg y una tabla desde lg', async () => {
-  const css = await Deno.readTextFile(new URL('../../../fe/src/styles.css', import.meta.url));
+  const css = await leerEstilos();
   const fila = clasesDe(css, 'admin-table-row');
   const primera = clasesDe(css, 'admin-table-cell-first');
   const celda = clasesDe(css, 'admin-table-cell');
@@ -154,7 +163,7 @@ Deno.test('las tarjetas del panel son una grilla de dos columnas por debajo de l
 const leer = (ruta: string) => Deno.readTextFile(new URL('../../../fe/src/' + ruta, import.meta.url));
 
 Deno.test('los formularios usan dos columnas desde sm y el pie de formulario envuelve', async () => {
-  const css = await leer('styles.css');
+  const css = await leerEstilos();
   const grilla = clasesDe(css, 'form-grid-2');
   const pie = clasesDe(css, 'form-footer');
 
@@ -183,7 +192,7 @@ Deno.test('el detalle del pedido y reordenar categorías scrollean enteros en ve
   const shell = await leer('app/shared/components/modals/modal-shell/modal-shell.component.html');
   assert.ok(shell.includes('[@media(max-height:480px)]:overflow-y-auto'), 'la tarjeta del shell scrollea entera en ventanas bajas');
 
-  const css = await Deno.readTextFile(new URL('../../../fe/src/styles.css', import.meta.url));
+  const css = await leerEstilos();
   const ventanaBaja = css.match(/@media \(max-height: 480px\) \{\s*\.modal-body,\s*\[modalForm\] \{([^}]*)\}/)?.[1] ?? '';
   assert.match(ventanaBaja, /overflow: visible/, 'el cuerpo y el formulario del shell no scrollean aparte en ventanas bajas');
 });
@@ -220,6 +229,6 @@ Deno.test('la tarjeta de app-modal-shell topa su alto en todas sus alturas y el 
   const shell = await leer('app/shared/components/modals/modal-shell/modal-shell.component.html');
   assert.ok(shell.includes('[class]="clasesTarjeta()"'), 'la tarjeta toma sus clases de clasesTarjeta()');
 
-  const css = await Deno.readTextFile(new URL('../../../fe/src/styles.css', import.meta.url));
+  const css = await leerEstilos();
   assert.match(css.match(/\.modal-body\s*\{([^}]*)\}/)?.[1] ?? '', /overflow-y-auto/, 'modal-body necesita scroll interno');
 });

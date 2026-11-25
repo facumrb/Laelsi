@@ -1,4 +1,4 @@
-<div class="container animate-fadeIn mx-auto p-4">
+<div class="container animate-fade-in mx-auto p-4">
   <app-breadcrumbs [steps]="breadcrumbSteps()" />
 
   @if (product(); as prod) {
@@ -32,8 +32,8 @@
                     (keydown.enter)="selectedPhotoFileName.set(photo.fileName)"
                     (mouseover)="selectedPhotoFileName.set(photo.fileName)"
                     (focus)="selectedPhotoFileName.set(photo.fileName)"
-                    class="w-16 h-16 md:w-20 md:h-20 shrink-0 rounded-lg overflow-hidden cursor-pointer border-2 bg-white transition-all duration-300 focus:outline-none focus:border-[#f4abac] hover:border-[#f4abac]"
-                    [class.border-[#f4abac]]="
+                    class="w-16 h-16 md:w-20 md:h-20 shrink-0 rounded-lg overflow-hidden cursor-pointer border-2 bg-white transition-all duration-300 focus:outline-hidden focus:border-accent-pink hover:border-accent-pink"
+                    [class.border-accent-pink]="
                       selectedPhotoFileName() === photo.fileName
                     "
                     [class.border-gray-200]="

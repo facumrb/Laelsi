@@ -1,4 +1,4 @@
-<div class="container animate-fadeIn mx-auto p-4">
+<div class="container animate-fade-in mx-auto p-4">
   <app-breadcrumbs [steps]="breadcrumbSteps()" />
 
   <!-- El encabezado siempre ocupa su lugar: mientras carga la categoría se ve una barra gris de la altura del
@@ -6,7 +6,7 @@
   <header class="section-header">
     @if (category()) {
       <h1 class="section-title">
-        <span class="text-[#EA6C6C]">{{ category()?.name }}</span>
+        <span class="text-accent-coral">{{ category()?.name }}</span>
       </h1>
     } @else {
       <div

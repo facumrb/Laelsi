@@ -43,7 +43,7 @@
           routerLink="/"
           (click)="close()"
           class="flex-1 py-3 pl-6 font-bold flex items-center gap-2"
-          [style.color]="mainLink.isActive ? '#5a2a8a' : null"
+          [class.text-accent-purple]="mainLink.isActive"
           [class.text-gray-700]="!mainLink.isActive"
         >
           <ng-icon name="bootstrapHouse" class="text-lg"></ng-icon>
@@ -71,7 +71,7 @@
           routerLink="/impresiones"
           (click)="close()"
           class="flex-1 py-3 pl-6 font-bold block"
-          [style.color]="impLink.isActive ? '#5a2a8a' : null"
+          [class.text-accent-purple]="impLink.isActive"
           [class.text-gray-700]="!impLink.isActive"
         >
           Impresiones
@@ -86,7 +86,7 @@
           routerLink="/disenio"
           (click)="close()"
           class="flex-1 py-3 pl-6 font-bold block"
-          [style.color]="disLink.isActive ? '#5a2a8a' : null"
+          [class.text-accent-purple]="disLink.isActive"
           [class.text-gray-700]="!disLink.isActive"
         >
           Diseño Gráfico
@@ -101,7 +101,7 @@
           routerLink="/sellos"
           (click)="close()"
           class="flex-1 py-3 pl-6 font-bold block"
-          [style.color]="selLink.isActive ? '#5a2a8a' : null"
+          [class.text-accent-purple]="selLink.isActive"
           [class.text-gray-700]="!selLink.isActive"
         >
           Sellos
@@ -117,7 +117,7 @@
         <a
           routerLink="/admin/analytics"
           (click)="close()"
-          class="flex items-center gap-3 px-4 py-3 text-[#5a2a8a] font-bold hover:bg-white rounded-lg mb-1"
+          class="flex items-center gap-3 px-4 py-3 text-accent-purple font-bold hover:bg-white rounded-lg mb-1"
         >
           <ng-icon name="bootstrapSpeedometer2" class="text-xl"></ng-icon>
           Admin
@@ -149,7 +149,7 @@
       <a
         routerLink="/auth/login"
         (click)="close()"
-        class="block w-full text-center bg-brand text-white py-3 rounded-lg font-bold shadow-md hover:bg-[#2d336b] transition"
+        class="block w-full text-center bg-brand text-white py-3 rounded-lg font-bold shadow-md hover:bg-brand-hover transition"
       >
         Iniciar Sesión
       </a>

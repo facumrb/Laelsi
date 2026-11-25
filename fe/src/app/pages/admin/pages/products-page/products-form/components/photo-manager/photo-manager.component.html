@@ -8,7 +8,7 @@
 
   <label
     for="productImages"
-    class="group flex justify-center rounded-lg border-2 border-dashed px-6 py-8 hover:bg-gray-50 hover:border-[#3d4494] transition-all cursor-pointer relative"
+    class="group flex justify-center rounded-lg border-2 border-dashed px-6 py-8 hover:bg-gray-50 hover:border-brand transition-all cursor-pointer relative"
     [class.border-gray-300]="!isDragging()"
     [class.border-brand]="isDragging()"
     [class.bg-gray-50]="isDragging()"
@@ -19,11 +19,11 @@
     <div class="text-center">
       <ng-icon
         name="bootstrapCloudUpload"
-        class="mx-auto text-5xl text-gray-400 group-hover:text-[#3d4494] transition-colors"
+        class="mx-auto text-5xl text-gray-400 group-hover:text-brand transition-colors"
       ></ng-icon>
 
       <div class="mt-2 text-sm text-gray-600">
-        <span class="font-semibold text-[#3d4494]">Haz clic para subir</span> o
+        <span class="font-semibold text-brand">Haz clic para subir</span> o
         arrastra la imagen aquí.
       </div>
       <p class="text-xs text-gray-500 mt-1">
@@ -59,7 +59,7 @@
             @for (photo of gallery(); track photo.uiId; let i = $index) {
               <div
                 [style.view-transition-name]="'photo-' + photo.uiId"
-                class="relative group size-32 shrink-0 motion-safe:animate-fadeIn rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-white"
+                class="relative group size-32 shrink-0 motion-safe:animate-fade-in rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-white"
               >
                 <app-product-image
                   [imageUrl]="photo.src"
@@ -97,7 +97,7 @@
                       [disabled]="i === 0"
                       [class.opacity-30]="i === 0"
                       aria-label="Mover foto a la izquierda"
-                      class="cursor-pointer bg-white/90 text-gray-800 p-1.5 rounded-full hover:bg-[#3d4494] hover:text-white transition shadow-sm disabled:cursor-not-allowed backdrop-blur-sm flex items-center justify-center"
+                      class="cursor-pointer bg-white/90 text-gray-800 p-1.5 rounded-full hover:bg-brand hover:text-white transition shadow-sm disabled:cursor-not-allowed backdrop-blur-sm flex items-center justify-center"
                     >
                       <ng-icon
                         name="bootstrapChevronLeft"
@@ -111,7 +111,7 @@
                       [disabled]="i === gallery().length - 1"
                       [class.opacity-30]="i === gallery().length - 1"
                       aria-label="Mover foto a la derecha"
-                      class="cursor-pointer bg-white/90 text-gray-800 p-1.5 rounded-full hover:bg-[#3d4494] hover:text-white transition shadow-sm disabled:cursor-not-allowed backdrop-blur-sm flex items-center justify-center"
+                      class="cursor-pointer bg-white/90 text-gray-800 p-1.5 rounded-full hover:bg-brand hover:text-white transition shadow-sm disabled:cursor-not-allowed backdrop-blur-sm flex items-center justify-center"
                     >
                       <ng-icon
                         name="bootstrapChevronRight"

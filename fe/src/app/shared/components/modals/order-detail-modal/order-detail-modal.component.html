@@ -147,7 +147,7 @@
             >
               Cant: {{ item.quantity }}
             </span>
-            <span class="font-bold elsi-price text-[#037971]">
+            <span class="font-bold elsi-price text-accent-teal">
               {{ item.price | currency: "ARS" : "symbol-narrow" : "1.0-0" }}
             </span>
           </div>
@@ -212,7 +212,7 @@
             [href]="whatsappLink"
             target="_blank"
             rel="noopener noreferrer"
-            class="px-5 py-2.5 rounded-xl bg-[#0F8477] text-white font-bold hover:bg-[#075E54] hover:shadow-md transition-all shadow-sm cursor-pointer flex items-center gap-2"
+            class="px-5 py-2.5 rounded-xl bg-whatsapp text-white font-bold hover:bg-whatsapp-hover hover:shadow-md transition-all shadow-sm cursor-pointer flex items-center gap-2"
             (click)="onClose()"
           >
             <ng-icon name="bootstrapWhatsapp" class="text-xl"></ng-icon>
@@ -224,7 +224,7 @@
           [href]="storeQueryLink()"
           target="_blank"
           rel="noopener noreferrer"
-          class="px-5 py-2.5 rounded-xl bg-[#0F8477] text-white font-bold hover:bg-[#075E54] hover:shadow-md transition-all shadow-sm cursor-pointer flex items-center gap-2"
+          class="px-5 py-2.5 rounded-xl bg-whatsapp text-white font-bold hover:bg-whatsapp-hover hover:shadow-md transition-all shadow-sm cursor-pointer flex items-center gap-2"
           (click)="onClose()"
         >
           <ng-icon name="bootstrapWhatsapp" class="text-xl"></ng-icon>

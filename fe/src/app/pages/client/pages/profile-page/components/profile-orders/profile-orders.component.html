@@ -1,6 +1,6 @@
-<div class="animate-fadeIn">
+<div class="animate-fade-in">
   <div
-    class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-neutral-200 relative overflow-hidden group mb-4"
+    class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-200 relative overflow-hidden group mb-4"
   >
     <div class="flex items-center gap-3 relative z-10">
       <div
@@ -40,7 +40,7 @@
     } @else {
       @for (pedido of orders(); track pedido.id) {
         <div
-          class="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden"
+          class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
         >
           <!-- Header del Pedido -->
           <div
@@ -90,7 +90,7 @@
                   Total del Pedido
                 </p>
                 <p
-                  class="text-lg sm:text-xl font-black text-[#3d4494] leading-none"
+                  class="text-lg sm:text-xl font-black text-brand leading-none"
                 >
                   {{
                     pedido.totalAmount
@@ -102,7 +102,7 @@
               <button
                 type="button"
                 (click)="openModal(pedido)"
-                class="w-full sm:w-auto mt-2 sm:mt-0 sm:ml-2 bg-[#3d4494]/10 text-[#3d4494] hover:bg-[#3d4494] hover:text-white border border-[#3d4494]/20 px-4 py-2.5 sm:py-2 rounded-xl font-bold transition-all duration-200 shadow-sm text-sm shrink-0 flex items-center justify-center gap-2 cursor-pointer"
+                class="w-full sm:w-auto mt-2 sm:mt-0 sm:ml-2 bg-brand/10 text-brand hover:bg-brand hover:text-white border border-brand/20 px-4 py-2.5 sm:py-2 rounded-xl font-bold transition-all duration-200 shadow-sm text-sm shrink-0 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <ng-icon name="bootstrapBoxSeam" class="text-lg"></ng-icon>
                 <span>Ver detalle</span>

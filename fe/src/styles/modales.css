@@ -1,0 +1,39 @@
+/* Modales (app-modal-shell) */
+@layer components {
+  /* Capa del fondo de app-modal-shell: la variable de la escala que elige la pila más un desplazamiento, para que un
+     modal nunca quede debajo de los que tiene abajo (ModalStackService). */
+  .modal-capa {
+    z-index: calc(
+      var(--modal-capa-base, var(--z-modal)) + var(--modal-capa-extra, 0)
+    );
+  }
+
+  /* Cuerpo y pie de app-modal-shell. Son clases (y no utilidades en su plantilla) para que un formulario proyectado
+     con [modalForm] pueda armar el mismo cuerpo y el mismo pie adentro. */
+  .modal-body {
+    @apply min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 py-6 sm:px-7;
+  }
+
+  .modal-footer {
+    @apply flex shrink-0 flex-col-reverse items-center justify-end gap-3 border-t border-gray-100 bg-gray-50/50 px-6 py-4 sm:flex-row;
+  }
+
+  [modalForm] {
+    @apply flex min-h-0 flex-1 flex-col;
+  }
+
+  /* Cuerpo sin padding ni espacio entre hijos (input flushBody del shell), sigue siendo el que se desplaza. */
+  .modal-body-flush {
+    @apply p-0 space-y-0;
+  }
+
+  /* En pantallas bajas (celular apaisado) la tarjeta del shell es la que se desplaza: el cuerpo y el formulario de
+     [modalForm] crecen con su contenido en lugar de encogerse, y llenan el resto de la tarjeta si les sobra lugar. */
+  @media (max-height: 480px) {
+    .modal-body,
+    [modalForm] {
+      flex: 1 0 auto;
+      overflow: visible;
+    }
+  }
+}

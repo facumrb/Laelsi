@@ -22,7 +22,7 @@
             <div class="flex p-1 bg-gray-100 rounded-xl border border-gray-200">
               <button
                 (click)="setAdjustmentType('percentage')"
-                class="flex-1 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
+                class="flex-1 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer outline-hidden focus-visible:ring-2 focus-visible:ring-gray-900"
                 [class]="
                   adjustmentType() === 'percentage'
                     ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
@@ -33,7 +33,7 @@
               </button>
               <button
                 (click)="setAdjustmentType('fixed')"
-                class="flex-1 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
+                class="flex-1 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer outline-hidden focus-visible:ring-2 focus-visible:ring-gray-900"
                 [class]="
                   adjustmentType() === 'fixed'
                     ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
@@ -90,7 +90,7 @@
               aria-labelledby="rounding-label"
               aria-haspopup="listbox"
               [attr.aria-expanded]="showRoundingOptions()"
-              class="relative w-full cursor-pointer bg-white rounded-xl border border-gray-300 py-2.5 pl-4 pr-10 text-left shadow-sm focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors sm:text-sm"
+              class="relative w-full cursor-pointer bg-white rounded-xl border border-gray-300 py-2.5 pl-4 pr-10 text-left shadow-sm focus:outline-hidden focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors sm:text-sm"
             >
               <span class="block truncate text-gray-900">
                 {{ roundingLabel() }}
@@ -108,7 +108,7 @@
 
             @if (showRoundingOptions()) {
               <div
-                class="absolute z-20 mt-1 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm animate-fadeIn"
+                class="absolute z-20 mt-1 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-xl ring-1 ring-black focus:outline-hidden sm:text-sm animate-fade-in"
                 appListbox
                 aria-labelledby="rounding-label"
                 (closed)="showRoundingOptions.set(false)"
@@ -206,7 +206,7 @@
       }
 
       @if (!loadingPreview() && previewData().length > 0) {
-        <section class="space-y-4 animate-fadeIn pb-4">
+        <section class="space-y-4 animate-fade-in pb-4">
           <div
             class="flex justify-between items-end border-b border-gray-100 pb-2"
           >

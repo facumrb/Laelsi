@@ -14,7 +14,7 @@
         #box
         type="checkbox"
         id="terms-gate-accept"
-        class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 accent-[#3d4494]"
+        class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 accent-brand"
         [checked]="accepted()"
         (change)="accepted.set(box.checked)"
       />
@@ -23,14 +23,14 @@
         <a
           routerLink="/terminos"
           target="_blank"
-          class="font-bold text-[#3d4494] hover:underline"
+          class="font-bold text-brand hover:underline"
           >Términos y Condiciones</a
         >
         y la
         <a
           routerLink="/privacidad"
           target="_blank"
-          class="font-bold text-[#3d4494] hover:underline"
+          class="font-bold text-brand hover:underline"
           >Política de Privacidad</a
         >, incluida la transferencia de mis datos a proveedores ubicados fuera
         de la Argentina.

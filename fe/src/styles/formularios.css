@@ -1,0 +1,79 @@
+/* Formularios, campo de contraseña, tarjetas del admin y botones */
+@layer components {
+  /* ── Formularios ── */
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+
+  .form-input {
+    @apply block w-full rounded-lg border-gray-300 border p-2.5 text-gray-900 shadow-sm text-sm;
+  }
+
+  /* Campo de contraseña con el botón del ojo FUERA del input: las extensiones (Bitwarden, etc.) dibujan su ícono
+     en el borde derecho del input, así queda a la izquierda del ojo en vez de taparlo. El borde y el foco van en
+     el contenedor (.password-field), cuyo aspecto define cada plantilla. */
+  .password-field {
+    @apply flex w-full items-center bg-white transition-[color,background-color,border-color,box-shadow];
+  }
+
+  .password-field-input {
+    @apply min-w-0 flex-1 border-0 bg-transparent outline-hidden focus:ring-0;
+  }
+
+  .form-card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden;
+  }
+
+  /* ── Tarjetas Admin ── */
+  .admin-stat-card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-200
+           p-6 flex items-start justify-between gap-4
+           transition-[box-shadow,border-color] duration-300
+           hover:shadow-md hover:border-brand/30;
+  }
+
+  .admin-section-card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-200
+           overflow-hidden flex flex-col h-full;
+  }
+
+  .form-body {
+    @apply p-6 md:p-8;
+  }
+
+  .form-section-title {
+    @apply text-lg font-semibold text-gray-800 mb-3 border-b pb-2;
+  }
+
+  .form-grid-2 {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3;
+  }
+
+  .form-footer {
+    @apply pt-6 flex flex-wrap items-center justify-end gap-x-4 gap-y-2 border-t border-gray-100;
+  }
+
+  /* ── Botones ── */
+  .btn-primary {
+    @apply cursor-pointer rounded-md bg-brand px-6 py-2.5 text-sm font-semibold
+           text-white shadow-sm enabled:hover:bg-brand-hover transition-colors
+           focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-brand
+           disabled:bg-gray-300 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply cursor-pointer rounded-md bg-white px-5 py-2.5 text-sm font-semibold
+           text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300
+           enabled:hover:bg-gray-50 transition-colors
+           focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-brand
+           disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed;
+  }
+
+  /* Acción destructiva (eliminar, cancelar un pedido): mismo formato que .btn-primary, en rose */
+  .btn-danger {
+    @apply cursor-pointer rounded-md bg-rose-600 px-6 py-2.5 text-sm font-semibold
+           text-white shadow-sm enabled:hover:bg-rose-700 transition-colors
+           focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-rose-600
+           disabled:bg-gray-300 disabled:cursor-not-allowed;
+  }
+}

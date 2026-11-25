@@ -21,7 +21,7 @@
         minlength="4"
         maxlength="255"
         autocomplete="username"
-        class="form-input p-3 focus:border-[#3d4494] focus:ring-1 focus:ring-[#3d4494] outline-none transition-all"
+        class="form-input p-3 focus:border-brand focus:ring-1 focus:ring-brand outline-hidden transition-all"
       />
       <div class="min-h-8 sm:min-h-0">
         <app-field-error [control]="formLogin.controls.username" />
@@ -37,7 +37,7 @@
         </label>
         <a
           routerLink="/auth/recover-password"
-          class="inline-block py-1 text-sm font-medium text-[#3d4494] hover:underline sm:hidden"
+          class="inline-block py-1 text-sm font-medium text-brand hover:underline sm:hidden"
         >
           ¿Olvidaste tu contraseña?
         </a>
@@ -48,7 +48,7 @@
         inputId="password"
         placeholder=""
         autocomplete="current-password"
-        fieldClass="rounded-lg border border-gray-300 shadow-sm focus-within:border-[#3d4494] focus-within:ring-1 focus-within:ring-[#3d4494]"
+        fieldClass="rounded-lg border border-gray-300 shadow-sm focus-within:border-brand focus-within:ring-1 focus-within:ring-brand"
         inputClass="p-3 text-sm text-gray-900"
       />
 
@@ -59,7 +59,7 @@
         </div>
         <a
           routerLink="/auth/recover-password"
-          class="hidden shrink-0 py-1 mt-1 text-sm font-medium text-[#3d4494] hover:underline sm:inline-block"
+          class="hidden shrink-0 py-1 mt-1 text-sm font-medium text-brand hover:underline sm:inline-block"
         >
           ¿Olvidaste tu contraseña?
         </a>
@@ -70,7 +70,7 @@
       <button
         type="submit"
         [disabled]="loading()"
-        class="btn-primary w-full flex justify-center py-3 px-4 shadow-md hover:shadow-lg focus:ring-2 focus:ring-offset-2 focus:ring-[#3d4494] transform active:scale-[0.98] font-bold"
+        class="btn-primary w-full flex justify-center py-3 px-4 shadow-md hover:shadow-lg focus:ring-2 focus:ring-offset-2 focus:ring-brand transform active:scale-[0.98] font-bold"
       >
         @if (loading()) {
           <ng-icon
@@ -93,7 +93,7 @@
       type="button"
       (click)="loginWithGoogle()"
       [disabled]="loading()"
-      class="cursor-pointer w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg border border-gray-300 bg-white font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3d4494]"
+      class="cursor-pointer w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg border border-gray-300 bg-white font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-colors focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-brand"
     >
       <ng-icon name="bootstrapGoogle" class="text-lg"></ng-icon>
       Continuar con Google
@@ -104,14 +104,14 @@
       <a
         routerLink="/terminos"
         target="_blank"
-        class="font-semibold text-[#3d4494] hover:underline"
+        class="font-semibold text-brand hover:underline"
         >Términos y Condiciones</a
       >
       y la
       <a
         routerLink="/privacidad"
         target="_blank"
-        class="font-semibold text-[#3d4494] hover:underline"
+        class="font-semibold text-brand hover:underline"
         >Política de Privacidad</a
       >.
     </p>
@@ -121,7 +121,7 @@
       <a
         routerLink="/auth/register"
         replaceUrl
-        class="cursor-pointer inline-block py-1 font-bold text-[#3d4494] hover:text-[#2a2f63] hover:underline transition-colors ml-1"
+        class="cursor-pointer inline-block py-1 font-bold text-brand hover:text-brand-hover hover:underline transition-colors ml-1"
       >
         Crear cuenta
       </a>

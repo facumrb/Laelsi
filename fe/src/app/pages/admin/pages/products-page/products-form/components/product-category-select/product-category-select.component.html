@@ -25,7 +25,7 @@
 
   @if (showCategoryMenu()) {
     <div
-      class="select-dropdown absolute z-20 mt-1 max-h-60 min-w-full w-max max-w-[min(28rem,calc(100vw-4rem))] overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm animate-fadeIn"
+      class="select-dropdown absolute z-20 mt-1 max-h-60 min-w-full w-max max-w-[min(28rem,calc(100vw-4rem))] overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black focus:outline-hidden sm:text-sm animate-fade-in"
     >
       <!-- Solo las opciones van dentro de la lista; el botón "Nueva Categoría" queda afuera -->
       <div
@@ -50,7 +50,7 @@
               }
               <span
                 class="block wrap-break-word"
-                [class.text-[#3d4494]]="value()?.id === cat.id"
+                [class.text-brand]="value()?.id === cat.id"
               >
                 {{ cat.name }}
               </span>
@@ -58,7 +58,7 @@
 
             @if (value()?.id === cat.id) {
               <span
-                class="absolute inset-y-0 right-0 flex items-center pr-4 text-[#3d4494]"
+                class="absolute inset-y-0 right-0 flex items-center pr-4 text-brand"
               >
                 <ng-icon name="bootstrapCheckLg" class="text-lg"></ng-icon>
               </span>
@@ -79,7 +79,7 @@
         <button
           type="button"
           (click)="createCategory.emit()"
-          class="cursor-pointer flex w-full items-center gap-2 px-3 py-2 text-sm font-bold text-[#3d4494] hover:bg-blue-50 transition-colors"
+          class="cursor-pointer flex w-full items-center gap-2 px-3 py-2 text-sm font-bold text-brand hover:bg-blue-50 transition-colors"
         >
           <ng-icon name="bootstrapPlusLg"></ng-icon>
           Nueva Categoría

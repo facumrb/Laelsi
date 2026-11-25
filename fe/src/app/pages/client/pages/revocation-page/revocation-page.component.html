@@ -1,6 +1,6 @@
-<section class="container animate-fadeIn mx-auto max-w-3xl px-3 py-4 sm:p-4">
+<section class="container animate-fade-in mx-auto max-w-3xl px-3 py-4 sm:p-4">
   <div class="mb-6 text-center">
-    <h1 class="text-4xl font-bold text-[#3d4494]">Botón de arrepentimiento</h1>
+    <h1 class="text-4xl font-bold text-brand">Botón de arrepentimiento</h1>
     <p class="mt-3 text-gray-600">
       Si compraste en Laelsi, podés revocar tu compra dentro de los
       <strong class="text-gray-800">10 días corridos</strong> desde que
@@ -10,14 +10,14 @@
   </div>
 
   <div
-    class="rounded-3xl border border-neutral-100 bg-white px-4 py-5 sm:p-5 shadow-sm md:p-10"
+    class="rounded-3xl border border-gray-100 bg-white px-4 py-5 sm:p-5 shadow-sm md:p-10"
   >
     @if (code(); as receiptCode) {
       <!-- Confirmación: el código de identificación se informa por el mismo medio, al instante -->
       <div class="text-center" role="status">
         <ng-icon
           name="bootstrapCheckCircleFill"
-          class="text-5xl text-[#037971]"
+          class="text-5xl text-accent-teal"
         ></ng-icon>
 
         <h2 class="mt-3 mb-2 text-2xl font-bold text-gray-900">
@@ -28,7 +28,7 @@
         </p>
 
         <p
-          class="mx-auto my-4 w-fit select-all rounded-xl bg-neutral-100 px-6 py-3 font-mono text-2xl font-bold tracking-wider text-[#3d4494]"
+          class="mx-auto my-4 w-fit select-all rounded-xl bg-gray-100 px-6 py-3 font-mono text-2xl font-bold tracking-wider text-brand"
         >
           {{ receiptCode }}
         </p>
@@ -72,7 +72,7 @@
               formControlName="firstName"
               maxlength="100"
               autocomplete="given-name"
-              class="form-input p-3 focus:border-[#3d4494] focus:ring-1 focus:ring-[#3d4494] outline-none transition-all"
+              class="form-input p-3 focus:border-brand focus:ring-1 focus:ring-brand outline-hidden transition-all"
             />
             <div class="min-h-8">
               <app-field-error [control]="form.controls.firstName" />
@@ -90,7 +90,7 @@
               formControlName="lastName"
               maxlength="100"
               autocomplete="family-name"
-              class="form-input p-3 focus:border-[#3d4494] focus:ring-1 focus:ring-[#3d4494] outline-none transition-all"
+              class="form-input p-3 focus:border-brand focus:ring-1 focus:ring-brand outline-hidden transition-all"
             />
             <div class="min-h-8">
               <app-field-error [control]="form.controls.lastName" />
@@ -109,7 +109,7 @@
               inputmode="email"
               maxlength="255"
               autocomplete="email"
-              class="form-input p-3 focus:border-[#3d4494] focus:ring-1 focus:ring-[#3d4494] outline-none transition-all"
+              class="form-input p-3 focus:border-brand focus:ring-1 focus:ring-brand outline-hidden transition-all"
               placeholder="Ej: juan@ejemplo.com"
             />
             <div class="min-h-8">
@@ -130,7 +130,7 @@
               inputmode="tel"
               maxlength="20"
               autocomplete="tel"
-              class="form-input p-3 focus:border-[#3d4494] focus:ring-1 focus:ring-[#3d4494] outline-none transition-all"
+              class="form-input p-3 focus:border-brand focus:ring-1 focus:ring-brand outline-hidden transition-all"
             />
             <div class="min-h-8">
               <app-field-error [control]="form.controls.phone" />
@@ -150,7 +150,7 @@
               appNumericInput
               inputmode="numeric"
               maxlength="9"
-              class="form-input p-3 focus:border-[#3d4494] focus:ring-1 focus:ring-[#3d4494] outline-none transition-all md:max-w-xs"
+              class="form-input p-3 focus:border-brand focus:ring-1 focus:ring-brand outline-hidden transition-all md:max-w-xs"
               placeholder="Lo ves en Mi Perfil, en Mis Pedidos"
             />
             <div class="min-h-8">
@@ -169,7 +169,7 @@
               formControlName="details"
               rows="5"
               maxlength="1000"
-              class="form-input p-3 focus:border-[#3d4494] focus:ring-1 focus:ring-[#3d4494] outline-none transition-all"
+              class="form-input p-3 focus:border-brand focus:ring-1 focus:ring-brand outline-hidden transition-all"
               placeholder="Contanos qué productos compraste, cuándo y, si querés, el motivo."
             ></textarea>
             <div class="min-h-8">
@@ -193,7 +193,7 @@
           <button
             type="submit"
             [disabled]="loading()"
-            class="btn-primary w-full md:w-80 flex justify-center py-3 px-4 shadow-md hover:shadow-lg focus:ring-2 focus:ring-offset-2 focus:ring-[#3d4494] transform active:scale-[0.98] font-bold"
+            class="btn-primary w-full md:w-80 flex justify-center py-3 px-4 shadow-md hover:shadow-lg focus:ring-2 focus:ring-offset-2 focus:ring-brand transform active:scale-[0.98] font-bold"
           >
             @if (loading()) {
               <ng-icon
@@ -210,13 +210,13 @@
           <a
             routerLink="/privacidad"
             target="_blank"
-            class="font-semibold text-[#3d4494] hover:underline"
+            class="font-semibold text-brand hover:underline"
             >Política de Privacidad</a
           >. Las condiciones del derecho de revocación están en los
           <a
             routerLink="/terminos"
             target="_blank"
-            class="font-semibold text-[#3d4494] hover:underline"
+            class="font-semibold text-brand hover:underline"
             >Términos y Condiciones</a
           >.
         </p>
@@ -230,7 +230,7 @@
           [href]="legal.whatsappUrl"
           target="_blank"
           rel="noopener noreferrer"
-          class="ml-1 inline-flex items-center gap-1 font-semibold text-[#0F8477] hover:text-[#075E54] hover:underline transition-colors"
+          class="ml-1 inline-flex items-center gap-1 font-semibold text-whatsapp hover:text-whatsapp-hover hover:underline transition-colors"
         >
           <ng-icon name="bootstrapWhatsapp"></ng-icon>
           Escribinos por WhatsApp

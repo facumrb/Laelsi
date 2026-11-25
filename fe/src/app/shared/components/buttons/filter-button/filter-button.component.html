@@ -1,7 +1,7 @@
 <button
   type="button"
   (click)="toggle()"
-  class="cursor-pointer flex w-full justify-center items-center gap-2 px-4 h-10 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all whitespace-nowrap focus:outline-none focus:border-black focus:ring-1 focus:ring-black"
+  class="cursor-pointer flex w-full justify-center items-center gap-2 px-4 h-10 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all whitespace-nowrap focus:outline-hidden focus:border-black focus:ring-1 focus:ring-black"
   [class.ring-1]="isActive()"
   [class.ring-black]="isActive()"
   [class.!border-black]="isActive()"

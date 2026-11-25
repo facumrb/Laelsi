@@ -7,7 +7,9 @@
 
   @if (showFilterMenu()) {
     <div
-      class="absolute left-0 lg:left-auto lg:right-0 mt-2 top-full w-72 max-w-[90vw] origin-top-left lg:origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 z-50"
+      class="filter-panel top-full"
+      role="region"
+      aria-label="Opciones de filtro de categorías"
     >
       <div class="p-4 space-y-4">
         <app-filter-accordion
@@ -27,7 +29,7 @@
         <button
           type="button"
           (click)="limpiar()"
-          class="cursor-pointer w-full mt-4 px-3 py-2.5 text-xs font-bold uppercase tracking-wide text-[#3d4494] bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors focus:outline-none focus:ring-2 focus:ring-[#3d4494] focus:ring-offset-1"
+          class="filter-reset-btn"
         >
           Limpiar todos los filtros
         </button>

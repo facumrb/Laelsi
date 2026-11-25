@@ -3,14 +3,14 @@
     <table class="table-base">
       <thead class="table-header">
         <tr>
-          <th class="table-th w-[33%] rounded-tl-lg">Categoría</th>
-          <th class="table-th w-[20%]">Descripción</th>
-          <th class="table-th text-center whitespace-nowrap w-[18%]">
+          <th class="admin-table-header-cell w-[33%] rounded-tl-lg">Categoría</th>
+          <th class="admin-table-header-cell w-[20%]">Descripción</th>
+          <th class="admin-table-header-cell text-center whitespace-nowrap w-[18%]">
             Productos
           </th>
-          <th class="table-th text-center whitespace-nowrap w-[13%]">Estado</th>
+          <th class="admin-table-header-cell text-center whitespace-nowrap w-[13%]">Estado</th>
           <th
-            class="table-th text-center whitespace-nowrap w-[16%] rounded-tr-lg"
+            class="admin-table-header-cell text-center whitespace-nowrap w-[16%] rounded-tr-lg"
           >
             Acciones
           </th>
@@ -28,7 +28,7 @@
             track category.id;
             let isLast = $last
           ) {
-            <tr class="admin-table-row animate-fadeIn">
+            <tr class="admin-table-row animate-fade-in">
               <td
                 class="admin-table-cell-first relative px-5 pt-3 pb-1.5 border-b border-gray-50 lg:border-b lg:border-gray-100 lg:px-6 lg:py-2 lg:table-cell lg:align-middle"
                 [class.lg:border-b-0]="isLast"

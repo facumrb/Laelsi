@@ -25,6 +25,12 @@ function leer(ruta: string): string {
   return Deno.readTextFileSync(new URL(ruta, RAIZ));
 }
 
+// Los estilos globales: styles.css más los parciales que importa desde fe/src/styles/
+function leerEstilos(): string {
+  const parciales = [...Deno.readDirSync(new URL('styles/', RAIZ))].map((e) => e.name).filter((n) => n.endsWith('.css')).sort();
+  return [leer('styles.css'), ...parciales.map((n) => leer('styles/' + n))].join('\n');
+}
+
 const BARRA = 'app/pages/client/layout/navbar/navbar-category-bar/navbar-category-bar.component.html';
 const SUPERIOR = 'app/pages/client/layout/navbar/navbar-top-bar/navbar-top-bar.component.html';
 const MOVIL = 'app/pages/client/layout/navbar/navbar-mobile-sidebar/navbar-mobile-sidebar.component.html';
@@ -67,9 +73,9 @@ Deno.test('la variante barra-hover existe y exige hover, puntero fino y pantalla
 // así que el foco no llegaba a pasar (se vio en el navegador: el menú abría y el foco se quedaba en la categoría). Al
 // abrir, `visibility` tiene que quedar fuera de la transición; el cierre conserva su fundido.
 Deno.test('al abrirse, el desplegable se hace visible en el acto (no se enfoca un ítem oculto)', () => {
-  const css = leer('styles.css');
+  const css = leerEstilos();
 
   const regla = css.match(/\.navbar-dropdown-abierto\s*\{([^}]*)\}/);
-  assert.ok(regla, 'falta la regla .navbar-dropdown-abierto en styles.css');
+  assert.ok(regla, 'falta la regla .navbar-dropdown-abierto en los estilos (styles.css o styles/*.css)');
   assert.match(regla[1], /transition-property:\s*opacity,\s*translate\s*;/);
 });

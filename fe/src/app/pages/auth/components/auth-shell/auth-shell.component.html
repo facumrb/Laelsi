@@ -11,7 +11,7 @@
 
     <div
       data-auth-card
-      class="rounded-2xl border border-neutral-200 bg-white px-4 py-8 shadow-sm sm:p-8 lg:min-h-[37rem]"
+      class="rounded-2xl border border-gray-200 bg-white px-4 py-8 shadow-sm sm:p-8 lg:min-h-[37rem]"
       [class]="cardClass()"
     >
       @if (layout() === "split") {
@@ -19,7 +19,7 @@
           class="relative mb-4 flex flex-col items-center justify-center text-center lg:mb-0 lg:border-r lg:border-gray-100 lg:pr-6"
         >
           <div
-            class="absolute inset-0 -z-10 rounded-l-xl bg-linear-to-br from-[#3d4494]/3 to-transparent"
+            class="absolute inset-0 -z-10 rounded-l-xl bg-linear-to-br from-brand/3 to-transparent"
           ></div>
           <h1 class="flex flex-col items-center">
             <app-logo

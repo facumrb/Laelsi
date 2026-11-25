@@ -27,6 +27,7 @@ import { NavbarMobileSidebarComponent } from './navbar-mobile-sidebar/navbar-mob
   ],
   templateUrl: './navbar.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'contents' },
 })
 export class NavbarComponent implements OnInit {
   authService = inject(AuthService);

@@ -25,7 +25,7 @@
           minlength="4"
           maxlength="30"
           autocomplete="username"
-          class="form-input p-3 focus:border-[#3d4494] focus:ring-1 focus:ring-[#3d4494] outline-none transition-all"
+          class="form-input p-3 focus:border-brand focus:ring-1 focus:ring-brand outline-hidden transition-all"
           placeholder="Ej: jperez"
         />
         <div class="min-h-8">
@@ -49,7 +49,7 @@
           inputmode="email"
           maxlength="255"
           autocomplete="email"
-          class="form-input p-3 focus:border-[#3d4494] focus:ring-1 focus:ring-[#3d4494] outline-none transition-all"
+          class="form-input p-3 focus:border-brand focus:ring-1 focus:ring-brand outline-hidden transition-all"
           placeholder="Ej: juan@ejemplo.com"
         />
         <div class="min-h-8">
@@ -70,7 +70,7 @@
           [control]="formRegister.controls.password"
           inputId="password"
           describedBy="password-hint"
-          fieldClass="rounded-lg border border-gray-300 shadow-sm focus-within:border-[#3d4494] focus-within:ring-1 focus-within:ring-[#3d4494]"
+          fieldClass="rounded-lg border border-gray-300 shadow-sm focus-within:border-brand focus-within:ring-1 focus-within:ring-brand"
           inputClass="p-3 text-sm text-gray-900"
         />
 
@@ -86,7 +86,7 @@
           [control]="formRegister.controls.confirmPassword"
           inputId="confirmPassword"
           placeholder="Repetí tu contraseña"
-          fieldClass="rounded-lg border border-gray-300 shadow-sm focus-within:border-[#3d4494] focus-within:ring-1 focus-within:ring-[#3d4494]"
+          fieldClass="rounded-lg border border-gray-300 shadow-sm focus-within:border-brand focus-within:ring-1 focus-within:ring-brand"
           inputClass="p-3 text-sm text-gray-900"
         />
 
@@ -107,21 +107,21 @@
           id="acceptTerms"
           name="acceptTerms"
           formControlName="acceptTerms"
-          class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 accent-[#3d4494]"
+          class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 accent-brand"
         />
         <span>
           Leí y acepto los
           <a
             routerLink="/terminos"
             target="_blank"
-            class="font-bold text-[#3d4494] hover:underline"
+            class="font-bold text-brand hover:underline"
             >Términos y Condiciones</a
           >
           y la
           <a
             routerLink="/privacidad"
             target="_blank"
-            class="font-bold text-[#3d4494] hover:underline"
+            class="font-bold text-brand hover:underline"
             >Política de Privacidad</a
           >, incluida la transferencia de mis datos a proveedores ubicados fuera
           de la Argentina.
@@ -139,7 +139,7 @@
         type="submit"
         disabled
         [disabled]="loading() || !isValid() || isPending()"
-        class="btn-primary w-full lg:w-72 flex justify-center py-3 px-4 shadow-md enabled:hover:shadow-lg focus:ring-2 focus:ring-offset-2 focus:ring-[#3d4494] enabled:transform enabled:active:scale-[0.98] font-bold"
+        class="btn-primary w-full lg:w-72 flex justify-center py-3 px-4 shadow-md enabled:hover:shadow-lg focus:ring-2 focus:ring-offset-2 focus:ring-brand enabled:transform enabled:active:scale-[0.98] font-bold"
       >
         @if (loading()) {
           <ng-icon
@@ -156,7 +156,7 @@
       <a
         routerLink="/auth/login"
         replaceUrl
-        class="cursor-pointer inline-block py-1 font-bold text-[#3d4494] hover:text-[#2a2f63] hover:underline transition-colors ml-1"
+        class="cursor-pointer inline-block py-1 font-bold text-brand hover:text-brand-hover hover:underline transition-colors ml-1"
       >
         Iniciar Sesión
       </a>

@@ -1,14 +1,14 @@
 <div
-  class="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden"
+  class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
 >
-  <div class="divide-y divide-neutral-100">
+  <div class="divide-y divide-gray-100">
     @for (item of items(); track $index) {
       @let aviso = availability(item.product.id);
       <div
-        class="p-3 sm:p-4 flex items-center gap-3 sm:gap-6 hover:bg-neutral-50/50 transition-colors animate-in fade-in slide-in-from-bottom-2"
+        class="p-3 sm:p-4 flex items-center gap-3 sm:gap-6 hover:bg-gray-50/50 transition-colors motion-safe:animate-fade-in"
       >
         <div
-          class="w-20 h-20 sm:w-24 sm:h-24 shrink-0 bg-neutral-50 rounded-xl overflow-hidden border border-neutral-200"
+          class="w-20 h-20 sm:w-24 sm:h-24 shrink-0 bg-gray-50 rounded-xl overflow-hidden border border-gray-200"
         >
           <app-product-image
             [imageUrl]="
@@ -17,14 +17,14 @@
                 : null
             "
             [altText]="item.product.name"
-            containerClass="w-full h-full bg-neutral-50"
+            containerClass="w-full h-full bg-gray-50"
           />
         </div>
 
         <div class="grow min-w-0">
           <div class="flex justify-between items-start mb-1 gap-2">
             <h2
-              class="font-bold text-neutral-800 text-base sm:text-lg leading-snug line-clamp-2"
+              class="font-bold text-gray-800 text-base sm:text-lg leading-snug line-clamp-2"
             >
               <a
                 [routerLink]="['/product', item.product.id]"
@@ -36,7 +36,7 @@
             <button
               type="button"
               (click)="removeItem(item.product.id)"
-              class="shrink-0 cursor-pointer text-neutral-400 hover:text-red-500 p-1 -mt-1 -mr-1 rounded-lg transition-all"
+              class="shrink-0 cursor-pointer text-gray-400 hover:text-red-500 p-1 -mt-1 -mr-1 rounded-lg transition-all"
               title="Eliminar producto"
             >
               <ng-icon
@@ -47,7 +47,7 @@
           </div>
 
           <p
-            class="text-neutral-500 text-xs sm:text-sm mb-2 sm:mb-4 font-medium truncate"
+            class="text-gray-500 text-xs sm:text-sm mb-2 sm:mb-4 font-medium truncate"
           >
             {{ item.product.brand }}
           </p>
@@ -66,7 +66,7 @@
                 ></ng-icon>
                 {{ aviso.mensaje }}
               </p>
-              <p class="text-neutral-500">
+              <p class="text-gray-500">
                 El importe no se incluye en el resumen del pedido.
               </p>
               <div
@@ -97,13 +97,13 @@
             class="flex flex-wrap items-end justify-between gap-y-3 gap-x-2 mt-2 sm:mt-4"
           >
             <div
-              class="flex items-center border border-neutral-200 rounded-lg h-8 sm:h-9 shrink-0"
+              class="flex items-center border border-gray-200 rounded-lg h-8 sm:h-9 shrink-0"
             >
               <!-- Boton para restar una unidad -->
               <button
                 type="button"
                 (click)="updateQuantity(item.product.id, item.quantity - 1)"
-                class="cursor-pointer w-8 sm:w-9 h-full flex items-center justify-center text-neutral-500 hover:text-[#3d4494] hover:bg-neutral-50 rounded-l-lg transition-colors disabled:opacity-50 disabled:hover:text-neutral-500 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                class="cursor-pointer w-8 sm:w-9 h-full flex items-center justify-center text-gray-500 hover:text-brand hover:bg-gray-50 rounded-l-lg transition-colors disabled:opacity-50 disabled:hover:text-gray-500 disabled:hover:bg-transparent disabled:cursor-not-allowed"
                 [disabled]="item.quantity <= 1"
                 [attr.aria-label]="'Disminuir cantidad de ' + item.product.name"
               >
@@ -115,7 +115,7 @@
               </button>
 
               <span
-                class="min-w-8 sm:min-w-10 text-center font-semibold text-neutral-800 text-xs sm:text-sm"
+                class="min-w-8 sm:min-w-10 text-center font-semibold text-gray-800 text-xs sm:text-sm"
               >
                 {{ item.quantity }}
               </span>
@@ -124,7 +124,7 @@
               <button
                 type="button"
                 (click)="updateQuantity(item.product.id, item.quantity + 1)"
-                class="cursor-pointer w-8 sm:w-9 h-full flex items-center justify-center text-neutral-500 hover:text-[#3d4494] hover:bg-neutral-50 rounded-r-lg transition-colors disabled:opacity-50 disabled:hover:text-neutral-500 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                class="cursor-pointer w-8 sm:w-9 h-full flex items-center justify-center text-gray-500 hover:text-brand hover:bg-gray-50 rounded-r-lg transition-colors disabled:opacity-50 disabled:hover:text-gray-500 disabled:hover:bg-transparent disabled:cursor-not-allowed"
                 [attr.aria-label]="'Aumentar cantidad de ' + item.product.name"
                 [disabled]="
                   item.quantity >= item.product.stock || !aviso.disponible
@@ -140,7 +140,7 @@
 
             <div class="text-right shrink-0">
               <p
-                class="text-base sm:text-lg font-bold text-[#3d4494] leading-tight mb-0.5 sm:mb-1"
+                class="text-base sm:text-lg font-bold text-brand leading-tight mb-0.5 sm:mb-1"
               >
                 {{
                   getCurrentPrice(item.product) * item.quantity
@@ -148,7 +148,7 @@
                 }}
               </p>
 
-              <p class="text-xs font-medium text-neutral-500">
+              <p class="text-xs font-medium text-gray-500">
                 {{
                   getCurrentPrice(item.product)
                     | currency: "ARS" : "symbol-narrow" : "1.0-0"

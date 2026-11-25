@@ -9,7 +9,9 @@
 
   @if (showFilterMenu()) {
     <div
-      class="absolute left-0 lg:left-auto lg:right-0 mt-2 w-72 sm:w-96 max-w-[90vw] origin-top-left lg:origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 z-50"
+      class="filter-panel sm:w-96"
+      role="region"
+      aria-label="Opciones de filtro de productos"
     >
       <div class="p-4 space-y-4">
         <!-- Categoría: mantiene implementación custom con jerarquía -->
@@ -25,7 +27,7 @@
             (click)="showCategoryMenu.set(!showCategoryMenu())"
             aria-haspopup="listbox"
             [attr.aria-expanded]="showCategoryMenu()"
-            class="relative w-full cursor-pointer bg-white rounded-lg border border-gray-300 py-2.5 pl-3 pr-10 text-left shadow-sm focus:outline-none focus:ring-1 sm:text-sm transition-colors"
+            class="relative w-full cursor-pointer bg-white rounded-lg border border-gray-300 py-2.5 pl-3 pr-10 text-left shadow-sm focus:outline-hidden focus:ring-1 sm:text-sm transition-colors"
           >
             <span class="block truncate text-gray-700">
               {{ selectedCategoryName() }}
@@ -43,7 +45,7 @@
 
           @if (showCategoryMenu()) {
             <div
-              class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm animate-fadeIn"
+              class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black focus:outline-hidden sm:text-sm animate-fade-in"
               appListbox
               aria-label="Categoría"
               (closed)="showCategoryMenu.set(false)"
@@ -58,13 +60,13 @@
                 <span
                   class="block wrap-break-word font-normal"
                   [class.font-semibold]="categoryFilter() === 'Todos'"
-                  [class.text-[#3d4494]]="categoryFilter() === 'Todos'"
+                  [class.text-brand]="categoryFilter() === 'Todos'"
                 >
                   Todas las categorías
                 </span>
                 @if (categoryFilter() === "Todos") {
                   <span
-                    class="absolute inset-y-0 right-0 flex items-center pr-4 text-[#3d4494]"
+                    class="absolute inset-y-0 right-0 flex items-center pr-4 text-brand"
                   >
                     <ng-icon name="bootstrapCheckLg" class="text-lg"></ng-icon>
                   </span>
@@ -88,7 +90,7 @@
                     }
                     <span
                       class="block wrap-break-word"
-                      [class.text-[#3d4494]]="categoryFilter() === cat.id"
+                      [class.text-brand]="categoryFilter() === cat.id"
                     >
                       {{ cat.name }}
                     </span>
@@ -96,7 +98,7 @@
 
                   @if (categoryFilter() === cat.id) {
                     <span
-                      class="absolute inset-y-0 right-0 flex items-center pr-4 text-[#3d4494]"
+                      class="absolute inset-y-0 right-0 flex items-center pr-4 text-brand"
                     >
                       <ng-icon
                         name="bootstrapCheckLg"
@@ -129,7 +131,7 @@
         <button
           type="button"
           (click)="limpiar()"
-          class="cursor-pointer w-full mt-4 px-3 py-2.5 text-xs font-bold uppercase tracking-wide text-[#3d4494] bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors focus:outline-none focus:ring-2 focus:ring-[#3d4494] focus:ring-offset-1"
+          class="filter-reset-btn"
         >
           Limpiar todos los filtros
         </button>

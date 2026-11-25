@@ -1,4 +1,4 @@
-<header class="sticky top-0 z-(--z-header) bg-brand shadow-md">
+<header class="sticky top-0 z-(--z-header) bg-brand shadow-md [@media(max-height:480px)]:static">
   <app-navbar-top-bar
     [cartCount]="cartSignal()"
     [currentUser]="currentUser()"
