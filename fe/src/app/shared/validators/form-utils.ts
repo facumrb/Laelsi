@@ -6,7 +6,7 @@ import {
 } from '@angular/forms';
 import { Observable, of, timer } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 import {
   MENSAJE_FORMATO_TELEFONO,
   PATRON_TELEFONO,

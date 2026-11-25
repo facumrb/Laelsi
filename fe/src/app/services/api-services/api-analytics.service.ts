@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { IAnalyticsSummary } from '@models/analytics.model';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 import { IApiResponse } from '@models/api-response.model';
 
 @Injectable({

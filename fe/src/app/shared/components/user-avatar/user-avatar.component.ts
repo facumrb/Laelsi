@@ -6,7 +6,7 @@ import {
   linkedSignal,
 } from '@angular/core';
 import { IApiUserPhoto } from '@models/photo.model';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 
 type AvatarSize = 'xs' | 'sm' | 'md' | 'lg';
 

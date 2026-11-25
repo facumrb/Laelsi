@@ -1,5 +1,5 @@
 import { GoTrueClient } from '@supabase/auth-js';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 
 /*
  Cliente único de Supabase para toda la aplicación.

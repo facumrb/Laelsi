@@ -13,7 +13,7 @@ import { AlertService } from '@services/alert.service';
 import { IApiUserPhoto } from '@models/photo.model';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { bootstrapCamera, bootstrapTrash } from '@ng-icons/bootstrap-icons';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 import { Observable, of } from 'rxjs';
 
 // Formatos que se aceptan (los mismos que anuncia el texto debajo de la foto)

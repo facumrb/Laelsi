@@ -14,7 +14,7 @@ import {
   ProductState,
 } from '@models/product.model';
 import { IPaginatedResult } from '@models/pagination.model';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 import { contextoPublico } from '@interceptor/peticion-publica';
 import { IApiResponse } from '@models/api-response.model';
 

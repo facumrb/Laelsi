@@ -18,7 +18,7 @@ import { TrimInputDirective } from '@shared/directives/trim-input.directive';
 import { PasswordInputComponent } from '@shared/components/inputs/password/password-input/password-input.component';
 import { PasswordRuleHintComponent } from '@shared/components/inputs/password/password-rule-hint/password-rule-hint.component';
 import { TurnstileComponent } from '@shared/components/turnstile/turnstile.component';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AlertService } from '@services/alert.service';
 import { finalize } from 'rxjs';

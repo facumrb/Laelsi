@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, from, map, Observable, of, switchMap, tap } from 'rxjs';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 import { Router } from '@angular/router';
 import {
   LoginData,

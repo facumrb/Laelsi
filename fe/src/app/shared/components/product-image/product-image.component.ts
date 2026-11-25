@@ -5,7 +5,7 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 
 const SIN_IMAGEN = 'assets/Webp/no-image.webp';
 

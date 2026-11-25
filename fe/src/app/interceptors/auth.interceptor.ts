@@ -2,7 +2,7 @@ import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { from, of, switchMap } from 'rxjs';
 import { AuthService } from '@services/auth.service';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 import { PETICION_PUBLICA } from './peticion-publica';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {

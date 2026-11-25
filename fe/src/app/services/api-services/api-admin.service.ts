@@ -9,7 +9,7 @@ import {
   UserStateFilter,
 } from '@models/user.model';
 import { IPaginatedResult } from '@models/pagination.model';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 import { IApiResponse } from '@models/api-response.model';
 
 @Injectable({

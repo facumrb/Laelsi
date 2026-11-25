@@ -7,7 +7,7 @@ import {
   ICreateCategory,
   IUpdateCategory,
 } from '@models/category.model';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 import { contextoPublico } from '@interceptor/peticion-publica';
 import { IApiResponse } from '@models/api-response.model';
 

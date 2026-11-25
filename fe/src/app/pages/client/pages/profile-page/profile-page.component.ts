@@ -10,7 +10,7 @@ import { ApiOrderService } from '@services/api-services/api-order.service';
 import { AuthService } from '@services/auth.service';
 import { IApiClient } from '@models/user.model';
 import { IApiOrder } from '@models/order.model';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 import { RouterLink, RouterLinkActive, RouterOutlet, ActivatedRoute, Router } from '@angular/router';
 
 @Component({

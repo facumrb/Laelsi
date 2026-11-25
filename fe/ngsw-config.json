@@ -1,5 +1,5 @@
 {
-  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "$schema": "../node_modules/@angular/service-worker/config/schema.json",
   "index": "/index.html",
   "navigationRequestStrategy": "freshness",
   "assetGroups": [
@@ -8,14 +8,7 @@
       "installMode": "prefetch",
       "updateMode": "prefetch",
       "resources": {
-        "files": [
-          "/favicon.ico",
-          "/index.html",
-          "/index.csr.html",
-          "/manifest.webmanifest",
-          "/*.css",
-          "/*.js"
-        ]
+        "files": ["/index.html", "/index.csr.html", "/*.css", "/*.js"]
       }
     },
     {

@@ -18,7 +18,7 @@ import { TrimInputDirective } from '@shared/directives/trim-input.directive';
 import { PhoneInputDirective } from '@shared/directives/phone-input.directive';
 import { NumericInputDirective } from '@shared/directives/numeric-input.directive';
 import { TurnstileComponent } from '@shared/components/turnstile/turnstile.component';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 import { LEGAL_INFO } from '../footer-pages/legal-info';
 
 /**

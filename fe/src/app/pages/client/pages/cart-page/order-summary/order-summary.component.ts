@@ -24,7 +24,7 @@ import { AuthService } from '@services/auth.service';
 import { AlertService } from '@services/alert.service';
 import { injectInvalidateCatalog } from '@services/queries/catalog-cache';
 import { TurnstileComponent } from '@shared/components/turnstile/turnstile.component';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 import { DATOS_TIENDA, enlaceWhatsappTienda } from '@shared/utils/datos-tienda';
 
 @Component({

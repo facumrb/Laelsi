@@ -12,7 +12,7 @@ import {
   throwError,
   toArray,
 } from 'rxjs';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 import {
   ImageCompressorService,
   PRODUCT_IMAGE_MAX_WIDTH,

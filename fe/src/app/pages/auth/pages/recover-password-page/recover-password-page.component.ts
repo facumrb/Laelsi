@@ -21,7 +21,7 @@ import { FormUtils } from '@shared/validators/form-utils';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
 import { TurnstileComponent } from '@shared/components/turnstile/turnstile.component';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 import { enlaceWhatsappTienda } from '@shared/utils/datos-tienda';
 import { AuthShellComponent } from '@auth/components/auth-shell/auth-shell.component';
 

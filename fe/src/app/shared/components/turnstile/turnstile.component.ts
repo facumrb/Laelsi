@@ -10,7 +10,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 
 const TURNSTILE_SCRIPT_URL =
   'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
