@@ -1,77 +1,82 @@
 <app-legal-shell>
-<section class="container animate-fade-in mx-auto max-w-4xl p-4">
-  <div class="mb-6 text-center">
-    <h1 class="text-4xl font-bold text-brand">Política de Privacidad</h1>
-    <p class="mt-3 text-gray-600">Última actualización: {{ legal.lastUpdate }}</p>
-  </div>
-
-  <article
-    class="legal-content rounded-3xl border border-gray-100 bg-white p-5 shadow-sm md:p-10"
-  >
-    <p>
-      En <strong>{{ legal.brand }}</strong> (librería y papelería de Rosario)
-      cuidamos tus datos personales. Esta Política explica qué datos recopilamos
-      cuando usás el sitio
-      <a [href]="legal.siteUrl">laelsi.com.ar</a> (el “Sitio”), para qué los
-      usamos, con quién los compartimos, cuánto tiempo los conservamos y cómo
-      podés ejercer tus derechos.
-    </p>
-    <p>
-      La redactamos de acuerdo con la Ley N° 25.326 de Protección de los Datos
-      Personales de la República Argentina, su decreto reglamentario N°
-      1558/2001 y las normas complementarias. Si no estás de acuerdo con ella,
-      te pedimos que no crees una cuenta ni uses el Sitio.
-    </p>
-
-    <h2>1. Responsable de la base de datos</h2>
-    <div class="legal-box">
-      <ul>
-        <li><strong>Nombre comercial:</strong> {{ legal.brand }}</li>
-        @if (legal.legalName) {
-          <li><strong>Titular:</strong> {{ legal.legalName }}</li>
-        }
-        @if (legal.cuit) {
-          <li><strong>CUIT:</strong> {{ legal.cuit }}</li>
-        }
-        <li><strong>Domicilio:</strong> {{ legal.address }}</li>
-        <li>
-          <strong>WhatsApp:</strong>
-          <a [href]="legal.whatsappUrl" target="_blank" rel="noopener noreferrer">{{
-            legal.whatsappLabel
-          }}</a>
-        </li>
-        @if (legal.contactEmail) {
-          <li>
-            <strong>Email:</strong>
-            <a [href]="'mailto:' + legal.contactEmail">{{
-              legal.contactEmail
-            }}</a>
-          </li>
-        }
-      </ul>
+  <section class="container animate-fade-in mx-auto max-w-4xl p-4">
+    <div class="mb-6 text-center">
+      <h1 class="text-4xl font-bold text-brand">Política de Privacidad</h1>
+      <p class="mt-3 text-gray-600">
+        Última actualización: {{ legal.lastUpdate }}
+      </p>
     </div>
 
-    <h2>2. Qué datos recopilamos</h2>
+    <article
+      class="legal-content rounded-3xl border border-gray-100 bg-white p-5 shadow-sm md:p-10"
+    >
+      <p>
+        En <strong>{{ legal.brand }}</strong> (librería y papelería de Rosario)
+        cuidamos tus datos personales. Esta Política explica qué datos
+        recopilamos cuando usás el sitio
+        <a [href]="legal.siteUrl">laelsi.com.ar</a> (el “Sitio”), para qué los
+        usamos, con quién los compartimos, cuánto tiempo los conservamos y cómo
+        podés ejercer tus derechos.
+      </p>
+      <p>
+        La redactamos de acuerdo con la Ley N° 25.326 de Protección de los Datos
+        Personales de la República Argentina, su decreto reglamentario N°
+        1558/2001 y las normas complementarias. Si no estás de acuerdo con ella,
+        te pedimos que no crees una cuenta ni uses el Sitio.
+      </p>
 
-    <h3>2.1. Datos que nos das vos</h3>
-    <ul>
-      <li>
-        <strong>Para crear tu cuenta:</strong> nombre de usuario, email y
-        contraseña. Si preferís entrar con Google, ver la sección 4.
-      </li>
-      <li>
-        <strong>En “Mi Perfil”:</strong> nombre, apellido, DNI, teléfono, CUIT /
-        CUIL, condición fiscal, domicilio (calle, número, piso, departamento,
-        ciudad, provincia y código postal) y una foto de perfil. Los campos
-        marcados con asterisco (*) en el formulario son obligatorios; los demás
-        son facultativos.
-      </li>
-      <li>
-        <strong>Cuando hacés un pedido:</strong> los productos y cantidades, sus
-        precios, el total, la forma de entrega y de pago elegidas, el estado del
-        pedido y la fecha.
-      </li>
-      <!-- PROVISIONAL-2026-11-08 (arrepentimiento): datos del botón, comentados. Para reactivar, descomentar.
+      <h2>1. Responsable de la base de datos</h2>
+      <div class="legal-box">
+        <ul>
+          <li><strong>Nombre comercial:</strong> {{ legal.brand }}</li>
+          @if (legal.legalName) {
+            <li><strong>Titular:</strong> {{ legal.legalName }}</li>
+          }
+          @if (legal.cuit) {
+            <li><strong>CUIT:</strong> {{ legal.cuit }}</li>
+          }
+          <li><strong>Domicilio:</strong> {{ legal.address }}</li>
+          <li>
+            <strong>WhatsApp: </strong>
+            <a
+              [href]="legal.whatsappUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              >{{ legal.whatsappLabel }}</a
+            >
+          </li>
+          @if (legal.contactEmail) {
+            <li>
+              <strong>Email: </strong>
+              <a [href]="'mailto:' + legal.contactEmail">{{
+                legal.contactEmail
+              }}</a>
+            </li>
+          }
+        </ul>
+      </div>
+
+      <h2>2. Qué datos recopilamos</h2>
+
+      <h3>2.1. Datos que nos das vos</h3>
+      <ul>
+        <li>
+          <strong>Para crear tu cuenta:</strong> nombre de usuario, email y
+          contraseña. Si preferís entrar con Google, ver la sección 4.
+        </li>
+        <li>
+          <strong>En “Mi Perfil”:</strong> nombre, apellido, DNI, teléfono, CUIT
+          / CUIL, condición fiscal, domicilio (calle, número, piso,
+          departamento, ciudad, provincia y código postal) y una foto de perfil.
+          Los campos marcados con asterisco (*) en el formulario son
+          obligatorios; los demás son facultativos.
+        </li>
+        <li>
+          <strong>Cuando hacés un pedido:</strong> los productos y cantidades,
+          sus precios, el total, la forma de entrega y de pago elegidas, el
+          estado del pedido y la fecha.
+        </li>
+        <!-- PROVISIONAL-2026-11-08 (arrepentimiento): datos del botón, comentados. Para reactivar, descomentar.
       <li>
         <strong>Cuando usás el Botón de arrepentimiento</strong> (no hace falta
         tener cuenta): tu nombre, apellido, email, el detalle de la compra que
@@ -79,33 +84,34 @@
         te damos un código de identificación y gestionamos la devolución.
       </li>
       -->
-      <li>
-        <strong>Cuando nos escribís</strong> por WhatsApp, Instagram o en el
-        local: los datos que nos envíes (por ejemplo, el comprobante de una
-        transferencia) para poder responderte. Esas aplicaciones tienen sus
-        propias políticas de privacidad.
-      </li>
-    </ul>
-    <p>
-      Si no completás los datos obligatorios, puede que no podamos crear tu
-      cuenta o procesar tu pedido. Tu foto de perfil se guarda en un
-      almacenamiento de archivos cuya dirección es pública: cualquier persona que
-      conozca la dirección exacta del archivo podría verlo. Esa dirección no se
-      publica en el Sitio; tu foto se muestra en tu cuenta y al personal de
-      {{ legal.brand }} que administra la tienda. Podés eliminarla cuando
-      quieras desde tu perfil.
-    </p>
+        <li>
+          <strong>Cuando nos escribís</strong> por WhatsApp, Instagram o en el
+          local: los datos que nos envíes (por ejemplo, el comprobante de una
+          transferencia) para poder responderte. Esas aplicaciones tienen sus
+          propias políticas de privacidad.
+        </li>
+      </ul>
+      <p>
+        Si no completás los datos obligatorios, puede que no podamos crear tu
+        cuenta o procesar tu pedido. Tu foto de perfil se guarda en un
+        almacenamiento de archivos cuya dirección es pública: cualquier persona
+        que conozca la dirección exacta del archivo podría verlo. Esa dirección
+        no se publica en el Sitio; tu foto se muestra en tu cuenta y al personal
+        de
+        {{ legal.brand }} que administra la tienda. Podés eliminarla cuando
+        quieras desde tu perfil.
+      </p>
 
-    <h3>2.2. Datos técnicos y de seguridad</h3>
-    <ul>
-      <li>
-        <strong>Aceptación de estos textos:</strong> cuando creás tu cuenta con
-        el formulario de registro, o la primera vez que entrás con Google,
-        guardamos la fecha en que marcaste la casilla de aceptación y la versión
-        de los Términos y de esta Política que tenías delante, para poder
-        demostrarlo.
-      </li>
-      <!-- PROVISIONAL-2026-11-08 (arrepentimiento): texto ORIGINAL, comentado. Citaba las solicitudes del botón.
+      <h3>2.2. Datos técnicos y de seguridad</h3>
+      <ul>
+        <li>
+          <strong>Aceptación de estos textos:</strong> cuando creás tu cuenta
+          con el formulario de registro, o la primera vez que entrás con Google,
+          guardamos la fecha en que marcaste la casilla de aceptación y la
+          versión de los Términos y de esta Política que tenías delante, para
+          poder demostrarlo.
+        </li>
+        <!-- PROVISIONAL-2026-11-08 (arrepentimiento): texto ORIGINAL, comentado. Citaba las solicitudes del botón.
       <li>
         <strong>Dirección IP:</strong> la usamos únicamente para limitar
         intentos abusivos (por ejemplo, demasiados intentos fallidos de inicio
@@ -116,49 +122,57 @@
         tiempo.
       </li>
       -->
-      <li>
-        <strong>Dirección IP:</strong> la usamos únicamente para limitar
-        intentos abusivos (por ejemplo, demasiados intentos fallidos de inicio
-        de sesión, pedidos de recuperación de contraseña o consultas de
-        validación de formularios). Se guarda junto con la fecha del intento y
-        se elimina automáticamente al poco tiempo.
-      </li>
-      <li>
-        <strong>Recuperación de contraseña:</strong> guardamos una huella
-        cifrada (hash) del enlace que te enviamos, su vencimiento y si ya se
-        usó. Nunca guardamos el enlace en sí.
-      </li>
-      <li>
-        <strong>Registros de los proveedores:</strong> los servicios de
-        alojamiento y seguridad que usamos (ver sección 6) pueden registrar
-        datos de conexión como la IP, el navegador y la fecha y hora de acceso,
-        para que el Sitio funcione y para detectar abusos. Los gestionan ellos,
-        según sus propias políticas.
-      </li>
-    </ul>
+        <li>
+          <strong>Dirección IP:</strong> la usamos únicamente para limitar
+          intentos abusivos (por ejemplo, demasiados intentos fallidos de inicio
+          de sesión, pedidos de recuperación de contraseña o consultas de
+          validación de formularios). Se guarda junto con la fecha del intento y
+          se elimina automáticamente al poco tiempo.
+        </li>
+        <li>
+          <strong>Recuperación de contraseña:</strong> guardamos una huella
+          cifrada (hash) del enlace que te enviamos, su vencimiento y si ya se
+          usó. Nunca guardamos el enlace en sí.
+        </li>
+        <li>
+          <strong>Registros de los proveedores:</strong> los servicios de
+          alojamiento y seguridad que usamos (ver sección 6) pueden registrar
+          datos de conexión como la IP, el navegador y la fecha y hora de
+          acceso, para que el Sitio funcione y para detectar abusos. Los
+          gestionan ellos, según sus propias políticas.
+        </li>
+      </ul>
 
-    <h3>2.3. Lo que no hacemos</h3>
-    <ul>
-      <li>
-        <strong>No pedimos ni guardamos datos de tarjetas ni claves
-        bancarias.</strong> El Sitio no procesa pagos: el pago se hace por
-        transferencia o en el local (ver los Términos y Condiciones).
-      </li>
-      <li>
-        No usamos Google Analytics ni herramientas parecidas de analítica,
-        publicidad o seguimiento.
-      </li>
-      <li>No vendemos tus datos ni los cedemos a terceros para publicidad.</li>
-    </ul>
+      <h3>2.3. Lo que no hacemos</h3>
+      <ul>
+        <li>
+          <strong
+            >No pedimos ni guardamos datos de tarjetas ni claves
+            bancarias.</strong
+          >
+          El Sitio no procesa pagos: el pago se hace por transferencia o en el
+          local (ver los Términos y Condiciones).
+        </li>
+        <li>
+          No usamos Google Analytics ni herramientas parecidas de analítica,
+          publicidad o seguimiento.
+        </li>
+        <li>
+          No vendemos tus datos ni los cedemos a terceros para publicidad.
+        </li>
+      </ul>
 
-    <h2>3. Para qué usamos tus datos</h2>
-    <ul>
-      <li>Crear y administrar tu cuenta, e identificarte cuando iniciás sesión.</li>
-      <li>
-        Procesar tus pedidos: reservar el stock, coordinar el pago y el retiro,
-        contactarte por el pedido y gestionar cancelaciones o reclamos.
-      </li>
-      <!-- PROVISIONAL-2026-11-08 (arrepentimiento): textos ORIGINALES, comentados. Para reactivar, descomentar.
+      <h2>3. Para qué usamos tus datos</h2>
+      <ul>
+        <li>
+          Crear y administrar tu cuenta, e identificarte cuando iniciás sesión.
+        </li>
+        <li>
+          Procesar tus pedidos: reservar el stock, coordinar el pago y el
+          retiro, contactarte por el pedido y gestionar cancelaciones o
+          reclamos.
+        </li>
+        <!-- PROVISIONAL-2026-11-08 (arrepentimiento): textos ORIGINALES, comentados. Para reactivar, descomentar.
       <li>
         Gestionar tus solicitudes del Botón de arrepentimiento: darte el código
         de identificación, contactarte y coordinar la devolución y el reintegro.
@@ -169,126 +183,133 @@
         arrepentimiento.
       </li>
       -->
-      <li>
-        Enviarte los correos del servicio: el enlace para recuperar tu
-        contraseña y el aviso de que se cambió.
-      </li>
-      <li>
-        Proteger el Sitio y tu cuenta: prevenir fraudes, accesos indebidos y el
-        uso de programas automáticos (bots).
-      </li>
-      <li>
-        Cumplir obligaciones legales, fiscales y contables, y atender
-        requerimientos de autoridades competentes.
-      </li>
-      <li>
-        Elaborar estadísticas internas del negocio, como la cantidad de pedidos,
-        los ingresos o los productos más vendidos.
-      </li>
-    </ul>
-    <p>
-      Tratamos tus datos con tu consentimiento, que das al crear la cuenta y al
-      usar el Sitio, y porque son necesarios para llevar adelante la compra que
-      vos iniciás (art. 5 de la Ley N° 25.326). Hoy no enviamos newsletters ni
-      publicidad por email. Si algún día lo hiciéramos, sería solo con tu
-      consentimiento previo y con una forma simple de darte de baja.
-    </p>
+        <li>
+          Enviarte los correos del servicio: el enlace para recuperar tu
+          contraseña y el aviso de que se cambió.
+        </li>
+        <li>
+          Proteger el Sitio y tu cuenta: prevenir fraudes, accesos indebidos y
+          el uso de programas automáticos (bots).
+        </li>
+        <li>
+          Cumplir obligaciones legales, fiscales y contables, y atender
+          requerimientos de autoridades competentes.
+        </li>
+        <li>
+          Elaborar estadísticas internas del negocio, como la cantidad de
+          pedidos, los ingresos o los productos más vendidos.
+        </li>
+      </ul>
+      <p>
+        Tratamos tus datos con tu consentimiento, que das al crear la cuenta y
+        al usar el Sitio, y porque son necesarios para llevar adelante la compra
+        que vos iniciás (art. 5 de la Ley N° 25.326). Hoy no enviamos
+        newsletters ni publicidad por email. Si algún día lo hiciéramos, sería
+        solo con tu consentimiento previo y con una forma simple de darte de
+        baja.
+      </p>
 
-    <h2 id="google">4. Inicio de sesión con Google</h2>
-    <p>
-      Podés crear tu cuenta o iniciar sesión con el botón “Continuar con
-      Google”. Esta sección explica cómo tratamos la información que Google nos
-      informa.
-    </p>
-    <ul>
-      <li>
-        <strong>Qué datos recibimos:</strong> solicitamos únicamente los
-        permisos básicos de identidad de Google (<em>openid</em>, <em>email</em>
-        y <em>profile</em>). Con ellos recibimos tu <strong>dirección de
-        email</strong> y tu <strong>nombre</strong>. Google también puede
-        informar otros datos básicos del perfil (por ejemplo, la foto de tu
-        cuenta de Google), pero {{ legal.brand }} no los usa para ninguna
-        función del Sitio.
-      </li>
-      <li>
-        <strong>Qué datos no recibimos:</strong> no accedemos a tu Gmail, Drive,
-        Calendario, Contactos ni a ningún otro servicio de tu cuenta de Google,
-        y no tenemos acceso a tu contraseña de Google.
-      </li>
-      <li>
-        <strong>Para qué los usamos:</strong> solo para crear o identificar tu
-        cuenta en {{ legal.brand }}, permitirte iniciar sesión y mostrar tu
-        nombre en el Sitio. La primera vez que entrás te pedimos que aceptes los
-        Términos y esta Política, y guardamos la constancia (fecha y versión). Si ya existe un perfil de {{ legal.brand }} con el
-        mismo email, tu acceso con Google se asocia a ese perfil.
-      </li>
-      <li>
-        <strong>Dónde se guardan:</strong> en nuestro proveedor de autenticación
-        y base de datos (Supabase), con las medidas de seguridad de la sección 8.
-      </li>
-      <li>
-        <strong>Con quién los compartimos:</strong> con nadie, salvo los
-        proveedores técnicos indicados en la sección 6, que los procesan por
-        nuestra cuenta y solo para que el Sitio funcione. No los vendemos, no
-        los usamos para publicidad ni para entrenar modelos de inteligencia
-        artificial.
-      </li>
-      <li>
-        <strong>Cuánto tiempo los conservamos:</strong> mientras tengas tu
-        cuenta. Si pedís eliminarla (sección 10), borramos tu perfil y la
-        identidad de Google vinculada a ella.
-      </li>
-      <li>
-        <strong>Cómo retirar el permiso:</strong> en cualquier momento podés
-        quitar el acceso de {{ legal.brand }} desde la
+      <h2 id="google">4. Inicio de sesión con Google</h2>
+      <p>
+        Podés crear tu cuenta o iniciar sesión con el botón “Continuar con
+        Google”. Esta sección explica cómo tratamos la información que Google
+        nos informa.
+      </p>
+      <ul>
+        <li>
+          <strong>Qué datos recibimos:</strong> solicitamos únicamente los
+          permisos básicos de identidad de Google (<em>openid</em>,
+          <em>email</em> y <em>profile</em>). Con ellos recibimos tu
+          <strong>dirección de email</strong> y tu <strong>nombre</strong>.
+          Google también puede informar otros datos básicos del perfil (por
+          ejemplo, la foto de tu cuenta de Google), pero {{ legal.brand }} no
+          los usa para ninguna función del Sitio.
+        </li>
+        <li>
+          <strong>Qué datos no recibimos:</strong> no accedemos a tu Gmail,
+          Drive, Calendario, Contactos ni a ningún otro servicio de tu cuenta de
+          Google, y no tenemos acceso a tu contraseña de Google.
+        </li>
+        <li>
+          <strong>Para qué los usamos:</strong> solo para crear o identificar tu
+          cuenta en {{ legal.brand }}, permitirte iniciar sesión y mostrar tu
+          nombre en el Sitio. La primera vez que entrás te pedimos que aceptes
+          los Términos y esta Política, y guardamos la constancia (fecha y
+          versión). Si ya existe un perfil de {{ legal.brand }} con el mismo
+          email, tu acceso con Google se asocia a ese perfil.
+        </li>
+        <li>
+          <strong>Dónde se guardan:</strong> en nuestro proveedor de
+          autenticación y base de datos (Supabase), con las medidas de seguridad
+          de la sección 8.
+        </li>
+        <li>
+          <strong>Con quién los compartimos:</strong> con nadie, salvo los
+          proveedores técnicos indicados en la sección 6, que los procesan por
+          nuestra cuenta y solo para que el Sitio funcione. No los vendemos, no
+          los usamos para publicidad ni para entrenar modelos de inteligencia
+          artificial.
+        </li>
+        <li>
+          <strong>Cuánto tiempo los conservamos:</strong> mientras tengas tu
+          cuenta. Si pedís eliminarla (sección 10), borramos tu perfil y la
+          identidad de Google vinculada a ella.
+        </li>
+        <li>
+          <strong>Cómo retirar el permiso:</strong> en cualquier momento podés
+          quitar el acceso de {{ legal.brand }} desde la
+          <a
+            href="https://myaccount.google.com/permissions"
+            target="_blank"
+            rel="noopener noreferrer"
+            >configuración de tu cuenta de Google</a
+          >.
+        </li>
+      </ul>
+      <p>
+        El uso que hace {{ legal.brand }} de la información recibida de las API
+        de Google se ajusta a la
         <a
-          href="https://myaccount.google.com/permissions"
+          href="https://developers.google.com/terms/api-services-user-data-policy"
           target="_blank"
           rel="noopener noreferrer"
-          >configuración de tu cuenta de Google</a
-        >.
-      </li>
-    </ul>
-    <p>
-      El uso que hace {{ legal.brand }} de la información recibida de las API de
-      Google se ajusta a la
-      <a
-        href="https://developers.google.com/terms/api-services-user-data-policy"
-        target="_blank"
-        rel="noopener noreferrer"
-        >Política de Datos de Usuario de los Servicios de API de Google</a
-      >, incluidos los requisitos de Uso Limitado (Limited Use).
-    </p>
+          >Política de Datos de Usuario de los Servicios de API de Google</a
+        >, incluidos los requisitos de Uso Limitado (Limited Use).
+      </p>
 
-    <h2>5. Cookies y almacenamiento en tu navegador</h2>
-    <p>
-      El Sitio no usa cookies de publicidad, de analítica ni de seguimiento.
-      Para funcionar, guarda información en tu navegador (en
-      <em>localStorage</em> y <em>sessionStorage</em>):
-    </p>
-    <ul>
-      <li>
-        <strong>Tu sesión</strong> (los tokens que entrega nuestro proveedor de
-        autenticación) y una copia mínima de tu usuario: número de cuenta,
-        nombre, apellido, rol y foto. No se guardan allí tu DNI, tu domicilio ni
-        tus pedidos.
-      </li>
-      <li><strong>Tu carrito de compras</strong>, hasta que lo vacíes o confirmes el pedido.</li>
-      <li>
-        <strong>El usuario, email o DNI que escribiste</strong> en las pantallas
-        de acceso, solo hasta que cerrás la pestaña, para que no tengas que
-        volver a escribirlo. La contraseña nunca se guarda.
-      </li>
-      <li>
-        <strong>La memoria caché de la aplicación</strong> (archivos del Sitio e
-        imágenes de productos, por hasta 30 días), para que cargue más rápido.
-      </li>
-    </ul>
-    <p>
-      Cerrar sesión borra tu sesión y tu usuario guardados. Podés borrar el resto
-      cuando quieras desde la configuración de tu navegador.
-    </p>
-    <!-- PROVISIONAL-2026-11-08 (arrepentimiento): texto ORIGINAL, comentado. Citaba el botón.
+      <h2>5. Cookies y almacenamiento en tu navegador</h2>
+      <p>
+        El Sitio no usa cookies de publicidad, de analítica ni de seguimiento.
+        Para funcionar, guarda información en tu navegador (en
+        <em>localStorage</em> y <em>sessionStorage</em>):
+      </p>
+      <ul>
+        <li>
+          <strong>Tu sesión</strong> (los tokens que entrega nuestro proveedor
+          de autenticación) y una copia mínima de tu usuario: número de cuenta,
+          nombre, apellido, rol y foto. No se guardan allí tu DNI, tu domicilio
+          ni tus pedidos.
+        </li>
+        <li>
+          <strong>Tu carrito de compras</strong>, hasta que lo vacíes o
+          confirmes el pedido.
+        </li>
+        <li>
+          <strong>El usuario, email o DNI que escribiste</strong> en las
+          pantallas de acceso, solo hasta que cerrás la pestaña, para que no
+          tengas que volver a escribirlo. La contraseña nunca se guarda.
+        </li>
+        <li>
+          <strong>La memoria caché de la aplicación</strong> (archivos del Sitio
+          e imágenes de productos, por hasta 30 días), para que cargue más
+          rápido.
+        </li>
+      </ul>
+      <p>
+        Cerrar sesión borra tu sesión y tu usuario guardados. Podés borrar el
+        resto cuando quieras desde la configuración de tu navegador.
+      </p>
+      <!-- PROVISIONAL-2026-11-08 (arrepentimiento): texto ORIGINAL, comentado. Citaba el botón.
     <p>
       En el carrito, en “Recuperar contraseña” y en el Botón de arrepentimiento
       se muestra un control de verificación anti-bots (Cloudflare Turnstile), que
@@ -296,108 +317,109 @@
       persona de un programa automático.
     </p>
     -->
-    <p>
-      En el carrito y en “Recuperar contraseña” se muestra un control de
-      verificación anti-bots (Cloudflare Turnstile), que puede leer información
-      técnica de tu navegador para distinguir a una persona de un programa
-      automático.
-    </p>
+      <p>
+        En el carrito y en “Recuperar contraseña” se muestra un control de
+        verificación anti-bots (Cloudflare Turnstile), que puede leer
+        información técnica de tu navegador para distinguir a una persona de un
+        programa automático.
+      </p>
 
-    <h2>6. Con quién compartimos tus datos</h2>
-    <p>
-      Solo el personal autorizado de {{ legal.brand }}, con rol de
-      administrador, accede a los datos de cuentas y pedidos, y únicamente para
-      gestionar la tienda. Para que el Sitio funcione usamos proveedores
-      técnicos que tratan datos por nuestra cuenta:
-    </p>
-    <ul>
-      <li>
-        <strong>Supabase:</strong> base de datos, autenticación y funciones del
-        servidor. Guarda los datos de tu cuenta, tu perfil y tus pedidos.
-      </li>
-      <li>
-        <strong>Vercel:</strong> alojamiento del Sitio. Recibe los datos técnicos
-        de conexión cuando lo cargás.
-      </li>
-      <li>
-        <strong>Cloudflare:</strong> gestión del dominio, almacenamiento de las
-        imágenes (productos y fotos de perfil) y verificación anti-bots.
-      </li>
-      <li>
-        <!-- PROVISIONAL-2026-11-08 (arrepentimiento): texto ORIGINAL, comentado. Citaba la constancia del botón.
+      <h2>6. Con quién compartimos tus datos</h2>
+      <p>
+        Solo el personal autorizado de {{ legal.brand }}, con rol de
+        administrador, accede a los datos de cuentas y pedidos, y únicamente
+        para gestionar la tienda. Para que el Sitio funcione usamos proveedores
+        técnicos que tratan datos por nuestra cuenta:
+      </p>
+      <ul>
+        <li>
+          <strong>Supabase:</strong> base de datos, autenticación y funciones
+          del servidor. Guarda los datos de tu cuenta, tu perfil y tus pedidos.
+        </li>
+        <li>
+          <strong>Vercel:</strong> alojamiento del Sitio. Recibe los datos
+          técnicos de conexión cuando lo cargás.
+        </li>
+        <li>
+          <strong>Cloudflare:</strong> gestión del dominio, almacenamiento de
+          las imágenes (productos y fotos de perfil) y verificación anti-bots.
+        </li>
+        <li>
+          <!-- PROVISIONAL-2026-11-08 (arrepentimiento): texto ORIGINAL, comentado. Citaba la constancia del botón.
         <strong>Resend:</strong> envío de los correos del servicio (recuperación
         de contraseña y constancia del Botón de arrepentimiento). Recibe tu email
         y tu nombre.
         -->
-        <strong>Resend:</strong> envío de los correos del servicio (recuperación
-        de contraseña). Recibe tu email y tu nombre.
-      </li>
-      <li>
-        <strong>Google:</strong> solo si elegís iniciar sesión con Google.
-      </li>
-    </ul>
-    <p>
-      También podemos comunicar datos a autoridades públicas cuando una norma o
-      una orden judicial lo exija. Los enlaces a WhatsApp, Instagram y Google
-      Maps abren servicios de terceros; al usarlos, esos servicios tratan tus
-      datos según sus propias políticas.
-    </p>
+          <strong>Resend:</strong> envío de los correos del servicio
+          (recuperación de contraseña). Recibe tu email y tu nombre.
+        </li>
+        <li>
+          <strong>Google:</strong> solo si elegís iniciar sesión con Google.
+        </li>
+      </ul>
+      <p>
+        También podemos comunicar datos a autoridades públicas cuando una norma
+        o una orden judicial lo exija. Los enlaces a WhatsApp, Instagram y
+        Google Maps abren servicios de terceros; al usarlos, esos servicios
+        tratan tus datos según sus propias políticas.
+      </p>
 
-    <h2>7. Transferencias internacionales</h2>
-    <p>
-      Algunos de estos proveedores tienen servidores fuera de la Argentina (por
-      ejemplo, en los Estados Unidos). Al crear tu cuenta y usar el Sitio, das tu
-      consentimiento expreso para esa transferencia, que hacemos solo para
-      prestarte el servicio y de acuerdo con las medidas de seguridad de cada
-      proveedor.
-    </p>
+      <h2>7. Transferencias internacionales</h2>
+      <p>
+        Algunos de estos proveedores tienen servidores fuera de la Argentina
+        (por ejemplo, en los Estados Unidos). Al crear tu cuenta y usar el
+        Sitio, das tu consentimiento expreso para esa transferencia, que hacemos
+        solo para prestarte el servicio y de acuerdo con las medidas de
+        seguridad de cada proveedor.
+      </p>
 
-    <h2>8. Cómo protegemos tus datos</h2>
-    <ul>
-      <li>El Sitio se sirve siempre por conexión cifrada (HTTPS).</li>
-      <li>
-        Tu contraseña la guarda nuestro proveedor de autenticación en forma
-        cifrada (hash). {{ legal.brand }} no la ve ni la guarda en sus propias
-        tablas.
-      </li>
-      <li>
-        Los datos de cuentas y pedidos solo pueden consultarlos su titular y los
-        administradores, y cada operación se valida en el servidor.
-      </li>
-      <li>
-        Aplicamos límites a los intentos de inicio de sesión y verificación
-        anti-bots en los formularios más sensibles.
-      </li>
-      <li>
-        Los enlaces de recuperación de contraseña vencen a la hora y se pueden
-        usar una sola vez.
-      </li>
-    </ul>
-    <p>
-      Ningún sistema es 100 % seguro. Te recomendamos usar una contraseña única
-      y no compartirla. Si detectás un uso no autorizado de tu cuenta, avisanos
-      cuanto antes.
-    </p>
+      <h2>8. Cómo protegemos tus datos</h2>
+      <ul>
+        <li>El Sitio se sirve siempre por conexión cifrada (HTTPS).</li>
+        <li>
+          Tu contraseña la guarda nuestro proveedor de autenticación en forma
+          cifrada (hash). {{ legal.brand }} no la ve ni la guarda en sus propias
+          tablas.
+        </li>
+        <li>
+          Los datos de cuentas y pedidos solo pueden consultarlos su titular y
+          los administradores, y cada operación se valida en el servidor.
+        </li>
+        <li>
+          Aplicamos límites a los intentos de inicio de sesión y verificación
+          anti-bots en los formularios más sensibles.
+        </li>
+        <li>
+          Los enlaces de recuperación de contraseña vencen a la hora y se pueden
+          usar una sola vez.
+        </li>
+      </ul>
+      <p>
+        Ningún sistema es 100 % seguro. Te recomendamos usar una contraseña
+        única y no compartirla. Si detectás un uso no autorizado de tu cuenta,
+        avisanos cuanto antes.
+      </p>
 
-    <h2>9. Cuánto tiempo conservamos tus datos</h2>
-    <ul>
-      <li>
-        <strong>Cuenta, perfil y pedidos:</strong> mientras tu cuenta esté
-        activa o hasta que pidas eliminarla.
-      </li>
-      <li>
-        <strong>Si pedís eliminar tu cuenta:</strong> borramos de nuestra
-        plataforma tu perfil, tu foto, tus pedidos y tus credenciales de acceso
-        (incluida la identidad de Google, si la usaste). Podemos conservar, fuera
-        de la plataforma, los comprobantes comerciales y fiscales que la ley nos
-        obligue a guardar. Los proveedores pueden mantener copias de seguridad
-        por un tiempo limitado, hasta que se renuevan.
-      </li>
-      <li>
-        <strong>Datos de seguridad</strong> (IP e intentos de acceso): se
-        eliminan automáticamente al poco tiempo.
-      </li>
-      <!-- PROVISIONAL-2026-11-08 (arrepentimiento): conservación de las solicitudes del botón, comentada.
+      <h2>9. Cuánto tiempo conservamos tus datos</h2>
+      <ul>
+        <li>
+          <strong>Cuenta, perfil y pedidos:</strong> mientras tu cuenta esté
+          activa o hasta que pidas eliminarla.
+        </li>
+        <li>
+          <strong>Si pedís eliminar tu cuenta:</strong> borramos de nuestra
+          plataforma tu perfil, tu foto, tus pedidos y tus credenciales de
+          acceso (incluida la identidad de Google, si la usaste). Podemos
+          conservar, fuera de la plataforma, los comprobantes comerciales y
+          fiscales que la ley nos obligue a guardar. Los proveedores pueden
+          mantener copias de seguridad por un tiempo limitado, hasta que se
+          renuevan.
+        </li>
+        <li>
+          <strong>Datos de seguridad</strong> (IP e intentos de acceso): se
+          eliminan automáticamente al poco tiempo.
+        </li>
+        <!-- PROVISIONAL-2026-11-08 (arrepentimiento): conservación de las solicitudes del botón, comentada.
       <li>
         <strong>Solicitudes del Botón de arrepentimiento:</strong> las
         conservamos, junto con la IP desde la que se enviaron, el tiempo
@@ -406,87 +428,90 @@
         la ley nos obligue a conservar.
       </li>
       -->
-      <li>
-        <strong>Aceptación de los Términos:</strong> la fecha y la versión se
-        conservan mientras tu cuenta exista.
-      </li>
-    </ul>
+        <li>
+          <strong>Aceptación de los Términos:</strong> la fecha y la versión se
+          conservan mientras tu cuenta exista.
+        </li>
+      </ul>
 
-    <h2>10. Tus derechos</h2>
-    <p>
-      Como titular de los datos tenés derecho a <strong>acceder</strong> a ellos,
-      <strong>rectificarlos</strong>, <strong>actualizarlos</strong> y pedir su
-      <strong>supresión</strong> (arts. 14 a 16 de la Ley N° 25.326). También
-      podés retirar tu consentimiento.
-    </p>
-    <ul>
-      <li>
-        Desde “Mi Perfil” podés ver y modificar tus datos y eliminar tu foto.
-      </li>
-      <li>
-        Para recibir una copia de tus datos o pedir la eliminación de tu cuenta,
-        escribinos por WhatsApp o acercate al local. Podemos pedirte que
-        acredites tu identidad para proteger tus datos.
-      </li>
-      <li>
-        Respondemos los pedidos de acceso dentro de los 10 días corridos, y los
-        de rectificación, actualización o supresión dentro de los 5 días
-        hábiles.
-      </li>
-    </ul>
-    <div class="legal-box">
+      <h2>10. Tus derechos</h2>
       <p>
-        El titular de los datos personales tiene la facultad de ejercer el
-        derecho de acceso a los mismos en forma gratuita a intervalos no
-        inferiores a seis meses, salvo que se acredite un interés legítimo al
-        efecto conforme lo establecido en el artículo 14, inciso 3 de la Ley N°
-        25.326.
+        Como titular de los datos tenés derecho a <strong>acceder</strong> a
+        ellos, <strong>rectificarlos</strong>, <strong>actualizarlos</strong> y
+        pedir su <strong>supresión</strong> (arts. 14 a 16 de la Ley N° 25.326).
+        También podés retirar tu consentimiento.
+      </p>
+      <ul>
+        <li>
+          Desde “Mi Perfil” podés ver y modificar tus datos y eliminar tu foto.
+        </li>
+        <li>
+          Para recibir una copia de tus datos o pedir la eliminación de tu
+          cuenta, escribinos por WhatsApp o acercate al local. Podemos pedirte
+          que acredites tu identidad para proteger tus datos.
+        </li>
+        <li>
+          Respondemos los pedidos de acceso dentro de los 10 días corridos, y
+          los de rectificación, actualización o supresión dentro de los 5 días
+          hábiles.
+        </li>
+      </ul>
+      <div class="legal-box">
+        <p>
+          El titular de los datos personales tiene la facultad de ejercer el
+          derecho de acceso a los mismos en forma gratuita a intervalos no
+          inferiores a seis meses, salvo que se acredite un interés legítimo al
+          efecto conforme lo establecido en el artículo 14, inciso 3 de la Ley
+          N° 25.326.
+        </p>
+        <p>
+          La Agencia de Acceso a la Información Pública, en su carácter de
+          Órgano de Control de la Ley N° 25.326, tiene la atribución de atender
+          las denuncias y reclamos que interpongan quienes resulten afectados en
+          sus derechos por incumplimiento de las normas vigentes en materia de
+          protección de datos personales (<a
+            href="https://www.argentina.gob.ar/aaip"
+            target="_blank"
+            rel="noopener noreferrer"
+            >argentina.gob.ar/aaip</a
+          >).
+        </p>
+      </div>
+
+      <h2>11. Menores de edad</h2>
+      <p>
+        El Sitio está pensado para personas mayores de 18 años. Si sos menor,
+        usalo con la participación y autorización de tu madre, padre o tutor. Si
+        advertimos que una persona menor creó una cuenta sin esa autorización,
+        podemos eliminarla.
+      </p>
+
+      <h2>12. Cambios en esta Política</h2>
+      <p>
+        Podemos actualizar esta Política para reflejar cambios en el Sitio o en
+        la normativa. Siempre vas a ver arriba la fecha de la última versión. Si
+        los cambios son importantes, te lo vamos a avisar en el Sitio.
+      </p>
+
+      <h2>13. Contacto</h2>
+      <p>
+        Para consultas sobre esta Política o para ejercer tus derechos, podés
+        comunicarte con nosotros por
+        <a [href]="legal.whatsappUrl" target="_blank" rel="noopener noreferrer"
+          >WhatsApp ({{ legal.whatsappLabel }})</a
+        >
+        @if (legal.contactEmail) {
+          , por email a
+          <a [href]="'mailto:' + legal.contactEmail">{{
+            legal.contactEmail
+          }}</a>
+        }
+        o en nuestro local de {{ legal.address }}.
       </p>
       <p>
-        La Agencia de Acceso a la Información Pública, en su carácter de Órgano
-        de Control de la Ley N° 25.326, tiene la atribución de atender las
-        denuncias y reclamos que interpongan quienes resulten afectados en sus
-        derechos por incumplimiento de las normas vigentes en materia de
-        protección de datos personales
-        (<a
-          href="https://www.argentina.gob.ar/aaip"
-          target="_blank"
-          rel="noopener noreferrer"
-          >argentina.gob.ar/aaip</a
-        >).
+        Las condiciones de uso y de compra del Sitio están en los
+        <a routerLink="/terminos">Términos y Condiciones</a>.
       </p>
-    </div>
-
-    <h2>11. Menores de edad</h2>
-    <p>
-      El Sitio está pensado para personas mayores de 18 años. Si sos menor,
-      usalo con la participación y autorización de tu madre, padre o tutor. Si
-      advertimos que una persona menor creó una cuenta sin esa autorización,
-      podemos eliminarla.
-    </p>
-
-    <h2>12. Cambios en esta Política</h2>
-    <p>
-      Podemos actualizar esta Política para reflejar cambios en el Sitio o en la
-      normativa. Siempre vas a ver arriba la fecha de la última versión. Si los
-      cambios son importantes, te lo vamos a avisar en el Sitio.
-    </p>
-
-    <h2>13. Contacto</h2>
-    <p>
-      Para consultas sobre esta Política o para ejercer tus derechos, podés
-      comunicarte con nosotros por
-      <a [href]="legal.whatsappUrl" target="_blank" rel="noopener noreferrer"
-        >WhatsApp ({{ legal.whatsappLabel }})</a
-      >@if (legal.contactEmail) {, por email a
-        <a [href]="'mailto:' + legal.contactEmail">{{ legal.contactEmail }}</a
-        >}
-      o en nuestro local de {{ legal.address }}.
-    </p>
-    <p>
-      Las condiciones de uso y de compra del Sitio están en los
-      <a routerLink="/terminos">Términos y Condiciones</a>.
-    </p>
-  </article>
-</section>
+    </article>
+  </section>
 </app-legal-shell>

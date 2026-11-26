@@ -59,6 +59,7 @@ export class ApiProductService {
       .pipe(map((response) => response.data));
   }
 
+  // Este método no se utiliza actualmente
   getActiveProducts(
     page: number = 1,
     limit: number = 16,

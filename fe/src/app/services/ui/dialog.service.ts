@@ -51,15 +51,13 @@ export interface OpcionesConfirmacion {
 export interface OpcionesEntrada {
   titulo: string;
   mensaje: string;
-  tipo: 'tel' | 'password';
+  tipo: 'tel';
   // Etiqueta visible del campo; si falta, se usa el título.
   etiqueta?: string;
   placeholder?: string;
   textoConfirmar?: string;
   textoCancelar?: string;
   autocomplete?: string;
-  autocapitalize?: string;
-  autocorrect?: string;
   // Devuelve el mensaje de error, o null si el valor sirve. Con error el diálogo sigue abierto y lo muestra.
   validar?: (valor: string) => string | null;
   // Si el valor se devuelve sin espacios en los bordes.
@@ -93,20 +91,35 @@ export interface DialogoConfirmacion extends Base {
 
 export interface DialogoEntrada extends Base {
   readonly clase: 'entrada';
-  readonly tipo: 'tel' | 'password';
+  readonly tipo: 'tel';
   readonly etiqueta: string;
   readonly placeholder: string;
   readonly textoConfirmar: string;
   readonly textoCancelar: string;
   readonly autocomplete: string | null;
-  readonly autocapitalize: string | null;
-  readonly autocorrect: string | null;
   readonly validar: (valor: string) => string | null;
   readonly filtro: ((valor: string) => string) | null;
   readonly largoMaximo: number | null;
 }
 
-export type Dialogo = DialogoAviso | DialogoConfirmacion | DialogoEntrada;
+export interface OpcionesContrasena {
+  // Qué se va a cambiar con la contraseña
+  mensaje: string;
+  // Usuario de la cuenta, para que el navegador ofrezca la contraseña guardada
+  usuario?: string;
+}
+
+// Pide la contraseña actual en VerifyPasswordModalComponent, que la verifica en el servidor antes de cerrar
+export interface DialogoContrasena extends Base {
+  readonly clase: 'contrasena';
+  readonly usuario: string;
+}
+
+export type Dialogo =
+  | DialogoAviso
+  | DialogoConfirmacion
+  | DialogoEntrada
+  | DialogoContrasena;
 
 // Cómo terminó un diálogo: confirmado (con el valor, si pedía uno) o descartado (Cancelar, Escape, fondo o X).
 export type SalidaDialogo =
@@ -199,7 +212,7 @@ export class DialogService {
     );
   }
 
-  // Pide un dato (teléfono o contraseña): devuelve el valor, o null si se cancela o queda vacío
+  // Pide un dato (un teléfono): devuelve el valor, o null si se cancela o queda vacío
   pedirDato(opciones: OpcionesEntrada): Promise<string | null> {
     if (!this.enNavegador) return Promise.resolve(null);
     const recortar = opciones.recortar ?? false;
@@ -216,8 +229,6 @@ export class DialogService {
           textoConfirmar: opciones.textoConfirmar ?? 'Confirmar',
           textoCancelar: opciones.textoCancelar ?? 'Cancelar',
           autocomplete: opciones.autocomplete ?? null,
-          autocapitalize: opciones.autocapitalize ?? null,
-          autocorrect: opciones.autocorrect ?? null,
           validar: opciones.validar ?? (() => null),
           filtro: opciones.filtro ?? null,
           largoMaximo: opciones.largoMaximo ?? null,
@@ -227,6 +238,23 @@ export class DialogService {
           const valor = recortar ? (s.valor ?? '').trim() : (s.valor ?? '');
           r(valor === '' ? null : valor);
         },
+      }),
+    );
+  }
+
+  // Pide la contraseña actual y la verifica: devuelve la contraseña, o null si la persona cancela
+  verificarContrasena(opciones: OpcionesContrasena): Promise<string | null> {
+    if (!this.enNavegador) return Promise.resolve(null);
+    return new Promise<string | null>((r) =>
+      this.encolar({
+        dialogo: {
+          id: ++this.siguienteId,
+          clase: 'contrasena',
+          titulo: 'Verificar identidad',
+          mensaje: opciones.mensaje,
+          usuario: opciones.usuario ?? '',
+        },
+        resolver: (s) => r(s.confirmado ? (s.valor ?? null) : null),
       }),
     );
   }

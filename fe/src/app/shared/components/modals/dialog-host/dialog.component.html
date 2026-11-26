@@ -107,8 +107,6 @@
             [placeholder]="d.placeholder"
             [value]="valor()"
             [attr.autocomplete]="d.autocomplete"
-            [attr.autocapitalize]="d.autocapitalize"
-            [attr.autocorrect]="d.autocorrect"
             [attr.aria-invalid]="error() ? 'true' : null"
             [attr.aria-describedby]="errorId"
             (input)="alEscribir($event)"
@@ -137,4 +135,13 @@
       </div>
     </form>
   </app-modal-shell>
+}
+
+@if (contrasena(); as d) {
+  <app-verify-password-modal
+    [mensaje]="d.mensaje"
+    [username]="d.usuario"
+    (verified)="contrasenaVerificada($event)"
+    (close)="descartar()"
+  />
 }

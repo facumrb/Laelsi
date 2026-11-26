@@ -1,10 +1,10 @@
-import { Component, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
 // PROVISIONAL-2026-11-08 (arrepentimiento): el único `routerLink` de esta plantilla era la franja del botón,
 // que está comentada; sin este comentario Angular avisa NG8113 (import sin usar). Reactivar junto con la franja.
 // import { RouterLink } from '@angular/router';
 import { IApiProduct } from '@models/product.model';
 import { IApiCategory } from '@models/category.model';
-import { ProductCardComponent } from '../../components/product-card/product-card.component';
+import { ProductCardComponent } from '@client/components/product-card/product-card.component';
 import { LogoComponent } from '@shared/components/logo/logo.component';
 import { ScrollTrackerDirective } from '@shared/directives/scroll-tracker.directive';
 import { CarouselNavComponent } from '@client/components/carousel-nav/carousel-nav.component';
@@ -21,6 +21,7 @@ import { injectHomeQuery } from '@services/queries/product-queries';
     ScrollTrackerDirective,
     CarouselNavComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './main-page.component.html',
 })
 export class MainPageComponent {
@@ -40,7 +41,16 @@ export class MainPageComponent {
 
   // Tantas tarjetas como entran en la fila más ancha (xl: 5 por fila)
   readonly skeletonCards = [1, 2, 3, 4, 5];
+  /*
+  Carruseles de esqueleto: los "más vendidos" y una sección de categoría, que es lo que entra en la primera
+  pantalla. Cada uno con el alto de su título (el de "más vendidos" es más grande)
+  */
+  readonly skeletonSections = [
+    { id: 'mas-vendidos', titleClass: 'h-7' },
+    { id: 'categoria', titleClass: 'h-6' },
+  ];
 
+  // Desplaza un carrusel un ancho de pantalla y avisa al tracker si llega a un extremo
   scrollCarousel(
     container: HTMLElement,
     direction: 'left' | 'right',

@@ -1,4 +1,9 @@
-import { Component, inject, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { CartService } from '@services/cart.service';
 import { RouterLink } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -19,6 +24,7 @@ import { OrderSummaryComponent } from './order-summary/order-summary.component';
       bootstrapCartX,
     }),
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './cart-page.component.html',
 })
 export class CartPageComponent implements OnInit {

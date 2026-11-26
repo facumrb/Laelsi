@@ -18,6 +18,7 @@ import {
   TableSkeletonComponent,
 } from '@admin/components/table-components/table-skeleton/table-skeleton.component';
 import { ActivableDirective } from '@shared/directives/activable.directive';
+import { precioVigente } from '@shared/utils/precio-vigente';
 
 @Component({
   selector: 'app-products-list',
@@ -77,12 +78,10 @@ export class ProductsListComponent {
   }
 
   getProductPrice(product: IApiProduct): number {
-    const currentPrice = product.prices?.find((p) => p.isCurrent);
-    return currentPrice ? currentPrice.amount : 0;
+    return precioVigente(product.prices)?.amount ?? 0;
   }
 
   getProductCurrency(product: IApiProduct): string {
-    const currentPrice = product.prices?.find((p) => p.isCurrent);
-    return currentPrice ? currentPrice.currency : 'ARS';
+    return precioVigente(product.prices)?.currency ?? 'ARS';
   }
 }

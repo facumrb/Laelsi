@@ -24,6 +24,8 @@ export class CurrentPasswordService {
     editingOwnAccount: boolean;
     changesEmail: boolean;
     changesPassword: boolean;
+    // Usuario de la cuenta, para que el navegador ofrezca la contraseña guardada
+    username?: string;
   }): Promise<string | null | undefined> {
     if (
       !change.editingOwnAccount ||
@@ -43,6 +45,7 @@ export class CurrentPasswordService {
 
     return this.alertService.askCurrentPassword(
       `Para cambiar ${what} necesitamos tu contraseña actual.`,
+      change.username,
     );
   }
 }

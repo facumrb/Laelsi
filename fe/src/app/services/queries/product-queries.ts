@@ -63,6 +63,7 @@ export function injectActiveProductsQuery(
             ),
           );
         }
+        // Esta rama no se utiliza actualmente: la búsqueda siempre trae un término y la categoría un ID
         return firstValueFrom(apiProductService.getActiveProducts(page, limit));
       },
       staleTime: 1000 * 60 * 3, // 3 minutos

@@ -1,10 +1,12 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   inject,
   input,
   output,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '@services/auth.service';
 import { PasswordInputComponent } from '@shared/components/inputs/password/password-input/password-input.component';
@@ -23,12 +25,19 @@ import {
     ModalSubtitleDirective,
     PasswordInputComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './verify-password-modal.component.html',
 })
 export class VerifyPasswordModalComponent {
   private authService = inject(AuthService);
 
+  // Qué se va a cambiar con la contraseña verificada
+  mensaje = input<string>(
+    'Para cambiar tu contraseña, primero confirmá la actual.',
+  );
+  // Usuario de la cuenta: el navegador lo usa para ofrecer la contraseña guardada. Vacío = no se agrega
   username = input<string>('');
+  // La contraseña es correcta: se emite para enviarla junto con la nueva
   verified = output<string>();
   close = output<void>();
 
@@ -36,13 +45,18 @@ export class VerifyPasswordModalComponent {
     password: new FormControl('', { nonNullable: true }),
   });
   private password = this.form.controls.password;
+  // Verificación en curso
   verifying = signal(false);
   errorMessage = signal('');
 
   constructor() {
-    this.password.valueChanges.subscribe(() => this.errorMessage.set(''));
+    // Al volver a escribir se borra el error anterior
+    this.password.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.errorMessage.set(''));
   }
 
+  // Le pide al servidor que verifique la contraseña actual
   onSubmit() {
     if (this.verifying()) return;
 
@@ -67,6 +81,7 @@ export class VerifyPasswordModalComponent {
     });
   }
 
+  // Cierra el modal, salvo mientras se está verificando
   onClose() {
     if (this.verifying()) return;
     this.close.emit();

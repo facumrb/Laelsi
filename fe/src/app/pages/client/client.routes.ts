@@ -103,7 +103,6 @@ export const clientRoutes: Routes = [
       // {
       //   // Botón de arrepentimiento (Disp. 954/2025): público, sin registro y accesible desde el inicio
       //   path: 'arrepentimiento',
-      //   title: 'Botón de arrepentimiento | Laelsi',
       //   data: {
       //     description:
       //       'Botón de arrepentimiento de Laelsi: pedí la revocación de tu compra dentro de los 10 días, sin necesidad de registrarte.',
@@ -156,10 +155,10 @@ export const clientRoutes: Routes = [
               ),
           },
           {
-            path: 'userData',
+            path: 'user-data',
             loadComponent: () =>
-              import('./pages/profile-page/components/profile-userData/profile-userData.component').then(
-                (m) => m.ProfileUserComponent,
+              import('./pages/profile-page/components/profile-user-data/profile-user-data.component').then(
+                (m) => m.ProfileUserDataComponent,
               ),
           },
           {

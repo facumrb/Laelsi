@@ -242,6 +242,7 @@ export class ProfilePageComponent implements OnInit {
           formValue.email.trim().toLowerCase() !==
           this.initialEmail().trim().toLowerCase(),
         changesPassword: !!formValue.password,
+        username: formValue.username,
       });
     } catch {
       // Si el diálogo falla se trata como una cancelación

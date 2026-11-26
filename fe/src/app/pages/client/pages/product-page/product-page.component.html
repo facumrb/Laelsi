@@ -8,9 +8,11 @@
           <div class="order-2 lg:order-1">
             <app-carousel-nav
               variant="ghost-wrapper"
-              [showControls]="productPhotos().length > 5"
+              [showControls]="productPhotos().length > miniaturasVisibles"
               [disablePrev]="thumbnailIndex() === 0"
-              [disableNext]="thumbnailIndex() + 5 >= productPhotos().length"
+              [disableNext]="
+                thumbnailIndex() + miniaturasVisibles >= productPhotos().length
+              "
               (prev)="prevThumbnails()"
               (next)="nextThumbnails()"
             >
@@ -18,15 +20,16 @@
                 @for (
                   photo of productPhotos().slice(
                     thumbnailIndex(),
-                    thumbnailIndex() + 5
+                    thumbnailIndex() + miniaturasVisibles
                   );
                   track photo.id
                 ) {
+                  @let posicion = thumbnailIndex() + $index + 1;
                   <div
                     role="button"
                     tabindex="0"
                     [attr.aria-label]="
-                      'Ver miniatura ' + ($index + 1) + ' de ' + prod.name
+                      'Ver miniatura ' + posicion + ' de ' + prod.name
                     "
                     (click)="selectedPhotoFileName.set(photo.fileName)"
                     (keydown.enter)="selectedPhotoFileName.set(photo.fileName)"
@@ -43,10 +46,7 @@
                     <app-product-image
                       [imageUrl]="photo.fileName"
                       [altText]="
-                        'Miniatura ' +
-                        ($index + 1) +
-                        ' del producto ' +
-                        prod.name
+                        'Miniatura ' + posicion + ' del producto ' + prod.name
                       "
                       containerClass="w-full h-full bg-white"
                       imageClass="p-1"
@@ -188,8 +188,8 @@
             <div
               class="flex items-center gap-3 text-blue-800 text-sm font-medium"
             >
-              <ng-icon name="bootstrapCheckLg" class="text-xl"></ng-icon>
-              <span>Envío rápido a través de Laelsi</span>
+              <ng-icon name="bootstrapShop" class="text-xl"></ng-icon>
+              <span>Retirás tu compra en nuestro local de Rosario</span>
             </div>
             <div
               class="flex items-center gap-3 text-blue-800 text-sm font-medium"

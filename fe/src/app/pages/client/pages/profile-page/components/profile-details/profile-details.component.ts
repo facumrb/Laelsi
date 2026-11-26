@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -8,6 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -46,6 +48,7 @@ import { TrimInputDirective } from '@shared/directives/trim-input.directive';
     TrimInputDirective,
     ListboxDirective,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   viewProviders: [
     provideIcons({
       bootstrapPerson,
@@ -64,11 +67,15 @@ export class ProfileDetailsComponent {
   private alertService = inject(AlertService);
   private currentPasswordService = inject(CurrentPasswordService);
 
+  // Perfil que muestra el formulario. Lo pasa ProfilePageComponent al activar la pestaña
   profile = input<IApiClient | null>(null);
 
+  // Avisa que se guardaron los datos, para recargar el perfil
   profileUpdated = output<void>();
 
+  // Guardado en curso: desde que se pide la contraseña (si hace falta) hasta que responde el servidor
   saving = signal(false);
+  // Opciones del menú de condición fiscal
   fiscalConditions = Object.values(FiscalCondition);
   isFiscalMenuOpen = signal(false);
 
@@ -134,6 +141,13 @@ export class ProfileDetailsComponent {
   // Valores con los que se cargó el formulario: sirven para saber si hay cambios y para descartarlos
   private initialValue = signal<string | null>(null);
   private formValue = toSignal(this.formPerfil.valueChanges);
+  /*
+  Estado del formulario como signal: las validaciones asíncronas (DNI, email y CUIT ya usados) terminan
+  sin un evento de la plantilla y, con OnPush, el botón de guardar no se enteraría
+  */
+  private formStatus = toSignal(this.formPerfil.statusChanges, {
+    initialValue: this.formPerfil.status,
+  });
 
   hasChanges = computed(() => {
     this.formValue();
@@ -144,6 +158,11 @@ export class ProfileDetailsComponent {
     );
   });
 
+  // Se puede guardar con cambios, el formulario válido y ningún guardado en curso
+  canSubmit = computed(
+    () => this.formStatus() === 'VALID' && this.hasChanges() && !this.saving(),
+  );
+
   constructor() {
     effect(() => {
       const profile = this.profile();
@@ -153,15 +172,18 @@ export class ProfileDetailsComponent {
     });
   }
 
+  // Abre o cierra el menú de condición fiscal
   toggleFiscalMenu() {
     this.isFiscalMenuOpen.update((v) => !v);
   }
 
+  // Elige una condición fiscal y cierra el menú
   selectFiscalCondition(condition: FiscalCondition) {
     this.formPerfil.patchValue({ fiscalCondition: condition });
     this.isFiscalMenuOpen.set(false);
   }
 
+  // Carga el perfil en el formulario y lo toma como punto de partida para detectar cambios
   private patchForm(fullUser: IApiClient) {
     this.formPerfil.patchValue({
       // La base guarda NULL en lo que el cliente nunca cargó: el formulario lo muestra vacío
@@ -197,6 +219,7 @@ export class ProfileDetailsComponent {
     this.initialValue.set(JSON.stringify(this.formPerfil.getRawValue()));
   }
 
+  // Vuelve el formulario a los valores con los que se cargó
   discardChanges() {
     const initial = this.initialValue();
     if (initial === null) return;
@@ -205,6 +228,7 @@ export class ProfileDetailsComponent {
   }
 
   async onSubmit() {
+    if (this.saving()) return;
     if (!this.formPerfil.valid) {
       this.formPerfil.markAllAsTouched();
       return;
@@ -214,6 +238,7 @@ export class ProfileDetailsComponent {
     if (!userId) return;
 
     const rawValue = this.formPerfil.getRawValue();
+    this.saving.set(true);
 
     // Cambiar el email de la propia cuenta exige confirmar con la contraseña actual (el servidor lo pide)
     const emailChanged =
@@ -223,10 +248,13 @@ export class ProfileDetailsComponent {
       editingOwnAccount: true,
       changesEmail: emailChanged,
       changesPassword: false,
+      username: this.profile()?.username,
     });
-    if (currentPassword === null) return; // la persona canceló: no se guarda nada
-
-    this.saving.set(true);
+    if (currentPassword === null) {
+      // La persona canceló: no se guarda nada
+      this.saving.set(false);
+      return;
+    }
 
     const clientData: IUpdateClient = {
       name: rawValue.name,
@@ -249,15 +277,16 @@ export class ProfileDetailsComponent {
       ...(currentPassword ? { currentPassword } : {}),
     };
 
-    this.apiClientService.updateClient(userId, clientData).subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.alertService.toast('Perfil actualizado correctamente', 'success');
-        this.profileUpdated.emit();
-      },
-      error: () => {
-        this.saving.set(false);
-      },
-    });
+    this.apiClientService
+      .updateClient(userId, clientData)
+      .pipe(finalize(() => this.saving.set(false)))
+      .subscribe({
+        next: () => {
+          this.alertService.toast('Perfil actualizado correctamente', 'success');
+          this.profileUpdated.emit();
+        },
+        // El errorInterceptor ya avisó: el formulario queda como estaba para reintentar
+        error: () => undefined,
+      });
   }
 }

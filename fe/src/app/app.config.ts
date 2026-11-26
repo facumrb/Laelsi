@@ -7,7 +7,7 @@ import {
   provideBrowserGlobalErrorListeners,
   provideZonelessChangeDetection,
 } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { routes } from './app.routes';
 import {
   provideHttpClient,
@@ -25,6 +25,7 @@ import { authInterceptor } from './interceptors/auth.interceptor';
 import { errorInterceptor } from './interceptors/error.interceptor';
 import { AppUpdateService } from '@services/app-update.service';
 import { NavigationHistoryService } from '@services/navigation-history.service';
+import { ScrollNavegacionService } from '@services/scroll-navegacion.service';
 import { SeoService } from '@services/seo.service';
 
 registerLocaleData(localeEsAr);
@@ -46,7 +47,11 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZonelessChangeDetection(),
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
+    // El router avisa cada navegación con un evento Scroll y ScrollNavegacionService decide cómo desplazar
+    provideRouter(
+      routes,
+      withInMemoryScrolling({ scrollPositionRestoration: 'disabled' }),
+    ),
     provideHttpClient(
       withFetch(),
       withInterceptors([authInterceptor, errorInterceptor]),
@@ -59,6 +64,7 @@ export const appConfig: ApplicationConfig = {
     { provide: LOCALE_ID, useValue: 'es-AR' },
     provideAppInitializer(() => {
       inject(NavigationHistoryService);
+      inject(ScrollNavegacionService);
       inject(SeoService);
 
       // Pregunta si actualizar cuando hay una versión nueva del sitio (si no, el navegador sigue mostrando la vieja)

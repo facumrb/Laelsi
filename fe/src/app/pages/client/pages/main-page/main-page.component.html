@@ -64,53 +64,34 @@
 
   <div>
     @if (loading()) {
-      <!-- Mientras carga: esqueletos que reservan el lugar de los carruseles. Se muestran los "más vendidos" y una sección de categoría, que es lo que entra en la primera pantalla -->
+      <!-- Mientras carga: esqueletos que reservan el lugar de los carruseles -->
       <div aria-busy="true">
         <p role="status" class="sr-only">Cargando productos…</p>
-        <section class="mb-10">
-          <div
-            class="bg-white rounded-2xl shadow-sm border border-gray-200 px-4 py-3 md:px-8 md:py-5 relative overflow-hidden"
-          >
-            <div class="flex h-9 md:h-10 items-center mb-2">
-              <div
-                class="h-7 w-64 max-w-full animate-pulse rounded-md bg-gray-200"
-              ></div>
-            </div>
-            <div class="flex overflow-hidden gap-4 md:gap-6 pt-3 pb-4">
-              @for (n of skeletonCards; track n) {
+        @for (section of skeletonSections; track section.id) {
+          <section class="mb-10">
+            <div
+              class="bg-white rounded-2xl shadow-sm border border-gray-200 px-4 py-3 md:px-8 md:py-5 relative overflow-hidden"
+            >
+              <div class="flex h-9 md:h-10 items-center mb-2">
                 <div
-                  class="flex-none w-[calc(50%-0.5rem)] md:w-[calc(33.333%-1rem)] lg:w-[calc(25%-1.125rem)] xl:w-[calc(20%-1.2rem)]"
-                >
-                  <app-product-card-skeleton />
-                </div>
-              }
+                  class="w-64 max-w-full animate-pulse rounded-md bg-gray-200"
+                  [class]="section.titleClass"
+                ></div>
+              </div>
+              <div class="flex overflow-hidden gap-4 md:gap-6 pt-3 pb-4">
+                @for (n of skeletonCards; track n) {
+                  <div
+                    class="flex-none w-[calc(50%-0.5rem)] md:w-[calc(33.333%-1rem)] lg:w-[calc(25%-1.125rem)] xl:w-[calc(20%-1.2rem)]"
+                  >
+                    <app-product-card-skeleton />
+                  </div>
+                }
+              </div>
             </div>
-          </div>
-        </section>
-        <section class="mb-10">
-          <div
-            class="bg-white rounded-2xl shadow-sm border border-gray-200 px-4 py-3 md:px-8 md:py-5 relative overflow-hidden"
-          >
-            <div class="flex h-9 md:h-10 items-center mb-2">
-              <div
-                class="h-6 w-64 max-w-full animate-pulse rounded-md bg-gray-200"
-              ></div>
-            </div>
-            <div class="flex overflow-hidden gap-4 md:gap-6 pt-3 pb-4">
-              @for (n of skeletonCards; track n) {
-                <div
-                  class="flex-none w-[calc(50%-0.5rem)] md:w-[calc(33.333%-1rem)] lg:w-[calc(25%-1.125rem)] xl:w-[calc(20%-1.2rem)]"
-                >
-                  <app-product-card-skeleton />
-                </div>
-              }
-            </div>
-          </div>
-        </section>
+          </section>
+        }
       </div>
-    }
-
-    @if (!loading()) {
+    } @else {
       <div class="animate-fade-in duration-700">
         @if (globalBestSellers().length > 0) {
           <section class="mb-10">
@@ -119,7 +100,7 @@
             >
               <div class="flex items-center justify-between mb-2 relative z-10">
                 <h2
-                  class="text-3xl font-bold text-gray-800 border-l-4 border-blue-600 pl-2"
+                  class="text-3xl font-bold text-gray-800 border-l-4 border-blue-600 pl-3"
                 >
                   Más vendidos
                 </h2>
@@ -163,7 +144,7 @@
             >
               <div class="flex items-center justify-between mb-2 relative z-10">
                 <h2
-                  class="text-2xl font-bold text-gray-800 border-l-4 border-blue-600 pl-4"
+                  class="text-2xl font-bold text-gray-800 border-l-4 border-blue-600 pl-3"
                 >
                   {{ item.category.name }} -
                   <span class="text-blue-600">Más Populares</span>

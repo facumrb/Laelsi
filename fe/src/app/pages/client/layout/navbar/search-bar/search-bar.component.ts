@@ -15,6 +15,7 @@ import { catchError, EMPTY, of, Subject, switchMap, tap, timer } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
 import { ProductImageComponent } from '@shared/components/product-image/product-image.component';
+import { precioVigente } from '@shared/utils/precio-vigente';
 
 // Cantidad de sugerencias que se piden al servicio y que se muestran en el autocompletado.
 const MAX_SUGERENCIAS = 6;
@@ -97,14 +98,12 @@ export class SearchBarComponent {
 
   // Extrae del producto el monto del precio marcado como 'actual'.
   getProductPrice(product: IApiProduct): number {
-    const currentPrice = product.prices?.find((p) => p.isCurrent);
-    return currentPrice ? currentPrice.amount : 0;
+    return precioVigente(product.prices)?.amount ?? 0;
   }
 
   // Extrae la denominación (USD, ARS, etc) del precio activo del producto.
   getProductCurrency(product: IApiProduct): string {
-    const currentPrice = product.prices?.find((p) => p.isCurrent);
-    return currentPrice ? currentPrice.currency : 'ARS';
+    return precioVigente(product.prices)?.currency ?? 'ARS';
   }
 
   // Registra cada tipeo del usuario y lo inserta en el flujo reactivo de búsqueda.

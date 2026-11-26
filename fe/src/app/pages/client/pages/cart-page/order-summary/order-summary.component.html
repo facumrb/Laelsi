@@ -86,7 +86,7 @@
       >
         <ng-icon name="bootstrapInfoCircle" class="mt-0.5"></ng-icon>
         <span>
-          Por el momento no hacemos envios. Podes coordinar con nosotros el
+          Por el momento no hacemos envíos. Podés coordinar con nosotros el
           retiro luego de la compra.
         </span>
       </div>
@@ -210,6 +210,7 @@
     }
 
     <button
+      type="button"
       (click)="checkout()"
       [disabled]="confirmDisabled()"
       class="w-full text-white font-bold py-3 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2"
@@ -219,12 +220,13 @@
           : 'bg-brand hover:bg-brand-hover shadow-blue-900/10 active:scale-[0.98] cursor-pointer'
       "
     >
-      <span>Confirmar Pedido</span>
+      <span>{{ saving() ? "Enviando pedido…" : "Confirmar Pedido" }}</span>
     </button>
 
     <a
       [href]="whatsAppLink()"
       target="_blank"
+      rel="noopener"
       class="w-full flex items-center justify-center gap-2 text-emerald-700 font-bold py-3 rounded-xl border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 transition-all active:scale-[0.98]"
     >
       <ng-icon name="bootstrapWhatsapp" class="text-xl"></ng-icon>

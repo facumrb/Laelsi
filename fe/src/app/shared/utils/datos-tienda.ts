@@ -8,6 +8,10 @@ Sin dependencias de Angular ni del navegador, porque también lo usan las págin
 export const DATOS_TIENDA = {
   // WhatsApp de la tienda tal como se muestra. El enlace usa solo sus dígitos
   whatsapp: '+54 9 341 712-1860',
+  // Calle y número del local, para mencionarlo en un texto
+  calle: '9 de Julio 2325',
+  // Dirección completa del local
+  direccion: '9 de Julio 2325, Rosario (2000), Santa Fe, Argentina',
   // Alias de Mercado Pago para pagar por transferencia
   aliasMercadoPago: 'laelsi.libreria.mp',
 } as const;

@@ -39,6 +39,7 @@ import { TrimInputDirective } from '@shared/directives/trim-input.directive';
 import { injectInvalidateCatalog } from '@services/queries/catalog-cache';
 import { injectAllCategoriesQuery } from '@services/queries/category-queries';
 import { StateSelectComponent } from '@admin/components/state-select/state-select.component';
+import { precioVigente } from '@shared/utils/precio-vigente';
 
 @Component({
   selector: 'app-products-form',
@@ -276,12 +277,10 @@ export class ProductsFormComponent implements OnInit {
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: (product) => {
-            const currentPrice = product.prices?.find((p) => p.isCurrent);
-
             this.formProduct.patchValue({
               name: product.name,
               description: product.description,
-              price: currentPrice ? currentPrice.amount : null,
+              price: precioVigente(product.prices)?.amount ?? null,
               brand: product.brand,
               stock: product.stock,
               state: product.state,

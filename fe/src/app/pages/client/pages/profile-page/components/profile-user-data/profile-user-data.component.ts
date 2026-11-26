@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -13,7 +14,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { bootstrapShieldLock } from '@ng-icons/bootstrap-icons';
-import { IApiClient } from '@models/user.model';
+import { IApiClient, IUpdateClient } from '@models/user.model';
 import { ApiClientService } from '@services/api-services/api-client.service';
 import { AlertService } from '@services/alert.service';
 import { PhotoManagerComponent } from '@shared/components/photo-manager/photo-manager.component';
@@ -24,10 +25,10 @@ import { FieldErrorComponent } from '@shared/validators/field-error/field-error.
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
 import { PasswordInputComponent } from '@shared/components/inputs/password/password-input/password-input.component';
 import { PasswordRuleHintComponent } from '@shared/components/inputs/password/password-rule-hint/password-rule-hint.component';
-import { VerifyPasswordModalComponent } from './verify-password-modal/verify-password-modal.component';
+import { VerifyPasswordModalComponent } from '@shared/components/modals/verify-password-modal/verify-password-modal.component';
 
 @Component({
-  selector: 'app-profile-user',
+  selector: 'app-profile-user-data',
   imports: [
     ReactiveFormsModule,
     NgIconComponent,
@@ -38,22 +39,27 @@ import { VerifyPasswordModalComponent } from './verify-password-modal/verify-pas
     PasswordRuleHintComponent,
     VerifyPasswordModalComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   viewProviders: [provideIcons({ bootstrapShieldLock })],
-  templateUrl: './profile-userData.component.html',
+  templateUrl: './profile-user-data.component.html',
 })
-export class ProfileUserComponent {
+export class ProfileUserDataComponent {
   private fb = inject(FormBuilder);
   private apiClientService = inject(ApiClientService);
   private http = inject(HttpClient);
   private alertService = inject(AlertService);
   private authService = inject(AuthService);
 
+  // Perfil que muestra el formulario. Lo pasa ProfilePageComponent al activar la pestaña
   profile = input<IApiClient | null>(null);
 
+  // Avisa que se guardaron los datos, para recargar el perfil
   profileUpdated = output<void>();
   photoManager = viewChild.required(PhotoManagerComponent);
 
+  // Guardado en curso
   saving = signal(false);
+  // Los campos de contraseña nueva se muestran recién después de verificar la actual
   isChangePasswordMode = signal(false);
   showVerifyModal = signal(false);
 
@@ -92,6 +98,13 @@ export class ProfileUserComponent {
   // Valores con los que se cargó el formulario: sirven para saber si hay cambios y para descartarlos
   private initialValue = signal<string | null>(null);
   private formValue = toSignal(this.formUsuario.valueChanges);
+  /*
+  Estado del formulario como signal: la validación asíncrona del nombre de usuario termina sin un evento
+  de la plantilla y, con OnPush, el botón de guardar no se enteraría
+  */
+  private formStatus = toSignal(this.formUsuario.statusChanges, {
+    initialValue: this.formUsuario.status,
+  });
 
   hasChanges = computed(() => {
     this.formValue();
@@ -105,6 +118,11 @@ export class ProfileUserComponent {
   // En modo contraseña también se puede cancelar sin haber escrito nada, para salir de ese modo
   canDiscard = computed(() => this.hasChanges() || this.isChangePasswordMode());
 
+  // Se puede guardar con cambios, el formulario válido y ningún guardado en curso
+  canSubmit = computed(
+    () => this.formStatus() === 'VALID' && this.hasChanges() && !this.saving(),
+  );
+
   constructor() {
     effect(() => {
       const profile = this.profile();
@@ -114,6 +132,7 @@ export class ProfileUserComponent {
     });
   }
 
+  // Carga el perfil en el formulario y lo toma como punto de partida para detectar cambios
   private patchForm(fullUser: IApiClient) {
     this.formUsuario.patchValue({
       username: fullUser.username || '',
@@ -131,6 +150,7 @@ export class ProfileUserComponent {
     this.initialValue.set(JSON.stringify(this.formUsuario.getRawValue()));
   }
 
+  // Descarta los cambios (también la foto) y sale del modo de cambiar contraseña
   discardChanges() {
     const initial = this.initialValue();
     if (initial !== null) this.formUsuario.reset(JSON.parse(initial));
@@ -139,10 +159,12 @@ export class ProfileUserComponent {
     this.verifiedCurrentPassword = null;
   }
 
+  // Pide la contraseña actual antes de dejar escribir una nueva
   startPasswordChange() {
     this.showVerifyModal.set(true);
   }
 
+  // La contraseña actual es correcta: se habilitan los campos de la nueva
   onPasswordVerified(password: string) {
     this.verifiedCurrentPassword = password;
     this.showVerifyModal.set(false);
@@ -151,6 +173,7 @@ export class ProfileUserComponent {
   }
 
   onSubmit() {
+    if (this.saving()) return;
     if (!this.formUsuario.valid) {
       this.formUsuario.markAllAsTouched();
       return;
@@ -162,7 +185,7 @@ export class ProfileUserComponent {
     this.saving.set(true);
     const rawValue = this.formUsuario.getRawValue();
 
-    const clientData: any = {
+    const clientData: IUpdateClient = {
       username: rawValue.username,
     };
     if (rawValue.password && rawValue.password.trim() !== '') {
@@ -181,7 +204,7 @@ export class ProfileUserComponent {
         switchMap(() =>
           nuevaContrasena
             ? this.authService.renewSessionAfterPasswordChange(
-                clientData.username,
+                rawValue.username,
                 nuevaContrasena,
               )
             : of(true),
@@ -207,8 +230,8 @@ export class ProfileUserComponent {
           // La foto ya se guardó: sin esto el archivo queda pendiente y un segundo guardado lo vuelve a subir
           this.photoManager().markSaved();
           this.alertService.toast('Datos de usuario actualizados', 'success');
-          this.formUsuario.get('password')?.setValue('');
-          this.formUsuario.get('confirmPassword')?.setValue('');
+          this.formUsuario.controls.password.setValue('');
+          this.formUsuario.controls.confirmPassword.setValue('');
           this.profileUpdated.emit();
         },
         error: () => {

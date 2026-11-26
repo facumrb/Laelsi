@@ -89,3 +89,19 @@ export function productosDelSubarbol(
   }
   return resultado;
 }
+
+/*
+Breadcrumb de una categoría: de la raíz hasta ella, cada paso con el enlace a su página.
+Lo usan la página de la categoría y la del producto.
+*/
+export function pasosDeCategoria(
+  categoria: IApiCategory,
+): { label: string; url: string }[] {
+  const pasos: { label: string; url: string }[] = [];
+  let actual: IApiCategory | null | undefined = categoria;
+  while (actual) {
+    pasos.unshift({ label: actual.name, url: `/category/${actual.id}` });
+    actual = actual.parent;
+  }
+  return pasos;
+}

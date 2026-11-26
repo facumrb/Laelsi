@@ -4,9 +4,9 @@
   <!-- El encabezado siempre ocupa su lugar: mientras carga la categoría se ve una barra gris de la altura del
        título (ID 70: antes aparecía recién después y empujaba todo lo de abajo) -->
   <header class="section-header">
-    @if (category()) {
+    @if (category(); as cat) {
       <h1 class="section-title">
-        <span class="text-accent-coral">{{ category()?.name }}</span>
+        <span class="text-accent-coral">{{ cat.name }}</span>
       </h1>
     } @else {
       <div
@@ -21,6 +21,9 @@
       [(priceOrder)]="priceOrder"
       [(brandFilter)]="brandFilter"
       [(popularityOrder)]="popularityOrder"
+      (priceOrderChange)="onFilterChange()"
+      (brandFilterChange)="onFilterChange()"
+      (popularityOrderChange)="onFilterChange()"
       [brands]="availableBrands()"
     />
   </section>
@@ -33,7 +36,7 @@
         <app-product-card-skeleton />
       }
     } @else {
-      @for (product of productsFiltered(); track product.id) {
+      @for (product of products(); track product.id) {
         <app-product-card
           [product]="product"
           [prioritaria]="$index < tarjetasPrioritarias"

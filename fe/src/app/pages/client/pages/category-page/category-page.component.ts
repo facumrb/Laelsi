@@ -1,12 +1,13 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   inject,
-  OnInit,
   signal,
   computed,
   effect,
   linkedSignal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductCardComponent } from '@client/components/product-card/product-card.component';
 import { ProductCardSkeletonComponent } from '@client/components/product-card-skeleton/product-card-skeleton.component';
@@ -25,6 +26,7 @@ import { combineLatest } from 'rxjs';
 import { InactiveCategoryModalComponent } from './inactive-category-modal/inactive-category-modal.component';
 import { injectCategoryDetailQuery } from '@services/queries/category-queries';
 import { injectActiveProductsQuery } from '@services/queries/product-queries';
+import { pasosDeCategoria } from '@shared/utils/category-tree';
 
 @Component({
   selector: 'app-category-page',
@@ -36,9 +38,10 @@ import { injectActiveProductsQuery } from '@services/queries/product-queries';
     PaginationComponent,
     InactiveCategoryModalComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './category-page.component.html',
 })
-export class CategoryPageComponent implements OnInit {
+export class CategoryPageComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -51,9 +54,8 @@ export class CategoryPageComponent implements OnInit {
   category = computed<IApiCategory | null>(
     () => this.categoryQuery.data() ?? null,
   );
-  // Todas las marcas de la categoría: las informa el servidor, porque con la paginación los
-  // productos de la página actual no alcanzan para armar la lista completa
-  availableBrands = computed(() => this.productsQuery.data()?.brands ?? []);
+
+  showInactiveCategoryModal = signal<boolean>(false);
 
   priceOrder = signal<PriceOrder>('Defecto');
   brandFilter = signal<string>('Todas');
@@ -71,30 +73,15 @@ export class CategoryPageComponent implements OnInit {
     computation: () => 1,
   });
 
+  // El camino de la categoría. La actual es la página en la que estamos: va sin link
   breadcrumbSteps = computed<BreadcrumbStep[]>(() => {
     const cat = this.category();
     if (!cat) return [];
 
-    const steps: BreadcrumbStep[] = [];
-
-    const buildPath = (current: IApiCategory) => {
-      steps.unshift({
-        label: current.name,
-        url: `/category/${current.id}`,
-      });
-      if (current.parent) {
-        buildPath(current.parent);
-      }
-    };
-
-    buildPath(cat);
-
-    // La categoría actual es la página en la que estamos: va sin link
+    const steps: BreadcrumbStep[] = pasosDeCategoria(cat);
     steps[steps.length - 1] = { label: cat.name };
     return steps;
   });
-
-  showInactiveCategoryModal = signal<boolean>(false);
 
   // Filtros agrupados que consume la query (cada combinación se cachea por separado)
   private activeFilters = computed(() => ({
@@ -113,11 +100,12 @@ export class CategoryPageComponent implements OnInit {
     enabled: this.isQueryEnabled,
   });
 
-  private productsRaw = computed(() => this.productsQuery.data()?.data ?? []);
+  // Los productos ya vienen filtrados, ordenados y paginados del server
+  products = computed(() => this.productsQuery.data()?.data ?? []);
   totalPages = computed(() => this.productsQuery.data()?.totalPages ?? 1);
-
-  // Los productos ya vienen filtrados y ordenados del server
-  productsFiltered = computed(() => [...this.productsRaw()]);
+  // Todas las marcas de la categoría: las informa el servidor, porque con la paginación los
+  // productos de la página actual no alcanzan para armar la lista completa
+  availableBrands = computed(() => this.productsQuery.data()?.brands ?? []);
 
   // Mientras no hay datos (primera carga, o un filtro o página nuevos) se muestran esqueletos en lugar de la grilla:
   // reservan el lugar y evitan el salto de diseño y el cartel falso de "no hay productos" (ID 70)
@@ -139,13 +127,12 @@ export class CategoryPageComponent implements OnInit {
         this.showInactiveCategoryModal.set(true);
       }
     });
-  }
 
-  ngOnInit(): void {
     // Escuchamos el ID de la categoría y la página de la URL. Al actualizar los signals,
     // TanStack Query trae los datos del caché o del server según corresponda.
-    combineLatest([this.route.paramMap, this.route.queryParamMap]).subscribe(
-      ([params, queryParams]) => {
+    combineLatest([this.route.paramMap, this.route.queryParamMap])
+      .pipe(takeUntilDestroyed())
+      .subscribe(([params, queryParams]) => {
         const id = Number(params.get('id'));
 
         if (!id) {
@@ -153,11 +140,12 @@ export class CategoryPageComponent implements OnInit {
           return;
         }
 
-        const pageParam = queryParams.get('page');
-        this.currentPage.set(Number(pageParam) || 1);
+        // Otra categoría empieza sin los filtros de la anterior (sus marcas pueden no existir acá)
+        if (id !== this.currentCategoryId()) this.resetFilters();
+
+        this.currentPage.set(Number(queryParams.get('page')) || 1);
         this.currentCategoryId.set(id);
-      },
-    );
+      });
   }
 
   onPageChange(page: number) {
@@ -169,8 +157,24 @@ export class CategoryPageComponent implements OnInit {
     });
   }
 
+  // Al cambiar un filtro se vuelve a la página 1, así que la página deja de ir en la URL
+  onFilterChange() {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page: null },
+      queryParamsHandling: 'merge',
+    });
+  }
+
   closeInactiveModal() {
     this.showInactiveCategoryModal.set(false);
     this.router.navigate(['/']);
+  }
+
+  // Vuelve los filtros a sus valores iniciales
+  private resetFilters() {
+    this.priceOrder.set('Defecto');
+    this.brandFilter.set('Todas');
+    this.popularityOrder.set('Defecto');
   }
 }

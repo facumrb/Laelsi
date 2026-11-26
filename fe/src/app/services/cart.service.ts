@@ -2,6 +2,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { ICartItem } from '@models/cart.model';
 import { IApiProduct, ProductState } from '@models/product.model';
 import { ApiProductService } from '@services/api-services/api-product.service';
+import { precioVigente } from '@shared/utils/precio-vigente';
 import {
   DisponibilidadEnCarrito,
   disponibilidadEnCarrito,
@@ -39,7 +40,7 @@ export class CartService {
   totalAmount = computed(() =>
     this.cartItemsSignal().reduce((acc, item) => {
       if (!this.availabilityOf(item.product.id).disponible) return acc;
-      const price = item.product.prices?.find((p) => p.isCurrent)?.amount || 0;
+      const price = precioVigente(item.product.prices)?.amount ?? 0;
       return acc + price * item.quantity;
     }, 0),
   );

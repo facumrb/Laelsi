@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -14,7 +14,8 @@ import { CartService } from '@services/cart.service';
 import { AlertService } from '@services/alert.service';
 import { ProductImageComponent } from '@shared/components/product-image/product-image.component';
 import { mensajeDeConsultaPorWhatsApp } from '@shared/utils/disponibilidad-producto';
-import { LEGAL_INFO } from '@client/pages/footer-pages/legal-info';
+import { enlaceWhatsappTienda } from '@shared/utils/datos-tienda';
+import { precioVigente } from '@shared/utils/precio-vigente';
 
 @Component({
   selector: 'app-cart-items',
@@ -28,6 +29,7 @@ import { LEGAL_INFO } from '@client/pages/footer-pages/legal-info';
       bootstrapExclamationTriangleFill,
     }),
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './cart-items.component.html',
 })
 export class CartItemsComponent {
@@ -36,8 +38,9 @@ export class CartItemsComponent {
 
   items = this.cartService.items;
 
+  // Precio por unidad del producto (0 si no tiene uno vigente)
   getCurrentPrice(product: IApiProduct): number {
-    return product.prices?.find((p) => p.isCurrent)?.amount || 0;
+    return precioVigente(product.prices)?.amount ?? 0;
   }
 
   // Aviso de un producto pausado o inactivo
@@ -47,17 +50,20 @@ export class CartItemsComponent {
 
   // Consulta prearmada por WhatsApp para saber cuándo vuelve un producto pausado
   whatsAppUrl(productName: string): string {
-    return `${LEGAL_INFO.whatsappUrl}?text=${encodeURIComponent(mensajeDeConsultaPorWhatsApp(productName))}`;
+    return enlaceWhatsappTienda(mensajeDeConsultaPorWhatsApp(productName));
   }
 
+  // Cambia la cantidad de un producto del carrito
   updateQuantity(productId: number, quantity: number) {
     this.cartService.updateQuantity(productId, quantity);
   }
 
+  // Quita un producto del carrito
   removeItem(productId: number) {
     this.cartService.removeFromCart(productId);
   }
 
+  // Vacía el carrito, previa confirmación
   async clearCart() {
     const isConfirmed = await this.alertService.confirmDelete(
       'Se eliminarán todos los productos seleccionados',

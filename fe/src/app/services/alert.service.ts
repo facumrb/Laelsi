@@ -126,26 +126,14 @@ export class AlertService {
     });
   }
 
-  /**
-   * Pide la contraseña actual de la cuenta. Se usa para confirmar el cambio del email o de la
-   * contraseña propios: con solo la sesión iniciada no alcanza. Devuelve null si la persona cancela.
-   * Un valor vacío o de solo espacios muestra el error y el diálogo sigue abierto. Cualquier otro valor se devuelve
-   * tal cual, sin recortar: los espacios pueden ser parte de la contraseña.
-   */
-  askCurrentPassword(text: string): Promise<string | null> {
-    return this.dialogos.pedirDato({
-      titulo: 'Confirmá que sos vos',
-      mensaje: text,
-      tipo: 'password',
-      etiqueta: 'Contraseña actual',
-      placeholder: 'Tu contraseña actual',
-      autocomplete: 'current-password',
-      autocapitalize: 'off',
-      autocorrect: 'off',
-      textoConfirmar: 'Confirmar',
-      textoCancelar: 'Cancelar',
-      validar: (valor) =>
-        valor.trim() ? null : 'Tenés que ingresar tu contraseña actual',
-    });
+  /*
+  Pide la contraseña actual de la cuenta, en el mismo modal que se usa para cambiar la contraseña
+  (VerifyPasswordModalComponent: con el botón para verla y verificada en el servidor antes de cerrar).
+  Confirma el cambio del email o de la contraseña propios: con solo la sesión iniciada no alcanza.
+  Devuelve la contraseña tal cual (los espacios pueden ser parte de ella), o null si la persona cancela.
+  usuario: el de la cuenta, para que el navegador ofrezca la contraseña guardada.
+  */
+  askCurrentPassword(text: string, usuario?: string): Promise<string | null> {
+    return this.dialogos.verificarContrasena({ mensaje: text, usuario });
   }
 }

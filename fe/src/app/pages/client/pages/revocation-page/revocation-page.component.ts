@@ -1,4 +1,10 @@
-import { Component, inject, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -19,17 +25,17 @@ import { PhoneInputDirective } from '@shared/directives/phone-input.directive';
 import { NumericInputDirective } from '@shared/directives/numeric-input.directive';
 import { TurnstileComponent } from '@shared/components/turnstile/turnstile.component';
 import { environment } from '@environments/environment';
-import { LEGAL_INFO } from '../footer-pages/legal-info';
+import { LEGAL_INFO } from '@client/pages/footer-pages/legal-info';
 
-/**
- * Botón de arrepentimiento (Disposición 954/2025 de la Subsecretaría de Defensa del Consumidor y
- * Lealtad Comercial).
- *
- * La norma exige que cualquier persona pueda pedir la revocación de su compra SIN registrarse ni
- * hacer otro trámite, y que se le informe un código de identificación por el mismo medio. Por eso
- * esta pantalla es pública y, al enviarla, muestra el código al instante (el servidor además lo
- * manda por email).
- */
+/*
+Botón de arrepentimiento (Disposición 954/2025 de la Subsecretaría de Defensa del Consumidor y
+Lealtad Comercial).
+
+La norma exige que cualquier persona pueda pedir la revocación de su compra SIN registrarse ni
+hacer otro trámite, y que se le informe un código de identificación por el mismo medio. Por eso
+esta pantalla es pública y, al enviarla, muestra el código al instante (el servidor además lo
+manda por email).
+*/
 @Component({
   selector: 'app-revocation-page',
   imports: [
@@ -49,6 +55,7 @@ import { LEGAL_INFO } from '../footer-pages/legal-info';
       bootstrapWhatsapp,
     }),
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './revocation-page.component.html',
 })
 export class RevocationPageComponent {

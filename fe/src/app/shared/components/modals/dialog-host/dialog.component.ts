@@ -14,7 +14,6 @@ import {
   bootstrapExclamationTriangle,
   bootstrapInfoCircle,
   bootstrapQuestionCircle,
-  bootstrapShieldLock,
   bootstrapTelephone,
   bootstrapXCircle,
 } from '@ng-icons/bootstrap-icons';
@@ -23,6 +22,7 @@ import {
   ModalShellComponent,
   ModalTone,
 } from '@shared/components/modals/modal-shell/modal-shell.component';
+import { VerifyPasswordModalComponent } from '@shared/components/modals/verify-password-modal/verify-password-modal.component';
 import type {
   Dialogo,
   SalidaDialogo,
@@ -55,14 +55,17 @@ Foco inicial: el campo, si pide un dato. Si no, el botón de confirmar.
 */
 @Component({
   selector: 'app-dialog',
-  imports: [ModalShellComponent, ModalDescriptionDirective],
+  imports: [
+    ModalShellComponent,
+    ModalDescriptionDirective,
+    VerifyPasswordModalComponent,
+  ],
   viewProviders: [
     provideIcons({
       bootstrapCheckCircle,
       bootstrapExclamationTriangle,
       bootstrapInfoCircle,
       bootstrapQuestionCircle,
-      bootstrapShieldLock,
       bootstrapTelephone,
       bootstrapXCircle,
     }),
@@ -94,22 +97,31 @@ export class DialogComponent {
     const d = this.dialogo();
     return d.clase === 'entrada' ? d : null;
   });
+  protected readonly contrasena = computed(() => {
+    const d = this.dialogo();
+    return d.clase === 'contrasena' ? d : null;
+  });
 
   protected readonly tono = computed<ModalTone>(() => {
     const d = this.dialogo();
-    if (d.clase === 'entrada') return 'info';
+    if (d.clase === 'entrada' || d.clase === 'contrasena') return 'info';
     if (d.clase === 'confirmacion' && d.peligro) return 'danger';
     return TONOS[d.icono];
   });
   protected readonly icono = computed(() => {
     const d = this.dialogo();
-    if (d.clase === 'entrada')
-      return d.tipo === 'tel' ? 'bootstrapTelephone' : 'bootstrapShieldLock';
+    if (d.clase === 'entrada') return 'bootstrapTelephone';
+    if (d.clase === 'contrasena') return '';
     return ICONOS[d.icono];
   });
 
   protected confirmar(): void {
     this.cerrar.emit({ confirmado: true });
+  }
+
+  // La contraseña ya se verificó en el servidor: se devuelve para enviarla con el cambio
+  protected contrasenaVerificada(valor: string): void {
+    this.cerrar.emit({ confirmado: true, valor });
   }
 
   protected descartar(): void {

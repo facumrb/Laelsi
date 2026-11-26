@@ -33,6 +33,8 @@ export class FooterComponent {
   // WhatsApp de la tienda: enlace y número para mostrar
   protected readonly whatsappUrl = enlaceWhatsappTienda();
   protected readonly whatsappTexto = DATOS_TIENDA.whatsapp;
+  // Dirección del local
+  protected readonly direccion = DATOS_TIENDA.direccion;
 
   scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });

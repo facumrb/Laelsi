@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { bootstrapChevronDown } from '@ng-icons/bootstrap-icons';
+import { DATOS_TIENDA } from '@shared/utils/datos-tienda';
 
 interface FaqItem {
   question: string;
@@ -15,10 +16,12 @@ interface FaqItem {
       bootstrapChevronDown,
     }),
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './faq-page.component.html',
 })
 export class FaqPageComponent {
-  faqs: FaqItem[] = [
+  // Preguntas frecuentes, en el orden en que se muestran
+  readonly faqs: FaqItem[] = [
     {
       question: '¿Cómo realizo una compra en Laelsi?',
       answer:
@@ -27,7 +30,7 @@ export class FaqPageComponent {
     {
       question: '¿Realizan envíos a domicilio?',
       answer:
-        'Por el momento no hacemos envíos a domicilio: los pedidos se retiran en nuestro local de Rosario (9 de Julio 2325). Si habilitamos los envíos, lo vamos a informar en el sitio.',
+        `Por el momento no hacemos envíos a domicilio: los pedidos se retiran en nuestro local de Rosario (${DATOS_TIENDA.calle}). Si habilitamos los envíos, lo vamos a informar en el sitio.`,
     },
     {
       question: '¿Cuáles son los medios de pago disponibles?',
@@ -37,7 +40,7 @@ export class FaqPageComponent {
     {
       question: '¿Cómo retiro mi compra en el local?',
       answer:
-        'Retirás tu pedido en 9 de Julio 2325, Rosario, en nuestro horario de atención (figura al pie del sitio). Podés seguir el estado del pedido en Mis Pedidos o consultarnos por WhatsApp.',
+        `Retirás tu pedido en ${DATOS_TIENDA.calle}, Rosario, en nuestro horario de atención (figura al pie del sitio). Podés seguir el estado del pedido en Mis Pedidos o consultarnos por WhatsApp.`,
     },
     {
       question: '¿Puedo cancelar un pedido?',
@@ -60,13 +63,11 @@ export class FaqPageComponent {
     },
   ];
 
+  // Pregunta abierta. Se abre una sola a la vez
   openIndex = signal<number | null>(null);
 
+  // Abre la pregunta, o la cierra si ya estaba abierta
   toggleFaq(index: number): void {
-    if (this.openIndex() === index) {
-      this.openIndex.set(null);
-    } else {
-      this.openIndex.set(index);
-    }
+    this.openIndex.update((actual) => (actual === index ? null : index));
   }
 }
