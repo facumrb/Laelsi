@@ -2,13 +2,14 @@
   class="rounded-full overflow-hidden border border-gray-200 flex items-center justify-center shrink-0 bg-indigo-100"
   [class]="containerClass()"
 >
-  @if (photoUrl()) {
+  @if (photoUrl() && !photoFailed()) {
     <img
       [src]="photoUrl()"
-      [alt]="name() + ' ' + lastName()"
+      [alt]="altText()"
       class="w-full h-full object-cover"
+      (error)="photoFailed.set(true)"
     />
   } @else {
-    <span class="font-bold text-[#3d4494]">{{ initials() }}</span>
+    <span class="font-bold text-brand">{{ initials() }}</span>
   }
 </div>

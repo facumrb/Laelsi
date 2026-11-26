@@ -5,6 +5,7 @@ import { IApiProduct } from '@models/product.model';
 import { ProductStatusBadgeComponent } from '@client/components/product-status-badge/product-status-badge.component';
 import { AddToCartControlComponent } from '@client/components/add-to-cart-control/add-to-cart-control.component';
 import { ProductImageComponent } from '@shared/components/product-image/product-image.component';
+import { precioVigente } from '@shared/utils/precio-vigente';
 
 @Component({
   selector: 'app-product-card',
@@ -28,13 +29,7 @@ export class ProductCardComponent {
     return (mainPhoto || photos[0]).fileName;
   });
 
-  price = computed(() => {
-    const currentPrice = this.product().prices?.find((p) => p.isCurrent);
-    return currentPrice ? currentPrice.amount : 0;
-  });
-
-  currency = computed(() => {
-    const currentPrice = this.product().prices?.find((p) => p.isCurrent);
-    return currentPrice ? currentPrice.currency : 'ARS';
-  });
+  private currentPrice = computed(() => precioVigente(this.product().prices));
+  price = computed(() => this.currentPrice()?.amount ?? 0);
+  currency = computed(() => this.currentPrice()?.currency ?? 'ARS');
 }

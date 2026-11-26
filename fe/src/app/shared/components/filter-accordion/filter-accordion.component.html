@@ -1,17 +1,20 @@
 <div class="relative" (clickOutside)="isOpen.set(false)">
-  <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+  <h2
+    [id]="labelId"
+    class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2"
+  >
     {{ label() }}
   </h2>
 
   <button
     type="button"
     (click)="toggle()"
-    class="relative w-full cursor-pointer bg-white rounded-lg border border-gray-300 py-2.5 pl-3 pr-10 text-left shadow-sm focus:outline-none focus:ring-1 sm:text-sm transition-colors"
+    class="relative w-full cursor-pointer bg-white rounded-lg border border-gray-300 py-2.5 pl-3 pr-10 text-left shadow-sm focus:outline-hidden focus:ring-1 sm:text-sm transition-colors"
     aria-haspopup="listbox"
     [attr.aria-expanded]="isOpen()"
-    [attr.aria-label]="label()"
+    [attr.aria-labelledby]="labelId + ' ' + valueId"
   >
-    <span class="block truncate text-gray-700">
+    <span [id]="valueId" class="block truncate text-gray-700">
       {{ selectedLabel() }}
     </span>
     <span
@@ -27,7 +30,7 @@
 
   @if (isOpen()) {
     <div
-      class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm animate-fadeIn"
+      class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black focus:outline-hidden sm:text-sm animate-fade-in"
       appListbox
       [attr.aria-label]="label()"
       (closed)="isOpen.set(false)"
@@ -48,7 +51,7 @@
           </span>
           @if (selected() === option.value) {
             <span
-              class="absolute inset-y-0 right-0 flex items-center pr-4 text-[#3d4494]"
+              class="absolute inset-y-0 right-0 flex items-center pr-4 text-brand"
             >
               <ng-icon name="bootstrapCheckLg" class="text-lg"></ng-icon>
             </span>

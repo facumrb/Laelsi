@@ -1,7 +1,12 @@
-import { Directive, ElementRef, HostListener, inject } from '@angular/core';
+import { Directive, ElementRef, inject } from '@angular/core';
 
+// Campo de teléfono: acepta dígitos, espacios, guiones y un + inicial, al tipear y al pegar
 @Directive({
   selector: '[appPhoneInput]',
+  host: {
+    '(keydown)': 'onKeyDown($event)',
+    '(paste)': 'onPaste()',
+  },
 })
 export class PhoneInputDirective {
   private el = inject(ElementRef);
@@ -18,20 +23,15 @@ export class PhoneInputDirective {
     'Escape',
   ];
 
-  @HostListener('keydown', ['$event'])
-  onKeyDown(event: KeyboardEvent) {
+  // Bloquea las teclas que escribirían un carácter no permitido en un teléfono
+  protected onKeyDown(event: KeyboardEvent) {
     if (this.specialKeys.includes(event.key)) return;
 
     // Permitir todas las teclas no imprimibles (F1-F12, Shift, Alt, CapsLock, etc.)
     if (event.key.length > 1) return;
 
-    // Permitir Ctrl/Cmd + a, c, v, x, z
-    if (
-      (event.ctrlKey || event.metaKey) &&
-      ['a', 'c', 'v', 'x', 'z'].includes(event.key.toLowerCase())
-    ) {
-      return;
-    }
+    // Permitir los atajos con Ctrl/Cmd. Con Alt además es AltGr, que escribe caracteres (por ejemplo @)
+    if ((event.ctrlKey || event.metaKey) && !event.altKey) return;
 
     // El + solo es válido al inicio del campo y si no hay ya uno
     if (event.key === '+') {
@@ -50,14 +50,16 @@ export class PhoneInputDirective {
     }
   }
 
-  @HostListener('paste')
-  onPaste() {
-    // No se llama a preventDefault() para cumplir con las buenas prácticas de accesibilidad.
-    // Se sanitiza el valor resultante en el siguiente tick eliminando caracteres inválidos.
+  // Limpia lo pegado y deja solo los caracteres permitidos
+  protected onPaste() {
+    /*
+    No se llama a preventDefault() para cumplir con las buenas prácticas de accesibilidad.
+    Se sanitiza el valor resultante en el siguiente tick eliminando caracteres inválidos.
+    */
     setTimeout(() => {
       const input = this.el.nativeElement as HTMLInputElement;
       const raw = input.value;
-      // El + solo es válido al inicio: lo extraemos, limpiamos el resto y lo reponemos si corresponde
+      // El + solo es válido al inicio: se extrae, se limpia el resto y se repone si corresponde
       const hasLeadingPlus = raw.startsWith('+');
       const digits = raw.replace(/[^0-9\-\s]/g, '');
       const sanitized = hasLeadingPlus ? '+' + digits : digits;

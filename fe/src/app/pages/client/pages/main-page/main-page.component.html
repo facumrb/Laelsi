@@ -1,4 +1,4 @@
-<div class="animate-fadeIn container mx-auto p-4">
+<div class="animate-fade-in container mx-auto p-4">
   <!-- PROVISIONAL-2026-11-08 (arrepentimiento): franja y botón de arrepentimiento, COMENTADOS. Para reactivarlos,
        descomentar este bloque (y los enlaces y la ruta marcados con la misma etiqueta).
 
@@ -12,7 +12,7 @@
     <span>¿Te arrepentiste de tu compra?</span>
     <a
       routerLink="/arrepentimiento"
-      class="rounded-lg border border-[#3d4494] px-3 py-1 font-semibold text-[#3d4494] transition-colors hover:bg-[#3d4494] hover:text-white focus:outline-none focus:ring-2 focus:ring-[#3d4494] focus:ring-offset-2"
+      class="rounded-lg border border-brand px-3 py-1 font-semibold text-brand transition-colors hover:bg-brand hover:text-white focus:outline-hidden focus:ring-2 focus:ring-brand focus:ring-offset-2"
     >
       Botón de arrepentimiento
     </a>
@@ -29,26 +29,25 @@
        escritos acá, como antes, hasta que exista la configuración por negocio (E1). -->
   <header class="mb-8 md:mb-10">
     <div
-      class="relative overflow-hidden rounded-2xl border-2 border-[#2a2f63] bg-[#f7f5fb] px-5 py-8 text-center shadow-[6px_6px_0_0_#2a2f63] sm:px-10 md:px-16 md:py-14 md:shadow-[10px_10px_0_0_#2a2f63]"
+      class="relative overflow-hidden rounded-2xl border-2 border-brand-hover bg-[#f7f5fb] px-5 py-8 text-center shadow-[6px_6px_0_0_#2a2f63] sm:px-10 md:px-16 md:py-14 md:shadow-[10px_10px_0_0_#2a2f63]"
     >
       <div
         aria-hidden="true"
-        class="pointer-events-none absolute -right-5 -top-5 size-20 rounded-full border-2 border-[#2a2f63] bg-[#f4abac] md:-right-6 md:-top-6 md:size-28"
+        class="pointer-events-none absolute -right-5 -top-5 size-20 rounded-full border-2 border-brand-hover bg-accent-pink md:-right-6 md:-top-6 md:size-28"
       ></div>
       <div
         aria-hidden="true"
-        class="pointer-events-none absolute -bottom-8 -left-8 size-20 rotate-12 border-2 border-[#2a2f63] bg-[#3d4494] md:-bottom-10 md:-left-10 md:size-28"
+        class="pointer-events-none absolute -bottom-8 -left-8 size-20 rotate-12 border-2 border-brand-hover bg-brand md:-bottom-10 md:-left-10 md:size-28"
       ></div>
 
       <div class="relative z-10 flex flex-col items-center gap-3 md:gap-4">
         <h1 class="flex flex-col items-center gap-1 md:gap-2">
           <span
-            class="text-3xl font-black tracking-tight text-[#3d4494] sm:text-4xl md:text-5xl"
+            class="text-3xl font-black tracking-tight text-brand sm:text-4xl md:text-5xl"
             >Bienvenidos a</span
           >
           <app-logo
             [width]="240"
-            [height]="125"
             alt="Laelsi"
             loading="eager"
             priority="high"
@@ -65,62 +64,43 @@
 
   <div>
     @if (loading()) {
-      <!-- Mientras carga: esqueletos que reservan el lugar de los carruseles. Se muestran los "más vendidos" y una sección de categoría, que es lo que entra en la primera pantalla -->
+      <!-- Mientras carga: esqueletos que reservan el lugar de los carruseles -->
       <div aria-busy="true">
         <p role="status" class="sr-only">Cargando productos…</p>
-        <section class="mb-10">
-          <div
-            class="bg-white rounded-2xl shadow-sm border border-neutral-200 px-4 py-3 md:px-8 md:py-5 relative overflow-hidden"
-          >
-            <div class="flex h-9 md:h-10 items-center mb-2">
-              <div
-                class="h-7 w-64 max-w-full animate-pulse rounded-md bg-gray-200"
-              ></div>
-            </div>
-            <div class="flex overflow-hidden gap-4 md:gap-6 pt-3 pb-4">
-              @for (n of skeletonCards; track n) {
+        @for (section of skeletonSections; track section.id) {
+          <section class="mb-10">
+            <div
+              class="bg-white rounded-2xl shadow-sm border border-gray-200 px-4 py-3 md:px-8 md:py-5 relative overflow-hidden"
+            >
+              <div class="flex h-9 md:h-10 items-center mb-2">
                 <div
-                  class="flex-none w-[calc(50%-0.5rem)] md:w-[calc(33.333%-1rem)] lg:w-[calc(25%-1.125rem)] xl:w-[calc(20%-1.2rem)]"
-                >
-                  <app-product-card-skeleton />
-                </div>
-              }
+                  class="w-64 max-w-full animate-pulse rounded-md bg-gray-200"
+                  [class]="section.titleClass"
+                ></div>
+              </div>
+              <div class="flex overflow-hidden gap-4 md:gap-6 pt-3 pb-4">
+                @for (n of skeletonCards; track n) {
+                  <div
+                    class="flex-none w-[calc(50%-0.5rem)] md:w-[calc(33.333%-1rem)] lg:w-[calc(25%-1.125rem)] xl:w-[calc(20%-1.2rem)]"
+                  >
+                    <app-product-card-skeleton />
+                  </div>
+                }
+              </div>
             </div>
-          </div>
-        </section>
-        <section class="mb-10">
-          <div
-            class="bg-white rounded-2xl shadow-sm border border-neutral-200 px-4 py-3 md:px-8 md:py-5 relative overflow-hidden"
-          >
-            <div class="flex h-9 md:h-10 items-center mb-2">
-              <div
-                class="h-6 w-64 max-w-full animate-pulse rounded-md bg-gray-200"
-              ></div>
-            </div>
-            <div class="flex overflow-hidden gap-4 md:gap-6 pt-3 pb-4">
-              @for (n of skeletonCards; track n) {
-                <div
-                  class="flex-none w-[calc(50%-0.5rem)] md:w-[calc(33.333%-1rem)] lg:w-[calc(25%-1.125rem)] xl:w-[calc(20%-1.2rem)]"
-                >
-                  <app-product-card-skeleton />
-                </div>
-              }
-            </div>
-          </div>
-        </section>
+          </section>
+        }
       </div>
-    }
-
-    @if (!loading()) {
-      <div class="animate-fadeIn duration-700">
+    } @else {
+      <div class="animate-fade-in duration-700">
         @if (globalBestSellers().length > 0) {
           <section class="mb-10">
             <div
-              class="bg-white rounded-2xl shadow-sm border border-neutral-200 px-4 py-3 md:px-8 md:py-5 relative overflow-hidden group"
+              class="bg-white rounded-2xl shadow-sm border border-gray-200 px-4 py-3 md:px-8 md:py-5 relative overflow-hidden group"
             >
               <div class="flex items-center justify-between mb-2 relative z-10">
                 <h2
-                  class="text-3xl font-bold text-neutral-800 border-l-4 border-blue-600 pl-2"
+                  class="text-3xl font-bold text-gray-800 border-l-4 border-blue-600 pl-3"
                 >
                   Más vendidos
                 </h2>
@@ -160,11 +140,11 @@
         @for (item of categoriesWithBestSellers(); track item.category.id) {
           <section class="mb-10">
             <div
-              class="bg-white rounded-2xl shadow-sm border border-neutral-200 px-4 py-3 md:px-8 md:py-5 relative overflow-hidden group"
+              class="bg-white rounded-2xl shadow-sm border border-gray-200 px-4 py-3 md:px-8 md:py-5 relative overflow-hidden group"
             >
               <div class="flex items-center justify-between mb-2 relative z-10">
                 <h2
-                  class="text-2xl font-bold text-neutral-800 border-l-4 border-blue-600 pl-4"
+                  class="text-2xl font-bold text-gray-800 border-l-4 border-blue-600 pl-3"
                 >
                   {{ item.category.name }} -
                   <span class="text-blue-600">Más Populares</span>
@@ -207,9 +187,9 @@
           categoriesWithBestSellers().length === 0
         ) {
           <div
-            class="text-center p-10 md:p-20 bg-white rounded-2xl shadow-sm border border-neutral-200"
+            class="text-center p-10 md:p-20 bg-white rounded-2xl shadow-sm border border-gray-200"
           >
-            <p class="text-xl text-neutral-500">
+            <p class="text-xl text-gray-500">
               No hay productos destacados para mostrar.
             </p>
           </div>

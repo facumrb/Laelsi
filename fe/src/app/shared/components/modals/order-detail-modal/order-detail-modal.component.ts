@@ -1,18 +1,15 @@
 import {
+  ChangeDetectionStrategy,
   Component,
+  computed,
+  inject,
   input,
   output,
-  OnInit,
-  OnDestroy,
-  inject,
-  computed,
-  HostListener,
 } from '@angular/core';
-import { A11yModule } from '@angular/cdk/a11y';
-import { CurrencyPipe, DOCUMENT } from '@angular/common';
+import { CurrencyPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { FormatDatePipe } from '@shared/pipes/format-date.pipe';
 import { NombrePersonaPipe } from '@shared/pipes/nombre-persona.pipe';
-import { RouterModule } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   bootstrapPerson,
@@ -20,24 +17,21 @@ import {
   bootstrapWhatsapp,
 } from '@ng-icons/bootstrap-icons';
 import { IApiOrder, OrderState, PaymentMethod } from '@models/order.model';
-import { AuthService } from 'src/app/services/auth.service';
-import { CloseModalButtonComponent } from '@shared/components/buttons/close-modal-button/close-modal-button.component';
+import { AuthService } from '@services/auth.service';
 import { ProductImageComponent } from '@shared/components/product-image/product-image.component';
-
-import { BackdropCloseDirective } from '@shared/directives/backdrop-close.directive';
+import { ModalShellComponent } from '@shared/components/modals/modal-shell/modal-shell.component';
+import { DATOS_TIENDA, enlaceWhatsappTienda } from '@shared/utils/datos-tienda';
 
 @Component({
   selector: 'app-order-detail-modal',
   imports: [
-    BackdropCloseDirective,
+    ModalShellComponent,
     NgIconComponent,
     CurrencyPipe,
     FormatDatePipe,
     NombrePersonaPipe,
-    RouterModule,
-    CloseModalButtonComponent,
+    RouterLink,
     ProductImageComponent,
-    A11yModule,
   ],
   viewProviders: [
     provideIcons({
@@ -46,52 +40,33 @@ import { BackdropCloseDirective } from '@shared/directives/backdrop-close.direct
       bootstrapWhatsapp,
     }),
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './order-detail-modal.component.html',
 })
-export class OrderDetailModalComponent implements OnInit, OnDestroy {
+export class OrderDetailModalComponent {
   order = input.required<IApiOrder>();
   showClientInfo = input<boolean>(false); // Opcional: mostrar info de contacto del cliente
   close = output<void>();
-  onCancel = output<number>(); // Emite el ID de la orden a cancelar
+  cancelRequested = output<number>(); // Emite el ID de la orden a cancelar
 
-  mpAlias = 'laelsi.libreria.mp';
-  OrderState = OrderState;
-  PaymentMethod = PaymentMethod;
+  protected readonly mpAlias = DATOS_TIENDA.aliasMercadoPago;
+  protected readonly storeWhatsappText = DATOS_TIENDA.whatsapp;
+  protected readonly OrderState = OrderState;
+  protected readonly PaymentMethod = PaymentMethod;
 
-  private document = inject(DOCUMENT);
   private authService = inject(AuthService);
 
   private nombrePersona = new NombrePersonaPipe();
 
   // Nombre de quien está viendo el pedido (o, sin sesión, del cliente). Nombre y apellido de un cliente son
-  // opcionales (ID 71): sin ellos se usa el correo del cliente en vez de mostrar "null null".
+  // opcionales: sin ellos se usa el correo del cliente en vez de mostrar "null null".
   currentUserName = computed(() => {
     const persona = this.authService.currentUser() ?? this.order().client;
     return this.nombrePersona.transform(persona, this.order().client.email);
   });
 
-  ngOnInit() {
-    this.document.body.style.overflow = 'hidden';
-  }
-
-  ngOnDestroy() {
-    this.document.body.style.overflow = '';
-  }
-
-  onClose() {
-    this.close.emit();
-  }
-
-  @HostListener('document:keydown.escape')
-  onEscapeKey() {
-    // Si hay un modal de cancelación abierto en primer plano, no cerramos este modal
-    if (this.document.querySelector('app-cancel-order-modal')) {
-      return;
-    }
-    this.close.emit();
-  }
-
-  getClientEmailLink(): string {
+  // Correo al cliente con el asunto y el saludo ya escritos
+  clientEmailLink = computed(() => {
     const clientEmail = this.order().client.email;
     const adminName = this.currentUserName();
     const orderId = this.order().id;
@@ -99,25 +74,24 @@ export class OrderDetailModalComponent implements OnInit, OnDestroy {
     const body = `Hola, soy ${adminName}, de la librería Laelsi. Quisiera preguntarle con respecto al pedido de ID ${orderId}.`;
 
     return `mailto:${clientEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  }
+  });
 
-  getStoreWhatsappLink(type: 'comprobante' | 'consulta'): string {
-    const storePhone = '5493417121860';
-    const userName = this.currentUserName();
-    const orderId = this.order().id;
+  // WhatsApp a la tienda para enviar el comprobante de pago
+  storeReceiptLink = computed(() =>
+    enlaceWhatsappTienda(
+      `Hola, soy ${this.currentUserName()}, te adjunto el comprobante del pedido de ID ${this.order().id}.`,
+    ),
+  );
 
-    let message = '';
-    if (type === 'comprobante') {
-      message = `Hola, soy ${userName}, te adjunto el comprobante del pedido de ID ${orderId}.`;
-    } else {
-      message = `Hola, soy ${userName}, tengo una consulta con respecto a mi pedido de ID ${orderId}.`;
-    }
+  // WhatsApp a la tienda para hacer una consulta sobre el pedido
+  storeQueryLink = computed(() =>
+    enlaceWhatsappTienda(
+      `Hola, soy ${this.currentUserName()}, tengo una consulta con respecto a mi pedido de ID ${this.order().id}.`,
+    ),
+  );
 
-    return `https://wa.me/${storePhone}?text=${encodeURIComponent(message)}`;
-  }
-
-  // Null si el cliente no tiene teléfono (el registro rápido y el acceso con Google no lo piden)
-  getClientWhatsappLink(): string | null {
+  // Null si el cliente no tiene teléfono (el registro rápido y el acceso con Google no lo piden, y se puede borrar del perfil)
+  clientWhatsappLink = computed(() => {
     const clientPhone = this.order().client.phone?.replace(/\D/g, '');
     if (!clientPhone) return null;
 
@@ -126,5 +100,9 @@ export class OrderDetailModalComponent implements OnInit, OnDestroy {
     const message = `Hola, soy ${adminName}, de la librería Laelsi. Quisiera preguntarle con respecto al pedido de ID ${orderId}.`;
 
     return `https://wa.me/${clientPhone}?text=${encodeURIComponent(message)}`;
+  });
+
+  onClose() {
+    this.close.emit();
   }
 }

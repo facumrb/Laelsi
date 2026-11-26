@@ -1,10 +1,19 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Location } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { GoBackButtonComponent } from '@shared/components/buttons/go-back-button/go-back-button.component';
+import { FormPageHeaderComponent } from '@admin/components/form-page-header/form-page-header.component';
+import { FormActionsComponent } from '@admin/components/form-actions/form-actions.component';
 import { ApiCategoryService } from '@services/api-services/api-category.service';
 import {
   ICreateCategory,
@@ -14,68 +23,62 @@ import {
 import { ProductDraftService } from '@services/product-draft.service';
 import { AlertService } from '@services/alert.service';
 import { FormUtils } from '@shared/validators/form-utils';
-import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
-import { ListboxDirective } from '@shared/directives/listbox.directive';
-import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import {
-  bootstrapChevronDown,
-  bootstrapCheckLg,
-} from '@ng-icons/bootstrap-icons';
 import { AuditInfoComponent } from '@admin/components/audit-info/audit-info.component';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
 import { CategoryParentSelectComponent } from './components/category-parent-select/category-parent-select.component';
 import { injectInvalidateCatalog } from '@services/queries/catalog-cache';
+import { injectAllCategoriesQuery } from '@services/queries/category-queries';
+import { StateSelectComponent } from '@admin/components/state-select/state-select.component';
 
 @Component({
   selector: 'app-categories-form',
   imports: [
     ReactiveFormsModule,
-    ClickOutsideDirective,
     TrimInputDirective,
-    NgIconComponent,
     AuditInfoComponent,
-    GoBackButtonComponent,
+    FormPageHeaderComponent,
+    FormActionsComponent,
     FieldErrorComponent,
     CategoryParentSelectComponent,
-    ListboxDirective,
+    StateSelectComponent,
   ],
-  viewProviders: [
-    provideIcons({
-      bootstrapChevronDown,
-      bootstrapCheckLg,
-    }),
-  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './categories-form.component.html',
 })
 export class CategoriesFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private routeActive = inject(ActivatedRoute);
-  private location = inject(Location);
+  private destroyRef = inject(DestroyRef);
   private categoryService = inject(ApiCategoryService);
   private alertService = inject(AlertService);
   private draftService = inject(ProductDraftService);
   private http = inject(HttpClient);
   private invalidateCatalog = injectInvalidateCatalog();
 
-  // Estados
   isEditMode = signal(false);
   categoryId = signal<number | null>(null);
-  initialFormValue = signal<string>(''); // Para hasRealChanges
-  initialState = signal<string>('Activo'); // Para AuditInfoComponent
+  // Hay un guardado en curso: evita el doble envío
+  saving = signal(false);
+  // Valor inicial del formulario, para detectar cambios al editar
+  initialFormValue = signal<string>('');
 
-  // Auditoría (signals de auditoria solo lectura)
+  // Datos de auditoría (solo lectura)
+  initialState = signal<CategoryState>(CategoryState.Activo);
   auditCreatedAt = signal<string | null>(null);
   auditUpdatedAt = signal<string | null>(null);
   auditStatusDate = signal<string | null>(null);
 
-  allCategories = signal<IApiCategory[]>([]);
+  private categoriesQuery = injectAllCategoriesQuery();
 
-  // UI State
-  showStateMenu = signal(false);
+  // Lista de categorías para el selector de padre (desde la caché de TanStack Query)
+  allCategories = computed(() => this.categoriesQuery.data() ?? []);
 
-  formCategory = this.fb.group({
+  // Estados que se ofrecen, en el orden en que se muestran
+  readonly stateOptions = Object.values(CategoryState);
+
+  formCategory = this.fb.nonNullable.group({
     name: [
       '',
       [
@@ -91,135 +94,108 @@ export class CategoriesFormComponent implements OnInit {
     parentId: [null as number | null],
   });
 
-  // Seguimiento reactivo del parentId del formulario
-  // initialValue: null asegura que en el estado inicial (sin emisiones aún) el valor sea null (raíz)
-  currentParentId = toSignal(
-    this.formCategory.get('parentId')!.valueChanges.pipe(takeUntilDestroyed()),
-    { initialValue: null as number | null },
-  );
+  // Valor actual del formulario como señal
+  private formValue = toSignal(this.formCategory.valueChanges, {
+    initialValue: this.formCategory.getRawValue(),
+  });
 
-  // Form control values mapping
-  get parentIdControl() {
-    return this.formCategory.get(
-      'parentId',
-    ) as import('@angular/forms').FormControl<number | null>;
-  }
+  // Categoría madre elegida (null = raíz)
+  currentParentId = computed(() => this.formValue().parentId ?? null);
 
   ngOnInit() {
     this.checkEditMode();
-    this.loadAllCategories();
   }
 
-  loadAllCategories() {
-    this.categoryService.getAllCategories().subscribe({
-      next: (categories) => {
-        this.allCategories.set(categories);
-      },
-    });
-  }
-
-  checkEditMode() {
+  private checkEditMode() {
     const id = this.routeActive.snapshot.paramMap.get('id');
     if (id) {
       this.categoryId.set(+id);
       this.isEditMode.set(true);
       this.loadCategory(+id);
     } else {
-      // Validación async para creación
+      // El nombre no se puede repetir
       this.formCategory.controls.name.addAsyncValidators(
         FormUtils.uniqueFieldValidator('Category', 'name', this.http),
       );
     }
   }
 
-  loadCategory(id: number) {
-    this.categoryService.getCategoryById(id).subscribe({
-      next: (category) => {
-        this.formCategory.patchValue({
-          name: category.name,
-          description: category.description || '',
-          state: category.state,
-          parentId: category.parentId ?? category.parent?.id ?? null,
-        });
+  private loadCategory(id: number) {
+    this.categoryService
+      .getCategoryById(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (category) => {
+          this.formCategory.patchValue({
+            name: category.name,
+            description: category.description || '',
+            state: category.state,
+            parentId: category.parentId ?? category.parent?.id ?? null,
+          });
 
-        // Auditoría
-        this.auditCreatedAt.set(category.createdAt);
-        this.auditUpdatedAt.set(category.updatedAt);
-        this.auditStatusDate.set(category.deletedAt || category.createdAt);
+          this.auditCreatedAt.set(category.createdAt);
+          this.auditUpdatedAt.set(category.updatedAt);
+          this.auditStatusDate.set(category.deletedAt || category.createdAt);
 
-        this.initialState.set(category.state);
+          this.initialState.set(category.state);
 
-        // Snapshot para comparación
-        const formSnapshot = this.formCategory.getRawValue();
-        this.initialFormValue.set(JSON.stringify(formSnapshot));
+          const formSnapshot = this.formCategory.getRawValue();
+          this.initialFormValue.set(JSON.stringify(formSnapshot));
 
-        // Validación async para edición
-        this.formCategory.controls.name.setAsyncValidators(
-          FormUtils.uniqueFieldValidator('Category', 'name', this.http, id),
-        );
-      },
-      error: () => {
-        this.location.back();
-      },
-    });
+          // El nombre no se puede repetir (salvo con la propia categoría)
+          this.formCategory.controls.name.setAsyncValidators(
+            FormUtils.uniqueFieldValidator('Category', 'name', this.http, id),
+          );
+        },
+        error: () => {
+          this.router.navigate(['/admin/categories']);
+        },
+      });
   }
 
-  // Lógica de "Cambios Reales"
-  get hasRealChanges(): boolean {
+  // Indica si hay algo para guardar: al crear siempre, al editar si cambió el formulario
+  hasRealChanges = computed(() => {
     if (!this.isEditMode()) return true;
-    const currentJson = JSON.stringify(this.formCategory.getRawValue());
-    return currentJson !== this.initialFormValue();
+    return JSON.stringify(this.formValue()) !== this.initialFormValue();
+  });
+
+  // Destino de "Cancelar" y "Volver": el producto si se vino desde él (con borrador), si no el listado
+  cancelUrl(): string {
+    return this.productDraftToReturn()?.returnUrl ?? '/admin/categories';
   }
 
-  // UI Methods
-  toggleStateMenu() {
-    this.showStateMenu.update((v) => !v);
-  }
-
-  selectState(state: string) {
-    this.formCategory.patchValue({ state: state as CategoryState });
-    this.showStateMenu.set(false);
-  }
-
-  onCancel() {
+  // Borrador del producto desde el que se abrió el formulario (null si no se vino desde uno)
+  private productDraftToReturn() {
     const fromProduct =
       this.routeActive.snapshot.queryParamMap.get('fromProduct');
-    const draft = this.draftService.getDraft();
-
-    if (fromProduct === 'true' && draft) {
-      this.router.navigateByUrl(draft.returnUrl);
-    } else {
-      this.router.navigate(['/admin/categories']);
-    }
+    return fromProduct === 'true' ? this.draftService.getDraft() : null;
   }
 
   onSubmit() {
+    if (this.saving()) return;
     if (!this.formCategory.valid) {
       this.formCategory.markAllAsTouched();
       return;
     }
+    this.saving.set(true);
 
     const formValue = this.formCategory.getRawValue();
     const categoryData: ICreateCategory = {
-      name: formValue.name!,
+      name: formValue.name,
       description: formValue.description || null,
-      state: formValue.state!,
+      state: formValue.state,
       parentId: formValue.parentId || null,
     };
 
-    let request$;
-    if (this.isEditMode() && this.categoryId()) {
-      request$ = this.categoryService.updateCategory(
-        this.categoryId()!,
-        categoryData,
-      );
-    } else {
-      request$ = this.categoryService.addCategory(categoryData);
-    }
+    const categoryId = this.categoryId();
+    const request$ =
+      this.isEditMode() && categoryId
+        ? this.categoryService.updateCategory(categoryId, categoryData)
+        : this.categoryService.addCategory(categoryData);
 
-    request$.subscribe({
+    request$.pipe(finalize(() => this.saving.set(false))).subscribe({
       next: (response: IApiCategory) => {
-        // La categoría cambió: invalidamos el caché para que los listados se recarguen
+        // La categoría cambió: los listados se vuelven a pedir
         this.invalidateCatalog();
 
         this.alertService.toast(
@@ -227,12 +203,9 @@ export class CategoriesFormComponent implements OnInit {
           'success',
         );
 
-        // Si venimos de la creación de producto, volvemos allí usando la returnUrl
-        const fromProduct =
-          this.routeActive.snapshot.queryParamMap.get('fromProduct');
-        const draft = this.draftService.getDraft();
-
-        if (fromProduct === 'true' && draft && !this.isEditMode()) {
+        // Si se vino desde un producto, se vuelve a él con la categoría nueva ya elegida
+        const draft = this.productDraftToReturn();
+        if (draft && !this.isEditMode()) {
           this.router.navigateByUrl(
             `${draft.returnUrl}?newCategoryId=${response.id}`,
           );
@@ -241,6 +214,8 @@ export class CategoriesFormComponent implements OnInit {
 
         this.router.navigate(['/admin/categories']);
       },
+      // El aviso del error lo muestra el interceptor
+      error: () => undefined,
     });
   }
 }

@@ -1,12 +1,11 @@
 <div class="flex min-h-dvh flex-col bg-gray-50">
-  <header class="bg-[#3d4494] py-3 text-white">
+  <header class="bg-brand py-3 text-white">
     <div
       class="container mx-auto flex items-center justify-between gap-4 px-4"
     >
       <a routerLink="/" aria-label="Ir al inicio de Laelsi">
         <app-logo
           [width]="128"
-          [height]="48"
           alt="Laelsi"
           loading="eager"
           customClass="h-10 w-auto object-contain"
@@ -14,7 +13,7 @@
       </a>
       <a
         routerLink="/"
-        class="text-sm font-semibold transition-colors hover:text-[#f4abac]"
+        class="text-sm font-semibold transition-colors hover:text-accent-pink"
       >
         &larr; Volver a la tienda
       </a>
@@ -25,23 +24,23 @@
     <ng-content />
   </main>
 
-  <footer class="bg-[#3d4494] py-4 text-xs text-gray-300">
+  <footer class="bg-brand py-4 text-xs text-gray-300">
     <div class="container mx-auto px-4">
       <nav
         aria-label="Enlaces legales"
         class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2"
       >
-        <a routerLink="/privacidad" class="transition-colors hover:text-[#f4abac]"
+        <a routerLink="/privacidad" class="transition-colors hover:text-accent-pink"
           >Política de Privacidad</a
         >
-        <a routerLink="/terminos" class="transition-colors hover:text-[#f4abac]"
+        <a routerLink="/terminos" class="transition-colors hover:text-accent-pink"
           >Términos y Condiciones</a
         >
         <!-- PROVISIONAL-2026-11-08 (arrepentimiento): enlace al botón, comentado. Para reactivarlo,
              descomentar este bloque (y la ruta en client.routes.ts).
         <a
           routerLink="/arrepentimiento"
-          class="transition-colors hover:text-[#f4abac]"
+          class="transition-colors hover:text-accent-pink"
           >Botón de arrepentimiento</a
         >
         -->

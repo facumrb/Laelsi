@@ -1,116 +1,89 @@
-<div
-  class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn duration-200"
-  (backdropClose)="close.emit()"
+<app-modal-shell
+  title="Productos Asociados"
+  size="sm"
+  height="md"
+  [tintedHeader]="true"
+  [flushBody]="true"
+  (close)="close.emit()"
 >
-  <div
-    cdkTrapFocus
-    cdkTrapFocusAutoCapture
-    (click)="$event.stopPropagation()"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="modal-title"
-    class="relative bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden flex flex-col h-130 max-h-[85vh] animate-in zoom-in-95 duration-200"
-  >
-    <div
-      class="px-5 py-4 border-b border-gray-100 flex justify-between items-start bg-gray-50"
-    >
-      <div>
-        <h2
-          id="modal-title"
-          class="text-lg font-bold text-gray-900 leading-tight"
-        >
-          Productos Asociados
-        </h2>
-        <p class="text-sm text-gray-500 mt-1 flex items-center gap-1">
-          Categoría:
-          <span class="font-medium text-[#3d4494]">{{ category().name }}</span>
-        </p>
-      </div>
-      <app-close-modal-button (clicked)="close.emit()"></app-close-modal-button>
-    </div>
+  <p modalSubtitle>
+    Categoría: <span class="font-medium text-brand">{{ category().name }}</span>
+  </p>
 
-    <div class="px-5 py-3 border-b border-gray-50">
-      <div class="h-10 w-full">
-        <app-search-input
-          [(query)]="searchQuery"
-          placeholder="Buscar producto en esta lista..."
-        ></app-search-input>
-      </div>
-    </div>
-
-    <div class="flex-1 overflow-y-auto overscroll-contain p-2">
-      @if (filteredProducts().length > 0) {
-        <ul class="space-y-1">
-          @for (product of filteredProducts(); track product.id) {
-            <li>
-              <button
-                (click)="onNavigateToProduct.emit(product)"
-                class="w-full flex items-center justify-between p-2 rounded-xl hover:bg-indigo-50 group transition-colors text-left cursor-pointer border border-transparent hover:border-indigo-100"
-              >
-                <div class="flex items-center gap-3 min-w-0">
-                  <div class="relative h-10 w-10 shrink-0">
-                    <app-product-image
-                      [imageUrl]="
-                        product.photos && product.photos.length > 0
-                          ? product.photos[0].fileName
-                          : null
-                      "
-                      [altText]="product.name"
-                      containerClass="h-full w-full bg-gray-50"
-                      imageClass="rounded-lg border border-gray-200"
-                    />
-                  </div>
-
-                  <div class="min-w-0">
-                    <div
-                      class="font-medium text-gray-900 text-sm line-clamp-1 group-hover:text-[#3d4494] transition-colors"
-                      title="{{ product.name }}"
-                    >
-                      {{ product.name }}
-                    </div>
-                    @if (product.categoryId !== category().id) {
-                      <div
-                        class="text-xs text-gray-500 line-clamp-1"
-                        title="{{ product.categoryName }}"
-                      >
-                        En {{ product.categoryName }}
-                      </div>
-                    }
-                  </div>
-                </div>
-
-                <div
-                  class="h-10 w-10 flex items-center justify-center rounded-lg text-gray-500 group-hover:text-[#3d4494] transition-all ml-2"
-                >
-                  <ng-icon
-                    name="bootstrapPencilSquare"
-                    class="text-lg"
-                  ></ng-icon>
-                </div>
-              </button>
-            </li>
-          }
-        </ul>
-      } @else {
-        <div
-          class="flex flex-col items-center justify-center py-10 text-gray-500"
-        >
-          <ng-icon
-            name="bootstrapSearch"
-            class="text-3xl mb-2 text-gray-300"
-          ></ng-icon>
-          <p class="text-sm">No se encontraron productos</p>
-        </div>
-      }
-    </div>
-
-    <div
-      class="px-5 py-3 bg-gray-50 border-t border-gray-100 flex items-center text-sm text-gray-500"
-    >
-      <span
-        >Total: {{ filteredProducts().length }}
-        {{ filteredProducts().length === 1 ? "producto" : "productos" }}</span
-      >
+  <div modalStrip class="border-b border-gray-50 px-5 py-3">
+    <div class="h-10 w-full">
+      <app-search-input
+        [(query)]="searchQuery"
+        placeholder="Buscar producto en esta lista..."
+      ></app-search-input>
     </div>
   </div>
-</div>
+
+  <div class="p-2">
+    @if (filteredProducts().length > 0) {
+      <ul class="space-y-1">
+        @for (product of filteredProducts(); track product.id) {
+          <li>
+            <button
+              (click)="onNavigateToProduct.emit(product)"
+              class="w-full flex items-center justify-between p-2 rounded-xl hover:bg-indigo-50 group transition-colors text-left cursor-pointer border border-transparent hover:border-indigo-100"
+            >
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="relative h-10 w-10 shrink-0">
+                  <app-product-image
+                    [imageUrl]="
+                      product.photos && product.photos.length > 0
+                        ? product.photos[0].fileName
+                        : null
+                    "
+                    [altText]="product.name"
+                    containerClass="h-full w-full bg-gray-50"
+                    imageClass="rounded-lg border border-gray-200"
+                  />
+                </div>
+
+                <div class="min-w-0">
+                  <div
+                    class="font-medium text-gray-900 text-sm line-clamp-1 group-hover:text-brand transition-colors"
+                    title="{{ product.name }}"
+                  >
+                    {{ product.name }}
+                  </div>
+                  @if (product.categoryId !== category().id) {
+                    <div
+                      class="text-xs text-gray-500 line-clamp-1"
+                      title="{{ product.categoryName }}"
+                    >
+                      En {{ product.categoryName }}
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div
+                class="h-10 w-10 flex items-center justify-center rounded-lg text-gray-500 group-hover:text-brand transition-all ml-2"
+              >
+                <ng-icon name="bootstrapPencilSquare" class="text-lg"></ng-icon>
+              </div>
+            </button>
+          </li>
+        }
+      </ul>
+    } @else {
+      <div
+        class="flex flex-col items-center justify-center py-10 text-gray-500"
+      >
+        <ng-icon
+          name="bootstrapSearch"
+          class="text-3xl mb-2 text-gray-300"
+        ></ng-icon>
+        <p class="text-sm">No se encontraron productos</p>
+      </div>
+    }
+  </div>
+
+  <p modalFooter class="w-full text-left text-sm text-gray-500">
+    Total: {{ filteredProducts().length }}
+    {{ filteredProducts().length === 1 ? "producto" : "productos" }}
+  </p>
+</app-modal-shell>

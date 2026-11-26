@@ -1,7 +1,13 @@
 import { EntityStateBadgeComponent } from '@admin/components/table-components/entity-state-badge/entity-state-badge.component';
 import { TableActionsComponent } from '@admin/components/table-components/table-actions/table-actions.component';
 import { CurrencyPipe } from '@angular/common';
-import { Component, input, output, model } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  model,
+  output,
+} from '@angular/core';
 import { IApiProduct } from '@models/product.model';
 import { ProductImageComponent } from '@shared/components/product-image/product-image.component';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -12,6 +18,7 @@ import {
   TableSkeletonComponent,
 } from '@admin/components/table-components/table-skeleton/table-skeleton.component';
 import { ActivableDirective } from '@shared/directives/activable.directive';
+import { precioVigente } from '@shared/utils/precio-vigente';
 
 @Component({
   selector: 'app-products-list',
@@ -29,17 +36,20 @@ import { ActivableDirective } from '@shared/directives/activable.directive';
     bootstrapCheck,
   }),
   templateUrl: './products-list.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductsListComponent {
   products = input.required<IApiProduct[]>();
   onEdit = output<IApiProduct>();
   onDelete = output<IApiProduct>();
+  // true cuando hay algún filtro activo (cambia el mensaje de la lista vacía)
   isFilterActive = input<boolean>(false);
 
   // true mientras la página todavía no tiene datos que mostrar
   loading = input<boolean>(false);
   protected skeletonRows = SKELETON_ROWS;
 
+  // Ids de los productos seleccionados para actualizar precios
   selectedIds = model<number[]>([]);
 
   isSelected(id: number): boolean {
@@ -68,12 +78,10 @@ export class ProductsListComponent {
   }
 
   getProductPrice(product: IApiProduct): number {
-    const currentPrice = product.prices?.find((p) => p.isCurrent);
-    return currentPrice ? currentPrice.amount : 0;
+    return precioVigente(product.prices)?.amount ?? 0;
   }
 
   getProductCurrency(product: IApiProduct): string {
-    const currentPrice = product.prices?.find((p) => p.isCurrent);
-    return currentPrice ? currentPrice.currency : 'ARS';
+    return precioVigente(product.prices)?.currency ?? 'ARS';
   }
 }

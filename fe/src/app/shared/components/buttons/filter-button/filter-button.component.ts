@@ -1,4 +1,9 @@
-import { Component, input, model } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  model,
+} from '@angular/core';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   bootstrapFunnel,
@@ -7,6 +12,7 @@ import {
 
 @Component({
   selector: 'app-filter-button',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgIconComponent],
   host: {
     class: 'block w-full h-full sm:w-auto',

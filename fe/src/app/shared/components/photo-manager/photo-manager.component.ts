@@ -1,6 +1,8 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   inject,
   input,
   linkedSignal,
@@ -11,11 +13,17 @@ import { AlertService } from '@services/alert.service';
 import { IApiUserPhoto } from '@models/photo.model';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { bootstrapCamera, bootstrapTrash } from '@ng-icons/bootstrap-icons';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 import { Observable, of } from 'rxjs';
+
+// Formatos que se aceptan (los mismos que anuncia el texto debajo de la foto)
+const FORMATOS_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp'];
+
+let siguienteId = 0;
 
 @Component({
   selector: 'app-photo-manager',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgIconComponent],
   viewProviders: [provideIcons({ bootstrapCamera, bootstrapTrash })],
   templateUrl: './photo-manager.component.html',
@@ -25,11 +33,26 @@ export class PhotoManagerComponent {
   private alertService = inject(AlertService);
   private readonly imageBaseUrl = environment.userImagesUrl;
 
+  // id del input de archivo, único por instancia (lo usa el label con for)
+  protected readonly inputId = `photo-manager-${++siguienteId}-archivo`;
+  protected readonly formatosPermitidos = FORMATOS_PERMITIDOS.join(',');
+
+  // URL temporal (blob:) de la vista previa local, que se libera al reemplazarla o descartarla
+  private objectUrl: string | null = null;
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => this.liberarVistaPrevia());
+  }
+
   currentPhoto = input<IApiUserPhoto | null>(null); // Recibimos la foto actual (o null) desde el padre
 
   previewUrl = linkedSignal({
     source: this.currentPhoto,
-    computation: (photo: IApiUserPhoto | null) => this.photoUrl(photo),
+    computation: (photo: IApiUserPhoto | null) => {
+      // Al llegar otra foto del padre, la vista previa local deja de mostrarse
+      this.liberarVistaPrevia();
+      return this.photoUrl(photo);
+    },
   });
 
   // Guardamos el archivo aquí hasta que el padre llame a saveChanges()
@@ -75,8 +98,8 @@ export class PhotoManagerComponent {
 
     const file = input.files[0];
 
-    if (!file.type.startsWith('image/')) {
-      this.alertService.toast('Solo imágenes permitidas', 'warning');
+    if (!FORMATOS_PERMITIDOS.includes(file.type)) {
+      this.alertService.toast('Solo imágenes JPG, PNG o WEBP', 'warning');
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
@@ -88,12 +111,10 @@ export class PhotoManagerComponent {
     this.pendingFile.set(file);
     this.deletePending.set(false); // Si subo nueva, anulo el borrado
 
-    // Generamos preview local (FileReader) para que el usuario vea la foto
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      this.previewUrl.set(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+    // Generamos preview local (URL temporal del archivo, al instante) para que el usuario vea la foto
+    this.liberarVistaPrevia();
+    this.objectUrl = URL.createObjectURL(file);
+    this.previewUrl.set(this.objectUrl);
   }
 
   // BORRADO VISUAL (Marcar para borrar)
@@ -102,6 +123,7 @@ export class PhotoManagerComponent {
     // Si el usuario subió una foto nueva pero se arrepintió y le dio al tacho
     if (this.pendingFile()) {
       this.pendingFile.set(null);
+      this.liberarVistaPrevia();
       // Restaurar el preview a la foto original
       this.previewUrl.set(this.photoUrl(this.currentPhoto()));
       return;
@@ -117,11 +139,25 @@ export class PhotoManagerComponent {
     }
   }
 
-  /** Descarta el archivo elegido y el borrado pendiente, y vuelve a mostrar `currentPhoto`. */
+  // Descarta el archivo elegido y el borrado pendiente, y vuelve a mostrar `currentPhoto`.
   reset(): void {
     this.pendingFile.set(null);
+    this.liberarVistaPrevia();
     this.deletePending.set(false);
     this.previewUrl.set(this.photoUrl(this.currentPhoto()));
+  }
+
+  // Confirma que los cambios ya se guardaron: no queda nada pendiente y la vista previa sigue igual
+  // hasta que el padre pase la foto nueva en currentPhoto
+  markSaved(): void {
+    this.pendingFile.set(null);
+    this.deletePending.set(false);
+  }
+
+  // Libera la URL temporal de la vista previa local, si hay una
+  private liberarVistaPrevia(): void {
+    if (this.objectUrl) URL.revokeObjectURL(this.objectUrl);
+    this.objectUrl = null;
   }
 
   private photoUrl(photo: IApiUserPhoto | null): string | null {

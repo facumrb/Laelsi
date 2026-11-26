@@ -8,16 +8,14 @@ export const clientGuard: CanActivateFn = (route, state) => {
 
   // Si no está logueado, lo mandamos al login guardando la URL a la que iba
   if (!authService.isLoggedIn()) {
-    router.navigate(['/auth/login'], {
+    return router.createUrlTree(['/auth/login'], {
       queryParams: { returnUrl: state.url },
     });
-    return false;
   }
 
   // Si es Administrador, lo enviamos a su perfil de administrador
   if (authService.isAdmin()) {
-    router.navigate(['/admin/profile']);
-    return false;
+    return router.createUrlTree(['/admin/profile']);
   }
 
   // Si es Cliente (logueado y NO es admin), se permite el acceso

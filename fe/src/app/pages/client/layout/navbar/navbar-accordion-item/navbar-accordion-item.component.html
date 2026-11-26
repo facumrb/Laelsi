@@ -12,7 +12,7 @@
       [class.font-semibold]="depth() === 1"
       [class.text-sm]="depth() > 0"
       [class.font-medium]="depth() >= 2"
-      [style.color]="isActive() ? '#5a2a8a' : null"
+      [class.text-accent-purple]="isActive()"
       [class.text-gray-700]="!isActive() && depth() === 0"
       [class.text-gray-600]="!isActive() && depth() === 1"
       [class.text-gray-500]="!isActive() && depth() >= 2"
@@ -24,13 +24,17 @@
     </a>
 
     <!-- Botón acordeón: expandir/colapsar hijos -->
-    @if (hasChildren) {
+    @if (hasChildren()) {
       <button
         type="button"
         (click)="toggleExpand()"
         [attr.aria-expanded]="isExpanded()"
-        [attr.aria-label]="'Expandir subcategorías de ' + category().name"
-        class="cursor-pointer px-4 py-3 text-gray-400 hover:text-[#3d4494] transition-colors"
+        [attr.aria-label]="
+          (isExpanded() ? 'Contraer' : 'Expandir') +
+          ' subcategorías de ' +
+          category().name
+        "
+        class="cursor-pointer px-4 py-3 text-gray-400 hover:text-brand transition-colors"
       >
         <ng-icon
           name="bootstrapChevronDown"
@@ -42,9 +46,9 @@
   </div>
 
   <!-- Hijos del acordeón (recursivo) -->
-  @if (isExpanded() && hasChildren) {
+  @if (isExpanded() && hasChildren()) {
     <div
-      class="bg-gray-50/50 border-t border-gray-100/50"
+      class="bg-gray-50/50 border-t border-gray-100/50 motion-safe:animate-fade-in"
       role="group"
       [attr.aria-label]="'Subcategorías de ' + category().name"
     >

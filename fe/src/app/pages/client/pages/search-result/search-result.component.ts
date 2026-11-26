@@ -1,13 +1,15 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   inject,
   signal,
   computed,
   linkedSignal,
-  OnInit,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductCardComponent } from '@client/components/product-card/product-card.component';
+import { ProductCardSkeletonComponent } from '@client/components/product-card-skeleton/product-card-skeleton.component';
 import {
   ProductsFilterComponent,
   PriceOrder,
@@ -21,18 +23,18 @@ import { injectActiveProductsQuery } from '@services/queries/product-queries';
   selector: 'app-search-result',
   imports: [
     ProductCardComponent,
+    ProductCardSkeletonComponent,
     ProductsFilterComponent,
     PaginationComponent,
     BreadcrumbsComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './search-result.component.html',
 })
-export class SearchResultComponent implements OnInit {
+export class SearchResultComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  // Todas las marcas de la búsqueda: las informa el servidor, porque con la paginación los
-  // productos de la página actual no alcanzan para armar la lista completa
-  availableBrands = computed(() => this.productsQuery.data()?.brands ?? []);
+
   searchTerm = signal<string>('');
 
   priceOrder = signal<PriceOrder>('Defecto');
@@ -53,11 +55,7 @@ export class SearchResultComponent implements OnInit {
 
   breadcrumbSteps = computed(() => [
     { label: 'Búsqueda' },
-    {
-      label: this.searchTerm()
-        ? `Resultados para "${this.searchTerm()}"`
-        : 'Todos los productos',
-    },
+    { label: `Resultados para "${this.searchTerm()}"` },
   ]);
 
   // Filtros agrupados que consume la query (cada combinación se cachea por separado)
@@ -77,21 +75,36 @@ export class SearchResultComponent implements OnInit {
     enabled: this.isReady,
   });
 
-  private productsRaw = computed(() => this.productsQuery.data()?.data ?? []);
+  // Los productos ya vienen filtrados, ordenados y paginados del server
+  products = computed(() => this.productsQuery.data()?.data ?? []);
   totalPages = computed(() => this.productsQuery.data()?.totalPages ?? 1);
+  // Todas las marcas de la búsqueda: las informa el servidor, porque con la paginación los
+  // productos de la página actual no alcanzan para armar la lista completa
+  availableBrands = computed(() => this.productsQuery.data()?.brands ?? []);
 
-  // Los productos ya vienen filtrados y ordenados del server
-  productsFiltered = computed(() => [...this.productsRaw()]);
+  // Mientras no hay datos se muestran esqueletos: evitan el salto de diseño y el cartel falso de "no hay productos"
+  loadingProducts = computed(() => this.productsQuery.isPending());
+  readonly skeletonCards = [1, 2, 3, 4, 5, 6, 7, 8];
+  // Las que entran en la primera fila de la grilla en celular (2 columnas)
+  readonly tarjetasPrioritarias = 2;
 
-  ngOnInit() {
-    this.route.queryParams.subscribe((params) => {
-      const newQ = params['q'] || '';
-      const newPage = Number(params['page']) || 1;
+  constructor() {
+    // La búsqueda y la página salen de la URL. Al actualizar los signals, TanStack Query trae
+    // los datos del caché o del server según corresponda.
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      const newQ = params.get('q')?.trim() || '';
 
-      // Solo recargar si cambió el query de búsqueda o la página: de eso se encarga
-      // TanStack Query, porque ambos signals forman parte de la queryKey
+      // Sin nada que buscar no hay resultados que mostrar: se vuelve al inicio (Atrás no regresa acá)
+      if (!newQ) {
+        this.router.navigate(['/'], { replaceUrl: true });
+        return;
+      }
+
+      // Una búsqueda nueva empieza sin los filtros de la anterior
+      if (newQ !== this.searchTerm()) this.resetFilters();
+
       this.searchTerm.set(newQ);
-      this.currentPage.set(newPage);
+      this.currentPage.set(Number(params.get('page')) || 1);
       this.isReady.set(true);
     });
   }
@@ -103,5 +116,21 @@ export class SearchResultComponent implements OnInit {
       queryParams: { page },
       queryParamsHandling: 'merge',
     });
+  }
+
+  // Al cambiar un filtro se vuelve a la página 1, así que la página deja de ir en la URL
+  onFilterChange() {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page: null },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  // Vuelve los filtros a sus valores iniciales
+  private resetFilters() {
+    this.priceOrder.set('Defecto');
+    this.brandFilter.set('Todas');
+    this.popularityOrder.set('Defecto');
   }
 }

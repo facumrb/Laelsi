@@ -1,0 +1,61 @@
+<div class="relative" (clickOutside)="isOpen.set(false)">
+  <label for="fiscalConditionBtn" class="form-label"> Condición Fiscal </label>
+
+  <button
+    type="button"
+    id="fiscalConditionBtn"
+    (click)="toggle()"
+    aria-haspopup="listbox"
+    [attr.aria-expanded]="isOpen()"
+    class="select-trigger"
+  >
+    <span class="block truncate text-gray-900 font-medium">
+      {{ value() || "Seleccione una condición" }}
+    </span>
+
+    <span class="select-chevron-wrapper pr-3">
+      <ng-icon
+        name="bootstrapChevronDown"
+        class="text-gray-400 text-sm transition-transform duration-200"
+        [class.rotate-180]="isOpen()"
+      ></ng-icon>
+    </span>
+  </button>
+
+  @if (isOpen()) {
+    <ul class="select-dropdown" appListbox (closed)="isOpen.set(false)">
+      @for (option of options; track option) {
+        <li
+          role="option"
+          tabindex="-1"
+          [attr.aria-selected]="value() === option"
+          (click)="select(option)"
+          class="select-option"
+        >
+          <div class="flex items-center">
+            <span
+              class="h-2 w-2 shrink-0 rounded-full mr-3"
+              [class]="dotClass[option]"
+            ></span>
+
+            <span
+              class="block truncate"
+              [class.font-semibold]="value() === option"
+            >
+              {{ option }}
+            </span>
+          </div>
+
+          @if (value() === option) {
+            <span
+              class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-900"
+            >
+              <ng-icon name="bootstrapCheckLg" class="text-xl"></ng-icon>
+            </span>
+          }
+        </li>
+      }
+    </ul>
+  }
+  <div class="min-h-8" aria-hidden="true"></div>
+</div>

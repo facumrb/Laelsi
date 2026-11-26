@@ -1,216 +1,165 @@
-<main
-  class="flex min-h-dvh items-start py-8 lg:py-4 lg:items-center justify-center bg-gray-50 px-4 overflow-y-auto"
+<app-auth-shell
+  layout="stacked"
+  heading="Crear cuenta - LaElsi"
+  backUrl="/auth/login"
 >
-  <div
-    class="w-full max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-5xl transition-all duration-300"
+  <form
+    [formGroup]="formRegister"
+    novalidate
+    (ngSubmit)="onSubmit()"
+    class="space-y-4"
   >
-    <div class="mb-3 flex justify-start">
-      <app-go-back-button></app-go-back-button>
-    </div>
-
+    <!-- Grilla por columnas: en móvil el orden es Usuario, Email, Contraseña, Confirmar; desde sm cada fila se alinea entre columnas -->
     <div
-      class="rounded-2xl bg-white p-8 lg:py-4 shadow-sm border border-neutral-200"
+      class="grid grid-cols-1 gap-y-3 sm:grid-cols-2 sm:grid-flow-col sm:grid-rows-2 sm:gap-y-5 sm:gap-x-6 lg:gap-x-12"
     >
-      <h1 class="mb-4 lg:mb-2 flex justify-center">
-        <app-logo
-          [width]="128"
-          [height]="48"
-          loading="eager"
-          customClass="h-14 lg:h-18 w-auto object-contain"
+      <div>
+        <label for="username" class="mb-1.5 form-label font-semibold">
+          Nombre de usuario <span class="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          formControlName="username"
+          minlength="4"
+          maxlength="30"
+          autocomplete="username"
+          class="form-input p-3 focus:border-brand focus:ring-1 focus:ring-brand outline-hidden transition-all"
+          placeholder="Ej: jperez"
         />
-        <span class="sr-only">LaElsi</span>
-      </h1>
-
-      <form
-        [formGroup]="formRegister"
-        novalidate
-        (ngSubmit)="onSubmit()"
-        class="space-y-4"
-      >
-        <!-- Grilla por columnas: en móvil el orden es Usuario, Email, Contraseña, Confirmar; desde sm cada fila se alinea entre columnas -->
-        <div
-          class="grid grid-cols-1 gap-y-3 sm:grid-cols-2 sm:grid-flow-col sm:grid-rows-2 sm:gap-y-5 sm:gap-x-6 lg:gap-x-12"
-        >
-          <div>
-            <label for="username" class="mb-1.5 form-label font-semibold">
-              Nombre de usuario <span class="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              formControlName="username"
-              minlength="4"
-              maxlength="30"
-              autocomplete="username"
-              class="form-input p-3 focus:border-[#3d4494] focus:ring-1 focus:ring-[#3d4494] outline-none transition-all"
-              placeholder="Ej: jperez"
-            />
-            <app-field-error
-              [control]="formRegister.controls.username"
-              [maxLength]="30"
-              validLabel="Usuario disponible"
-            />
-          </div>
-
-          <div>
-            <label for="email" class="mb-1.5 form-label font-semibold">
-              Email <span class="text-red-500">*</span>
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              formControlName="email"
-              inputmode="email"
-              maxlength="255"
-              autocomplete="email"
-              class="form-input p-3 focus:border-[#3d4494] focus:ring-1 focus:ring-[#3d4494] outline-none transition-all"
-              placeholder="Ej: juan@ejemplo.com"
-            />
-            <app-field-error
-              [control]="formRegister.controls.email"
-              [maxLength]="255"
-              validLabel="Email disponible"
-            />
-          </div>
-
-          <div>
-            <label for="password" class="mb-1.5 form-label font-semibold">
-              Contraseña <span class="text-red-500">*</span>
-            </label>
-
-            <div
-              class="password-field rounded-lg border border-gray-300 shadow-sm focus-within:border-[#3d4494] focus-within:ring-1 focus-within:ring-[#3d4494]"
-            >
-              <input
-                [type]="passwordVisible() ? 'text' : 'password'"
-                id="password"
-                name="password"
-                formControlName="password"
-                maxlength="100"
-                autocomplete="new-password"
-                aria-describedby="password-hint"
-                class="password-field-input p-3 text-sm text-gray-900"
-                placeholder="•••••••••••••••••"
-              />
-
-              <app-password-toggle-button
-                [(visible)]="passwordVisible"
-                [show]="showEyeIcon()"
-              />
-            </div>
-
-            <p
-              id="password-hint"
-              class="mt-1 text-xs"
-              [class.text-red-600]="passwordHintError()"
-              [class.text-gray-500]="!passwordHintError()"
-            >
-              Mínimo 8 caracteres, con al menos una letra y un número.
-            </p>
-          </div>
-
-          <div>
-            <label
-              for="confirmPassword"
-              class="mb-1.5 form-label font-semibold"
-            >
-              Confirmar Contraseña <span class="text-red-500">*</span>
-            </label>
-
-            <div
-              class="password-field rounded-lg border border-gray-300 shadow-sm focus-within:border-[#3d4494] focus-within:ring-1 focus-within:ring-[#3d4494]"
-            >
-              <input
-                [type]="confirmPasswordVisible() ? 'text' : 'password'"
-                id="confirmPassword"
-                name="confirmPassword"
-                formControlName="confirmPassword"
-                maxlength="100"
-                autocomplete="new-password"
-                class="password-field-input p-3 text-sm text-gray-900"
-                placeholder="Repetí tu contraseña"
-              />
-
-              <app-password-toggle-button
-                [(visible)]="confirmPasswordVisible"
-                [show]="showConfirmEyeIcon()"
-              />
-            </div>
-
-            <app-field-error
-              [control]="formRegister.controls.confirmPassword"
-            />
-          </div>
+        <div class="min-h-8">
+          <app-field-error
+            [control]="formRegister.controls.username"
+            [maxLength]="30"
+            validLabel="Usuario disponible"
+          />
         </div>
+      </div>
 
-        <!-- Aceptación de los Términos y la Política de Privacidad (se abren en otra pestaña para no perder lo cargado) -->
-        <div class="flex justify-center">
-          <label
-            for="acceptTerms"
-            class="flex max-w-xl cursor-pointer items-start gap-2 text-sm text-gray-600"
-          >
-            <input
-              type="checkbox"
-              id="acceptTerms"
-              name="acceptTerms"
-              formControlName="acceptTerms"
-              class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 accent-[#3d4494]"
-            />
-            <span>
-              Leí y acepto los
-              <a
-                routerLink="/terminos"
-                target="_blank"
-                class="font-bold text-[#3d4494] hover:underline"
-                >Términos y Condiciones</a
-              >
-              y la
-              <a
-                routerLink="/privacidad"
-                target="_blank"
-                class="font-bold text-[#3d4494] hover:underline"
-                >Política de Privacidad</a
-              >, incluida la transferencia de mis datos a proveedores ubicados
-              fuera de la Argentina.
-            </span>
-          </label>
+      <div>
+        <label for="email" class="mb-1.5 form-label font-semibold">
+          Email <span class="text-red-500">*</span>
+        </label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          formControlName="email"
+          inputmode="email"
+          maxlength="255"
+          autocomplete="email"
+          class="form-input p-3 focus:border-brand focus:ring-1 focus:ring-brand outline-hidden transition-all"
+          placeholder="Ej: juan@ejemplo.com"
+        />
+        <div class="min-h-8">
+          <app-field-error
+            [control]="formRegister.controls.email"
+            [maxLength]="255"
+            validLabel="Email disponible"
+          />
         </div>
+      </div>
 
-        @if (turnstileEnabled) {
-          <!-- Verificación anti-bots de Cloudflare Turnstile -->
-          <app-turnstile (tokenChange)="turnstileToken.set($event)" />
-        }
+      <div>
+        <label for="password" class="mb-1.5 form-label font-semibold">
+          Contraseña <span class="text-red-500">*</span>
+        </label>
 
-        <div class="pt-0 flex justify-center">
-          <button
-            type="submit"
-            disabled
-            [disabled]="loading() || !isValid() || isPending()"
-            class="btn-primary w-full lg:w-72 flex justify-center py-3 px-4 shadow-md enabled:hover:shadow-lg focus:ring-2 focus:ring-offset-2 focus:ring-[#3d4494] enabled:transform enabled:active:scale-[0.98] font-bold"
-          >
-            @if (loading()) {
-              <ng-icon
-                name="bootstrapArrowClockwise"
-                class="animate-spin text-xl mr-2"
-              ></ng-icon>
-            }
-            Crear Cuenta
-          </button>
+        <app-password-input
+          [control]="formRegister.controls.password"
+          inputId="password"
+          describedBy="password-hint"
+          fieldClass="rounded-lg border border-gray-300 shadow-sm focus-within:border-brand focus-within:ring-1 focus-within:ring-brand"
+          inputClass="p-3 text-sm text-gray-900"
+        />
+
+        <app-password-rule-hint [control]="formRegister.controls.password" />
+      </div>
+
+      <div>
+        <label for="confirmPassword" class="mb-1.5 form-label font-semibold">
+          Confirmar Contraseña <span class="text-red-500">*</span>
+        </label>
+
+        <app-password-input
+          [control]="formRegister.controls.confirmPassword"
+          inputId="confirmPassword"
+          placeholder="Repetí tu contraseña"
+          fieldClass="rounded-lg border border-gray-300 shadow-sm focus-within:border-brand focus-within:ring-1 focus-within:ring-brand"
+          inputClass="p-3 text-sm text-gray-900"
+        />
+
+        <div class="min-h-8">
+          <app-field-error [control]="formRegister.controls.confirmPassword" />
         </div>
-
-        <div class="mt-4 text-center text-sm text-gray-600">
-          ¿Ya tenés cuenta?
-          <a
-            routerLink="/auth/login"
-            replaceUrl="true"
-            class="cursor-pointer inline-block py-1 font-bold text-[#3d4494] hover:text-[#2a2f63] hover:underline transition-colors ml-1"
-          >
-            Iniciar Sesión
-          </a>
-        </div>
-      </form>
+      </div>
     </div>
-  </div>
-</main>
+
+    <!-- Aceptación de los Términos y la Política de Privacidad (se abren en otra pestaña para no perder lo cargado) -->
+    <div class="flex justify-center">
+      <label
+        for="acceptTerms"
+        class="flex max-w-xl cursor-pointer items-start gap-2 text-sm text-gray-600"
+      >
+        <input
+          type="checkbox"
+          id="acceptTerms"
+          name="acceptTerms"
+          formControlName="acceptTerms"
+          class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 accent-brand"
+        />
+        <span>
+          Leí y acepto los
+          <a
+            routerLink="/terminos"
+            target="_blank"
+            class="font-bold text-brand hover:underline"
+            >Términos y Condiciones</a
+          >
+          y la
+          <a
+            routerLink="/privacidad"
+            target="_blank"
+            class="font-bold text-brand hover:underline"
+            >Política de Privacidad</a
+          >, incluida la transferencia de mis datos a proveedores ubicados fuera
+          de la Argentina.
+        </span>
+      </label>
+    </div>
+
+    @if (turnstileEnabled) {
+      <!-- Verificación anti-bots de Cloudflare Turnstile -->
+      <app-turnstile (tokenChange)="turnstileToken.set($event)" />
+    }
+
+    <div class="pt-0 flex justify-center">
+      <button
+        type="submit"
+        disabled
+        [disabled]="loading() || !isValid() || isPending()"
+        class="btn-primary w-full lg:w-72 flex justify-center py-3 px-4 shadow-md enabled:hover:shadow-lg focus:ring-2 focus:ring-offset-2 focus:ring-brand enabled:transform enabled:active:scale-[0.98] font-bold"
+      >
+        @if (loading()) {
+          <ng-icon
+            name="bootstrapArrowClockwise"
+            class="animate-spin text-xl mr-2"
+          ></ng-icon>
+        }
+        Crear Cuenta
+      </button>
+    </div>
+
+    <div class="mt-4 text-center text-sm text-gray-600">
+      ¿Ya tenés cuenta?
+      <a
+        routerLink="/auth/login"
+        replaceUrl
+        class="cursor-pointer inline-block py-1 font-bold text-brand hover:text-brand-hover hover:underline transition-colors ml-1"
+      >
+        Iniciar Sesión
+      </a>
+    </div>
+  </form>
+</app-auth-shell>

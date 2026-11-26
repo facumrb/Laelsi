@@ -1,0 +1,84 @@
+/* Títulos, textos legales, secciones, paginación y layouts adaptables */
+@layer components {
+  /* ── Títulos ── */
+  .page-title {
+    @apply text-2xl font-bold text-brand;
+  }
+
+  /* ── Textos legales (Política de Privacidad y Términos y Condiciones) ── */
+  .legal-content {
+    @apply leading-relaxed text-gray-600;
+  }
+
+  .legal-content h2 {
+    @apply mt-8 mb-1 border-b border-gray-100 pb-2 text-xl font-bold text-brand;
+  }
+
+  .legal-content h3 {
+    @apply mt-5 mb-1 font-bold text-gray-800;
+  }
+
+  .legal-content p {
+    @apply mt-2;
+  }
+
+  .legal-content ul {
+    @apply mt-2 list-disc space-y-1.5 pl-6;
+  }
+
+  .legal-content a {
+    @apply font-semibold text-brand underline hover:text-brand-hover;
+  }
+
+  .legal-content strong {
+    @apply font-semibold text-gray-800;
+  }
+
+  .legal-content .legal-box {
+    @apply mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm;
+  }
+
+  /* ── Estructura y secciones ── */
+  .section-header {
+    @apply mb-4 border-b-2 border-accent-coral pb-4;
+  }
+
+  .section-title {
+    @apply text-3xl font-black uppercase text-gray-900;
+  }
+
+  .product-grid {
+    @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6;
+  }
+
+  /* ── Paginación ── */
+  .pagination-container {
+    @apply flex flex-col items-center gap-2 mt-8 mb-4;
+  }
+
+  .pagination-controls {
+    @apply flex items-center justify-center gap-2;
+  }
+
+  .pagination-btn {
+    @apply cursor-pointer flex items-center justify-center w-10 h-10 rounded-lg
+           border border-gray-200 text-gray-700 transition-colors
+           hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200
+           disabled:opacity-50 disabled:cursor-not-allowed
+           disabled:hover:bg-transparent disabled:hover:text-gray-700 disabled:hover:border-gray-200;
+  }
+
+  .pagination-btn-active {
+    @apply cursor-default flex items-center justify-center w-10 h-10 rounded-lg
+           bg-emerald-600 text-white font-medium shadow-sm transition-colors;
+  }
+
+  .pagination-info {
+    @apply text-sm text-gray-500;
+  }
+
+  /* ── Layouts adaptables ── */
+  .page-container-adaptive {
+    @apply min-h-[calc(100dvh-(--spacing(32)))] flex flex-col;
+  }
+}

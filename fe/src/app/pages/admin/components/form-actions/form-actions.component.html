@@ -1,0 +1,19 @@
+<div class="form-footer">
+  <button
+    type="button"
+    (click)="onCancel()"
+    [disabled]="cancelDisabled()"
+    class="btn-secondary"
+  >
+    {{ cancelLabel() }}
+  </button>
+
+  <button
+    type="submit"
+    [disabled]="submitDisabled()"
+    class="btn-primary"
+    [class]="submitClass()"
+  >
+    {{ submitLabel() }}
+  </button>
+</div>

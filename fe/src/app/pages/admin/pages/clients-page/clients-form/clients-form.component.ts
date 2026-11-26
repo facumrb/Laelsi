@@ -1,69 +1,72 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   inject,
   OnInit,
   signal,
   viewChild,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Location } from '@angular/common';
-import { GoBackButtonComponent } from '@shared/components/buttons/go-back-button/go-back-button.component';
-import { PasswordToggleButtonComponent } from '@shared/components/buttons/password-toggle-button/password-toggle-button.component';
-import { switchMap } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormPageHeaderComponent } from '@admin/components/form-page-header/form-page-header.component';
+import { FormActionsComponent } from '@admin/components/form-actions/form-actions.component';
+import { PasswordInputComponent } from '@shared/components/inputs/password/password-input/password-input.component';
+import { PasswordRuleHintComponent } from '@shared/components/inputs/password/password-rule-hint/password-rule-hint.component';
+import { catchError, finalize, Observable, switchMap } from 'rxjs';
 import { ApiClientService } from '@services/api-services/api-client.service';
-import { ICreateClient, UserRole, FiscalCondition } from '@models/user.model';
+import {
+  IApiClient,
+  ICreateClient,
+  IUpdateClient,
+  UserRole,
+  FiscalCondition,
+  UserState,
+} from '@models/user.model';
 import { IApiUserPhoto } from '@models/photo.model';
 import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
-import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import {
-  bootstrapChevronDown,
-  bootstrapCheckLg,
-} from '@ng-icons/bootstrap-icons';
 import { PhotoManagerComponent } from '@shared/components/photo-manager/photo-manager.component';
 import { AlertService } from '@services/alert.service';
 import { FormUtils } from '@shared/validators/form-utils';
+import {
+  LARGO_MAXIMO_TELEFONO,
+  LARGO_MINIMO_TELEFONO,
+} from '@shared/utils/telefono';
 import { NumericInputDirective } from '@shared/directives/numeric-input.directive';
-import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
-import { ListboxDirective } from '@shared/directives/listbox.directive';
 import { AuditInfoComponent } from '@admin/components/audit-info/audit-info.component';
 import { PhoneInputDirective } from '@shared/directives/phone-input.directive';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
 import { TrimInputDirective } from '@shared/directives/trim-input.directive';
 import { injectInvalidateClients } from '@services/queries/client-queries';
+import { FiscalConditionSelectComponent } from './components/fiscal-condition-select/fiscal-condition-select.component';
 
 @Component({
   selector: 'app-clients-form',
   imports: [
     ReactiveFormsModule,
-    NgIconComponent,
     NumericInputDirective,
     PhoneInputDirective,
     PhotoManagerComponent,
-    ClickOutsideDirective,
     AuditInfoComponent,
-    GoBackButtonComponent,
-    PasswordToggleButtonComponent,
+    FormPageHeaderComponent,
+    FormActionsComponent,
+    PasswordInputComponent,
+    PasswordRuleHintComponent,
     FieldErrorComponent,
     TrimInputDirective,
-    ListboxDirective,
+    FiscalConditionSelectComponent,
   ],
-  viewProviders: [
-    provideIcons({
-      bootstrapChevronDown,
-      bootstrapCheckLg,
-    }),
-  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './clients-form.component.html',
 })
 export class ClientsFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private routeActive = inject(ActivatedRoute);
-  location = inject(Location);
+  private destroyRef = inject(DestroyRef);
   private clientService = inject(ApiClientService);
   private alertService = inject(AlertService);
   private http = inject(HttpClient);
@@ -74,30 +77,19 @@ export class ClientsFormComponent implements OnInit {
   isEditMode = signal(false);
   clientId = signal<number | null>(null);
   currentPhoto = signal<IApiUserPhoto | null>(null);
+  // Hay un guardado en curso: evita el doble envío
+  saving = signal(false);
 
-  // Signal para guardar el estado inicial del formulario
+  // Valor inicial del formulario, para detectar cambios al editar
   initialFormValue = signal<string>('');
 
-  // Auditoría (signals de auditoria solo lectura)
+  // Datos de auditoría (solo lectura)
+  initialState = signal<UserState>('Activo');
   auditCreatedAt = signal<string | null>(null);
   auditUpdatedAt = signal<string | null>(null);
   auditStatusDate = signal<string | null>(null);
 
-  fiscalConditions = Object.values(FiscalCondition) as FiscalCondition[];
-  isFiscalMenuOpen = signal(false);
-
-  // Alternar estado
-  toggleFiscalMenu() {
-    this.isFiscalMenuOpen.update((v) => !v);
-  }
-
-  // Seleccionar opción y cerrar
-  selectFiscalCondition(value: FiscalCondition) {
-    this.formClient.get('fiscalCondition')?.setValue(value);
-    this.isFiscalMenuOpen.set(false);
-  }
-
-  formClient = this.fb.group(
+  formClient = this.fb.nonNullable.group(
     {
       // --- DATOS PERSONALES ---
       name: [
@@ -127,8 +119,8 @@ export class ClientsFormComponent implements OnInit {
       phone: [
         '',
         [
-          FormUtils.minLength(7),
-          FormUtils.maxLength(20),
+          FormUtils.minLength(LARGO_MINIMO_TELEFONO),
+          FormUtils.maxLength(LARGO_MAXIMO_TELEFONO),
           Validators.pattern(FormUtils.phonePattern),
         ],
       ],
@@ -162,7 +154,7 @@ export class ClientsFormComponent implements OnInit {
       confirmPassword: ['', [FormUtils.maxLength(100)]],
 
       // --- DATOS DE FACTURACIÓN ---
-      fiscalCondition: [FiscalCondition.ConsumidorFinal],
+      fiscalCondition: [FiscalCondition.ConsumidorFinal as FiscalCondition],
       cuit: [
         '',
         [
@@ -188,30 +180,18 @@ export class ClientsFormComponent implements OnInit {
     },
   );
 
-  passwordVisible = signal(false);
-  confirmPasswordVisible = signal(false);
-
-  private passwordValue = toSignal(
-    this.formClient.controls.password.valueChanges,
-  );
-  private confirmPasswordValue = toSignal(
-    this.formClient.controls.confirmPassword.valueChanges,
-  );
-
-  showEyeIcon = computed(() => !!this.passwordValue());
-  showConfirmEyeIcon = computed(() => !!this.confirmPasswordValue());
-
   ngOnInit() {
     this.checkEditMode();
+    // La contraseña es obligatoria al crear y opcional al editar
     if (!this.isEditMode()) {
-      this.formClient.get('password')?.addValidators(Validators.required);
-      this.formClient
-        .get('confirmPassword')
-        ?.addValidators(Validators.required);
+      this.formClient.controls.password.addValidators(Validators.required);
+      this.formClient.controls.confirmPassword.addValidators(
+        Validators.required,
+      );
     }
   }
 
-  checkEditMode() {
+  private checkEditMode() {
     const id = this.routeActive.snapshot.paramMap.get('id');
     if (id) {
       this.loadClientData(+id);
@@ -240,106 +220,115 @@ export class ClientsFormComponent implements OnInit {
     );
   }
 
-  loadClientData(id: number) {
+  private loadClientData(id: number) {
     this.clientId.set(id);
     this.isEditMode.set(true);
 
-    this.clientService.getClientById(id).subscribe({
-      next: (client) => {
-        this.currentPhoto.set(client.photo);
+    this.clientService
+      .getClientById(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (client) => {
+          this.currentPhoto.set(client.photo);
 
-        this.formClient.patchValue({
-          name: client.name,
-          lastName: client.lastName,
-          dni: client.dni,
-          phone: client.phone,
-          username: client.username,
-          email: client.email,
+          this.formClient.patchValue({
+            name: client.name ?? '',
+            lastName: client.lastName ?? '',
+            dni: client.dni ?? '',
+            phone: client.phone ?? '',
+            username: client.username,
+            email: client.email,
 
-          // Mapeo de campos extra
-          cuit: client.cuit || '',
-          fiscalCondition:
-            client.fiscalCondition || FiscalCondition.ConsumidorFinal,
-          street: client.street || '',
-          streetNumber: client.streetNumber
-            ? client.streetNumber.toString()
-            : '',
-          city: client.city || '',
-          province: client.province || '',
-          postalCode: client.postalCode || '',
-          floor: client.floor || '',
-          apartment: client.apartment || '',
-        });
+            // Mapeo de campos extra
+            cuit: client.cuit || '',
+            fiscalCondition:
+              client.fiscalCondition || FiscalCondition.ConsumidorFinal,
+            street: client.street || '',
+            streetNumber: client.streetNumber
+              ? client.streetNumber.toString()
+              : '',
+            city: client.city || '',
+            province: client.province || '',
+            postalCode: client.postalCode || '',
+            floor: client.floor || '',
+            apartment: client.apartment || '',
+          });
 
-        // Auditoría
-        this.auditCreatedAt.set(client.createdAt);
-        this.auditUpdatedAt.set(client.updatedAt);
-        this.auditStatusDate.set(client.deletedAt || client.createdAt);
+          this.auditCreatedAt.set(client.createdAt);
+          this.auditUpdatedAt.set(client.updatedAt);
+          this.auditStatusDate.set(client.deletedAt || client.createdAt);
+          this.initialState.set(client.state);
 
-        this.formClient.get('password')?.removeValidators(Validators.required);
-        this.formClient.get('password')?.updateValueAndValidity();
+          this.setupAsyncValidators(id);
 
-        this.setupAsyncValidators(id);
-
-        const formSnapshot = this.formClient.getRawValue();
-        this.initialFormValue.set(JSON.stringify(formSnapshot));
-      },
-      error: () => {
-        this.location.back();
-      },
-    });
+          const formSnapshot = this.formClient.getRawValue();
+          this.initialFormValue.set(JSON.stringify(formSnapshot));
+        },
+        error: () => {
+          this.router.navigate(['/admin/clients']);
+        },
+      });
   }
 
-  get fullName(): string {
-    const name = this.formClient.get('name')?.value || '';
-    const lastName = this.formClient.get('lastName')?.value || '';
-    return `${name} ${lastName}`;
-  }
+  // Valor actual del formulario como señal
+  private formValue = toSignal(this.formClient.valueChanges, {
+    initialValue: this.formClient.getRawValue(),
+  });
 
-  get hasRealChanges(): boolean {
-    // Si estamos creando, siempre permitimos guardar (si es válido)
+  // Nombre completo para las iniciales de la foto
+  fullName = computed(
+    () => `${this.formValue().name ?? ''} ${this.formValue().lastName ?? ''}`,
+  );
+
+  // Indica si hay algo para guardar: al crear siempre, al editar si cambió el formulario o la foto
+  hasRealChanges = computed(() => {
     if (!this.isEditMode()) return true;
-
-    // Comparar formulario actual vs inicial
-    const currentJson = JSON.stringify(this.formClient.getRawValue());
-    const formHasChanges = currentJson !== this.initialFormValue();
-
-    // Verificar cambios en la foto
-    const photoHasChanges = this.photoManager().hasChanges();
-
-    return formHasChanges || photoHasChanges;
-  }
+    const formHasChanges =
+      JSON.stringify(this.formValue()) !== this.initialFormValue();
+    return formHasChanges || this.photoManager().hasChanges();
+  });
 
   onSubmit() {
+    if (this.saving()) return;
     if (!this.formClient.valid) {
       this.formClient.markAllAsTouched();
       return;
     }
+    this.saving.set(true);
 
     const formValue = this.formClient.getRawValue();
+    const editing = this.isEditMode();
 
-    // Construimos el objeto base
+    /*
+    Al editar, la dirección vacía se manda vacía ('' o null en la altura): si la clave no viaja,
+    el servidor no toca la columna y no se podría borrar un dato. Al crear, lo vacío no se manda.
+    */
+    const optionalText = (value: string) =>
+      editing ? value : value || undefined;
+
     const baseData = {
-      name: formValue.name!,
-      lastName: formValue.lastName!,
-      dni: formValue.dni!,
-      phone: formValue.phone!,
-      username: formValue.username!,
-      email: formValue.email!,
+      name: formValue.name,
+      lastName: formValue.lastName,
+      dni: formValue.dni,
+      phone: formValue.phone,
+      username: formValue.username,
+      email: formValue.email,
       role: UserRole.Client,
 
       // Campos opcionales
       cuit: formValue.cuit || undefined,
-      fiscalCondition: formValue.fiscalCondition!,
-      street: formValue.street || undefined,
+      fiscalCondition: formValue.fiscalCondition,
+      street: optionalText(formValue.street),
       streetNumber: formValue.streetNumber
         ? Number(formValue.streetNumber)
-        : undefined,
-      city: formValue.city || undefined,
-      province: formValue.province || undefined,
-      postalCode: formValue.postalCode || undefined,
-      floor: formValue.floor || undefined,
-      apartment: formValue.apartment || undefined,
+        : editing
+          ? null
+          : undefined,
+      city: optionalText(formValue.city),
+      province: optionalText(formValue.province),
+      postalCode: optionalText(formValue.postalCode),
+      floor: optionalText(formValue.floor),
+      apartment: optionalText(formValue.apartment),
     };
 
     const clientData = formValue.password
@@ -350,46 +339,53 @@ export class ClientsFormComponent implements OnInit {
         }
       : baseData;
 
-    // Guardar datos
-    let request$;
-    if (this.isEditMode() && this.clientId()) {
-      request$ = this.clientService.updateClient(
-        this.clientId()!,
-        clientData as Partial<ICreateClient>,
-      );
-    } else {
-      request$ = this.clientService.addClient(clientData as ICreateClient);
-    }
+    const clientId = this.clientId();
+    const request$: Observable<IApiClient> =
+      editing && clientId
+        ? this.clientService.updateClient(clientId, clientData as IUpdateClient)
+        : this.clientService.addClient(clientData as ICreateClient);
 
-    // Procesar foto y guardar
+    // Si falla la foto se muestra solo el aviso: sweetalert2 muestra un toast por vez
+    let photoFailed = false;
+
     request$
       .pipe(
-        switchMap((res: any) => {
-          const userId = this.isEditMode()
-            ? this.clientId()!
-            : res.user?.id || res.id;
-
-          if (!userId) {
-            console.error(
-              'No se pudo obtener el ID del usuario para subir la foto',
-              res,
-            );
-            return of(null);
-          }
-
-          if (this.photoManager().hasChanges()) {
-            return this.photoManager().saveChanges(userId);
-          }
-
-          return of(null);
+        switchMap((res) => {
+          if (!this.photoManager().hasChanges()) return of(null);
+          const userId = clientId ?? res.id;
+          return this.savePhotoOrWarn(userId, () => (photoFailed = true));
         }),
+        finalize(() => this.saving.set(false)),
       )
       .subscribe({
         next: () => {
           this.invalidateClients();
-          this.alertService.toast('Guardado exitosamente', 'success');
-          this.router.navigate(['/admin/clients']); // Redirección al listado de clientes
+          if (!photoFailed) {
+            this.alertService.toast('Guardado exitosamente', 'success');
+          }
+          this.router.navigate(['/admin/clients']);
         },
+        // El aviso del error lo muestra el interceptor
+        error: () => undefined,
       });
+  }
+
+  /*
+  Sube o borra la foto. Si falla, el cliente ya quedó guardado: se avisa, se llama a onFail y se
+  sigue igual.
+  */
+  private savePhotoOrWarn(userId: number, onFail: () => void) {
+    return this.photoManager()
+      .saveChanges(userId)
+      .pipe(
+        catchError(() => {
+          onFail();
+          this.alertService.toast(
+            'Se guardó, pero no se pudo actualizar la foto',
+            'warning',
+          );
+          return of(null);
+        }),
+      );
   }
 }

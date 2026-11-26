@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
@@ -12,6 +13,7 @@ import { AdminsListComponent } from './admins-list/admins-list.component';
 import { AdminsToolbarComponent } from './admins-toolbar/admins-toolbar.component';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { ConfirmDeleteModalComponent } from '@admin/components/confirm-delete-modal/confirm-delete-modal.component';
+import { NombrePersonaPipe } from '@shared/pipes/nombre-persona.pipe';
 import { AdminSelfDeleteBlockedModalComponent } from './admins-list/components/admin-self-delete-blocked-modal/admin-self-delete-blocked-modal.component';
 import { AuthService } from '@services/auth.service';
 import {
@@ -26,9 +28,11 @@ import {
     AdminsToolbarComponent,
     PaginationComponent,
     ConfirmDeleteModalComponent,
+    NombrePersonaPipe,
     AdminSelfDeleteBlockedModalComponent,
   ],
   templateUrl: './admins-page.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminsPageComponent {
   private alertService = inject(AlertService);
@@ -42,8 +46,10 @@ export class AdminsPageComponent {
   searchQuery = signal<string>('');
   stateFilter = signal<UserStateFilter>('Todos');
 
-  // Al cambiar un filtro se vuelve a la página 1; la primera vez se toma la página de la URL.
-  // La página forma parte de la queryKey, así que TanStack Query pide los datos solo.
+  /*
+  Al cambiar un filtro se vuelve a la página 1. La primera vez se toma la página de la URL.
+  La página forma parte de la queryKey, así que TanStack Query pide los datos solo.
+  */
   currentPage = linkedSignal<unknown, number>({
     source: () => [this.searchQuery(), this.stateFilter()],
     computation: (_filters, previous) =>
@@ -96,16 +102,18 @@ export class AdminsPageComponent {
       return;
     }
 
-    // Que no quede el panel sin administradores activos lo controla el servidor: no se puede desactivar
-    // al último administrador activo. Acá no se cuenta, porque con el filtro de estado el total de la
-    // lista ya no es la cantidad de administradores activos.
+    /*
+    Que no quede el panel sin administradores activos lo controla el servidor: no se puede
+    desactivar al último administrador activo. Acá no se cuenta, porque con el filtro de estado
+    el total de la lista ya no es la cantidad de administradores activos.
+    */
     this.adminToDelete.set(admin);
   }
 
   // La mutación invalida la caché: la lista se vuelve a pedir y la paginación se recalcula.
   confirmDeactivateAdmin() {
     const admin = this.adminToDelete();
-    if (!admin) return;
+    if (!admin || this.setStateMutation.isPending()) return;
 
     this.setStateMutation.mutate(
       { id: admin.id, state: 'Inactivo' },
@@ -119,6 +127,7 @@ export class AdminsPageComponent {
   }
 
   reactivateAdmin(admin: IApiAdmin) {
+    if (this.setStateMutation.isPending()) return;
     this.setStateMutation.mutate(
       { id: admin.id, state: 'Activo' },
       {

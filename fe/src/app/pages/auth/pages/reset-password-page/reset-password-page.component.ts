@@ -1,5 +1,10 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -12,25 +17,28 @@ import { AuthService } from '@services/auth.service';
 import { AlertService } from '@services/alert.service';
 import { FormUtils } from '@shared/validators/form-utils';
 import { FieldErrorComponent } from '@shared/validators/field-error/field-error.component';
-import { PasswordToggleButtonComponent } from '@shared/components/buttons/password-toggle-button/password-toggle-button.component';
-import { LogoComponent } from '@shared/components/logo/logo.component';
+import { PasswordInputComponent } from '@shared/components/inputs/password/password-input/password-input.component';
+import { PasswordRuleHintComponent } from '@shared/components/inputs/password/password-rule-hint/password-rule-hint.component';
+import { AuthShellComponent } from '@auth/components/auth-shell/auth-shell.component';
 
 // checking: consultando si el enlace sirve | ready: se puede cargar la contraseña | invalid: enlace vencido o inexistente
 type ResetState = 'checking' | 'ready' | 'invalid';
 
-/**
- * Pantalla a la que lleva el enlace del correo de recuperación. Permite elegir
- * una contraseña nueva ("Contraseña" y "Confirmar contraseña").
- */
+/*
+Pantalla a la que lleva el enlace del correo de recuperación. Permite elegir
+una contraseña nueva ("Contraseña" y "Confirmar contraseña").
+*/
 @Component({
   selector: 'app-reset-password-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     RouterLink,
     NgIconComponent,
     FieldErrorComponent,
-    PasswordToggleButtonComponent,
-    LogoComponent,
+    PasswordInputComponent,
+    PasswordRuleHintComponent,
+    AuthShellComponent,
   ],
   viewProviders: [
     provideIcons({
@@ -49,8 +57,6 @@ export class ResetPasswordPageComponent implements OnInit {
 
   state = signal<ResetState>('checking');
   loading = signal(false);
-  passwordVisible = signal(false);
-  confirmPasswordVisible = signal(false);
 
   // Cuenta a la que pertenece el enlace (la informa el backend)
   username = signal('');
@@ -78,29 +84,6 @@ export class ResetPasswordPageComponent implements OnInit {
     },
   );
 
-  private passwordValue = toSignal(
-    this.formReset.controls.password.valueChanges,
-    { initialValue: '' },
-  );
-
-  private confirmPasswordValue = toSignal(
-    this.formReset.controls.confirmPassword.valueChanges,
-    { initialValue: '' },
-  );
-
-  private passwordControl = this.formReset.controls.password;
-
-  private passwordEvents = toSignal(this.passwordControl.events);
-
-  // La regla de la contraseña se muestra siempre (reserva su espacio) y pasa a rojo cuando no se cumple
-  passwordHintError = computed(() => {
-    this.passwordEvents();
-    return this.passwordControl.touched && this.passwordControl.invalid;
-  });
-
-  showEyeIcon = computed(() => this.passwordValue().length > 0);
-  showConfirmEyeIcon = computed(() => this.confirmPasswordValue().length > 0);
-
   ngOnInit(): void {
     this.token = this.route.snapshot.queryParamMap.get('token') ?? '';
 
@@ -120,7 +103,7 @@ export class ResetPasswordPageComponent implements OnInit {
     this.checkToken();
   }
 
-  /** Consulta al backend si el enlace sigue vigente (no lo gasta). */
+  // Consulta al backend si el enlace sigue vigente (no lo gasta)
   private checkToken(): void {
     this.authService.validateResetToken(this.token).subscribe({
       next: (status) => {

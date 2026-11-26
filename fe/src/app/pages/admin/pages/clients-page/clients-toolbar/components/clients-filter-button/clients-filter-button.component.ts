@@ -1,13 +1,21 @@
-import { Component, model, signal, computed } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  model,
+  signal,
+} from '@angular/core';
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
 import { FilterButtonComponent } from '@shared/components/buttons/filter-button/filter-button.component';
 import {
   FilterAccordionComponent,
   FilterOption,
 } from '@shared/components/filter-accordion/filter-accordion.component';
-import { FiscalCondition, UserStateFilter } from '@models/user.model';
-
-export type FiscalConditionFilter = FiscalCondition | 'Todos';
+import {
+  FiscalCondition,
+  FiscalConditionFilter,
+  UserStateFilter,
+} from '@models/user.model';
 
 @Component({
   selector: 'app-clients-filter-button',
@@ -17,6 +25,7 @@ export type FiscalConditionFilter = FiscalCondition | 'Todos';
     FilterAccordionComponent,
   ],
   templateUrl: './clients-filter-button.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClientsFilterButtonComponent {
   fiscalFilter = model.required<FiscalConditionFilter>();

@@ -6,7 +6,7 @@ import {
   QueryClient,
 } from '@tanstack/angular-query-experimental';
 import { firstValueFrom } from 'rxjs';
-import { ApiAdminService } from '../api-services/api-admin.service';
+import { ApiAdminService } from '@services/api-services/api-admin.service';
 import { UserState, UserStateFilter } from '@models/user.model';
 
 export interface IAdminQueryFilters {
@@ -65,9 +65,7 @@ export function injectInvalidateAdmins(): () => void {
   };
 }
 
-/**
- * Mutación para desactivar o reactivar un administrador
- */
+//Mutación para desactivar o reactivar un administrador
 export function injectSetAdminStateMutation() {
   const apiAdminService = inject(ApiAdminService);
   const invalidateAdmins = injectInvalidateAdmins();

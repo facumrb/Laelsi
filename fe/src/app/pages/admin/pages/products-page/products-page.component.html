@@ -1,4 +1,4 @@
-<div class="animate-fadeIn container mx-auto">
+<div class="animate-fade-in container mx-auto">
   <app-products-toolbar
     [(searchQuery)]="searchQuery"
     [(statusFilter)]="statusFilter"
@@ -12,7 +12,7 @@
 
   <app-products-list
     class="mt-6 block"
-    [products]="productsFiltered()"
+    [products]="products()"
     [isFilterActive]="filtersActive()"
     [loading]="loading()"
     (onEdit)="handleNavigateToEdit($event)"
@@ -20,7 +20,7 @@
     [(selectedIds)]="selectedIds"
   />
 
-  @if (productsFiltered().length > 0) {
+  @if (products().length > 0) {
     <app-pagination
       [currentPage]="currentPage()"
       [totalPages]="totalPages()"

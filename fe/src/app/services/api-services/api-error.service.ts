@@ -1,8 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AlertService } from '../alert.service';
+import { AlertService } from '@services/alert.service';
 import { AuthService } from '@services/auth.service';
 
+/*
+ Traduce un error HTTP en un aviso para la persona. Lo llama errorInterceptor con cada respuesta fallida.
+ Los errores críticos (sesión inválida o vencida, sin conexión, acción inválida) se muestran en un modal que hay que cerrar; el resto, en un toast.
+*/
 @Injectable({
   providedIn: 'root',
 })
@@ -13,7 +17,10 @@ export class ApiErrorService {
   handle(err: HttpErrorResponse, reqUrl: string = '') {
     // El modal de verificación de contraseña muestra estos errores debajo del campo (contraseña
     // incorrecta, demasiados intentos): un aviso global los duplicaría.
-    if (reqUrl.includes('/verify-password') && (err.status === 400 || err.status === 429)) {
+    if (
+      reqUrl.includes('/verify-password') &&
+      (err.status === 400 || err.status === 429)
+    ) {
       return;
     }
 
@@ -39,7 +46,7 @@ export class ApiErrorService {
         }
         break;
 
-      case 401:
+      case 401: {
         const isLoginRequest = reqUrl.includes('/auth/login');
         if (backendMessage && !isLoginRequest) {
           // Si hay un mensaje del backend y NO estamos intentando loguearnos,
@@ -60,6 +67,7 @@ export class ApiErrorService {
           esCritico = true;
         }
         break;
+      }
 
       case 403:
         titulo = 'Acceso Denegado';

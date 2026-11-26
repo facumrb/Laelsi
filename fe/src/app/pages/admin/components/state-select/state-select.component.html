@@ -1,0 +1,62 @@
+<div class="relative w-full" (clickOutside)="isOpen.set(false)">
+  <label [for]="inputId()" class="form-label">
+    Estado <span class="text-red-500">*</span>
+  </label>
+
+  <button
+    type="button"
+    [id]="inputId()"
+    (click)="toggle()"
+    aria-haspopup="listbox"
+    [attr.aria-expanded]="isOpen()"
+    class="select-trigger"
+    [class]="triggerClass()"
+  >
+    <span class="flex items-center gap-3">
+      @if (value(); as current) {
+        <span
+          class="h-2.5 w-2.5 rounded-full transition-colors"
+          [class]="dotClass(current)"
+        ></span>
+      }
+      <span class="block truncate">{{ value() }}</span>
+    </span>
+    <span class="select-chevron-wrapper">
+      <ng-icon
+        name="bootstrapChevronDown"
+        class="text-gray-400 transition-transform duration-200"
+        [class.rotate-180]="isOpen()"
+      ></ng-icon>
+    </span>
+  </button>
+
+  @if (isOpen()) {
+    <ul class="select-dropdown" appListbox (closed)="isOpen.set(false)">
+      @for (option of options(); track option) {
+        <li
+          role="option"
+          tabindex="-1"
+          [attr.aria-selected]="value() === option"
+          (click)="select(option)"
+          class="select-option"
+        >
+          <div class="flex items-center">
+            <span
+              class="h-2.5 w-2.5 rounded-full mr-2"
+              [class]="dotClass(option)"
+            ></span>
+            <span [class.font-semibold]="value() === option">
+              {{ option }}
+            </span>
+          </div>
+          @if (value() === option) {
+            <span class="absolute inset-y-0 right-0 flex items-center pr-4">
+              <ng-icon name="bootstrapCheckLg" class="text-lg"></ng-icon>
+            </span>
+          }
+        </li>
+      }
+    </ul>
+  }
+  <app-field-error [control]="control()" />
+</div>

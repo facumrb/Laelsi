@@ -1,0 +1,54 @@
+<main
+  class="flex min-h-dvh items-start justify-center overflow-y-auto bg-gray-50 px-3 py-8 sm:px-4 lg:items-center lg:py-4"
+>
+  <div
+    data-auth-wrapper
+    class="w-full max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-5xl"
+  >
+    <div class="mb-3 flex justify-start">
+      <app-go-back-button [url]="backUrl()" [fallbackUrl]="backFallbackUrl()" />
+    </div>
+
+    <div
+      data-auth-card
+      class="rounded-2xl border border-gray-200 bg-white px-4 py-8 shadow-sm sm:p-8 lg:min-h-[37rem]"
+      [class]="cardClass()"
+    >
+      @if (layout() === "split") {
+        <div
+          class="relative mb-4 flex flex-col items-center justify-center text-center lg:mb-0 lg:border-r lg:border-gray-100 lg:pr-6"
+        >
+          <div
+            class="absolute inset-0 -z-10 rounded-l-xl bg-linear-to-br from-brand/3 to-transparent"
+          ></div>
+          <h1 class="flex flex-col items-center">
+            <app-logo
+              [width]="128"
+              loading="eager"
+              customClass="h-14 lg:h-24 w-auto object-contain"
+            />
+            <span class="sr-only">{{ heading() }}</span>
+          </h1>
+        </div>
+
+        <div class="flex w-full flex-col justify-center">
+          <ng-container [ngTemplateOutlet]="content" />
+        </div>
+      } @else {
+        <h1 class="mb-4 flex justify-center lg:mb-2">
+          <app-logo
+            [width]="128"
+            loading="eager"
+            customClass="h-14 lg:h-18 w-auto object-contain"
+          />
+          <span class="sr-only">{{ heading() }}</span>
+        </h1>
+
+        <ng-container [ngTemplateOutlet]="content" />
+      }
+    </div>
+  </div>
+</main>
+
+<!-- El contenido se proyecta una sola vez y se ubica según la distribución -->
+<ng-template #content><ng-content /></ng-template>

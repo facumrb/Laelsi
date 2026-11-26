@@ -1,15 +1,24 @@
-import { Component, model, signal, computed } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  model,
+  signal,
+} from '@angular/core';
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
 import { FilterButtonComponent } from '@shared/components/buttons/filter-button/filter-button.component';
 import {
   FilterAccordionComponent,
   FilterOption,
 } from '@shared/components/filter-accordion/filter-accordion.component';
-import { OrderState, DeliveryMethod, PaymentMethod } from '@models/order.model';
-
-export type OrderStatusFilter = OrderState | 'Todos';
-export type DeliveryMethodFilter = DeliveryMethod | 'Todos';
-export type PaymentMethodFilter = PaymentMethod | 'Todos';
+import {
+  DeliveryMethod,
+  DeliveryMethodFilter,
+  OrderState,
+  OrderStatusFilter,
+  PaymentMethod,
+  PaymentMethodFilter,
+} from '@models/order.model';
 
 @Component({
   selector: 'app-orders-filter-button',
@@ -19,6 +28,7 @@ export type PaymentMethodFilter = PaymentMethod | 'Todos';
     FilterAccordionComponent,
   ],
   templateUrl: './orders-filter-button.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrdersFilterButtonComponent {
   statusFilter = model.required<OrderStatusFilter>();
@@ -48,6 +58,7 @@ export class OrdersFilterButtonComponent {
     { value: PaymentMethod.Local, label: 'Local' },
   ];
 
+  // true si algún filtro no está en "Todos"
   hayFiltrosActivos = computed(
     () =>
       this.statusFilter() !== 'Todos' ||
@@ -55,6 +66,7 @@ export class OrdersFilterButtonComponent {
       this.paymentMethodFilter() !== 'Todos',
   );
 
+  // Vuelve todos los filtros a "Todos" y cierra el menú
   limpiar(): void {
     this.statusFilter.set('Todos');
     this.deliveryMethodFilter.set('Todos');

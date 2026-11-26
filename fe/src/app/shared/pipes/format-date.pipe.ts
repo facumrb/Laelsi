@@ -1,6 +1,7 @@
 import { Pipe, PipeTransform, inject, LOCALE_ID } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { formatDate } from '@angular/common';
 
+// Fecha y hora en formato dd/MM/yyyy - HH:mm. Sin valor muestra un guion
 @Pipe({
   name: 'formatDatePipe',
 })
@@ -10,7 +11,6 @@ export class FormatDatePipe implements PipeTransform {
   transform(value: string | Date | null): string {
     if (!value) return '-';
 
-    const datePipe = new DatePipe(this.locale);
-    return datePipe.transform(value, 'dd/MM/yyyy - HH:mm') || '-';
+    return formatDate(value, 'dd/MM/yyyy - HH:mm', this.locale) || '-';
   }
 }

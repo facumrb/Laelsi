@@ -1,4 +1,10 @@
-import { Component, output, model, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  model,
+  output,
+  signal,
+} from '@angular/core';
 import { CreateEntityButtonComponent } from '@admin/components/toolbar-components/create-entity-button/create-entity-button.component';
 import { ToolbarTitleComponent } from '@admin/components/toolbar-components/toolbar-title/toolbar-title.component';
 import { CategoriesOrderModalComponent } from './components/categories-order-modal/categories-order-modal.component';
@@ -6,15 +12,10 @@ import { SearchInputComponent } from '@admin/components/toolbar-components/searc
 import { CategoriesFilterButtonComponent } from './components/categories-filter-button/categories-filter-button.component';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { bootstrapArrowDownUp } from '@ng-icons/bootstrap-icons';
-
-export type StockFilter =
-  | 'Todos'
-  | 'ConProductos'
-  | 'SinProductos'
-  | 'MasProductos'
-  | 'MenosProductos';
-
-export type StatusFilter = 'Todos' | 'Activo' | 'Inactivo';
+import {
+  CategoryStateFilter,
+  CategoryStockFilter,
+} from '@models/category.model';
 
 @Component({
   selector: 'app-categories-toolbar',
@@ -28,16 +29,17 @@ export type StatusFilter = 'Todos' | 'Activo' | 'Inactivo';
   ],
   providers: [provideIcons({ bootstrapArrowDownUp })],
   templateUrl: './categories-toolbar.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CategoriesToolbarComponent {
   searchQuery = model.required<string>();
-  statusFilter = model.required<StatusFilter>();
-  stockFilter = model.required<StockFilter>();
+  statusFilter = model.required<CategoryStateFilter>();
+  stockFilter = model.required<CategoryStockFilter>();
 
-  // OUTPUT: Para avisar que hicieron clic en "Agregar"
+  // Avisa que se pidió crear una categoría
   onAdd = output<void>();
 
-  // OUTPUT: Para avisar que el orden ha cambiado
+  // Avisa que se guardó un orden nuevo
   onOrderChange = output<void>();
 
   showOrderModal = signal(false);

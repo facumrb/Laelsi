@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { IApiResponse } from '@models/auth.model';
+import { IApiResponse } from '@models/api-response.model';
 import { IApiProductPhoto, IApiUserPhoto } from '@models/photo.model';
 import {
   concatMap,
@@ -12,7 +12,7 @@ import {
   throwError,
   toArray,
 } from 'rxjs';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
 import {
   ImageCompressorService,
   PRODUCT_IMAGE_MAX_WIDTH,
@@ -72,7 +72,11 @@ export class ApiPhotoService {
     );
   }
 
-  // Cargar las fotos de un producto
+  /**
+   * Cargar las fotos de un producto.
+   * El FormData lleva `files` (las imágenes) y `orders` (la posición de cada una en la galería),
+   * alineados por índice: el orden i corresponde al archivo i.
+   */
   uploadProductPhotos(
     productId: number,
     photosData: FormData,

@@ -88,6 +88,13 @@ Deno.test('campo: sin etiqueta es un problema; con label asociada, aria-label o 
   assert.deepEqual(reglas('<input type="text" name="username" hidden readonly>'), []);
 });
 
+Deno.test('campos: un label y un id enlazados a la misma expresión cuentan, y el placeholder enlazado también', () => {
+  assert.deepEqual(reglas('<label [for]="campoId">A</label><input type="text" [id]="campoId">'), []);
+  assert.deepEqual(reglas('<label [for]="otroId">A</label><input type="text" [id]="campoId">'), ['campo-sin-etiqueta']);
+  assert.deepEqual(reglas('<input type="text" [id]="campoId">'), ['campo-sin-etiqueta']);
+  assert.deepEqual(reglas('<input type="password" [id]="inputId()" [placeholder]="placeholder()">'), []);
+});
+
 Deno.test('los comentarios HTML no cuentan', () => {
   assert.deepEqual(reglas('<!-- <img src="a.png"> -->'), []);
 });

@@ -1,4 +1,4 @@
-<div class="animate-fadeIn container mx-auto">
+<div class="animate-fade-in container mx-auto">
   <app-orders-toolbar
     [(searchQuery)]="searchQuery"
     [(statusFilter)]="statusFilter"
@@ -8,7 +8,7 @@
 
   <app-orders-list
     class="mt-6 block"
-    [orders]="ordersFiltered()"
+    [orders]="orders()"
     [isFilterActive]="filtersActive()"
     [loading]="loading()"
     (onUpdateStatus)="handleUpdateStatus($event)"
@@ -29,7 +29,7 @@
     [order]="selectedOrderForModal()!"
     [showClientInfo]="true"
     (close)="closeOrderDetail()"
-    (onCancel)="handleCancel($event)"
+    (cancelRequested)="handleCancel($event)"
   />
 }
 

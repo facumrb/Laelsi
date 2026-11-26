@@ -1,18 +1,17 @@
 import {
+  ChangeDetectionStrategy,
   Component,
+  computed,
+  effect,
   inject,
   input,
   output,
   signal,
-  computed,
-  effect,
-  OnDestroy,
-  HostListener,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CurrencyPipe } from '@angular/common';
-import { Subject, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { A11yModule } from '@angular/cdk/a11y';
+import { catchError, EMPTY, of, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   bootstrapEye,
@@ -23,12 +22,23 @@ import {
   bootstrapCheckLg,
 } from '@ng-icons/bootstrap-icons';
 import { ApiProductService } from '@services/api-services/api-product.service';
-import { IBulkPricePreviewItem } from '@models/product.model';
+import {
+  BulkAdjustmentType,
+  IBulkPricePreviewItem,
+} from '@models/product.model';
 import { AlertService } from '@services/alert.service';
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
 import { ListboxDirective } from '@shared/directives/listbox.directive';
 import { PriceAdjustmentInputDirective } from '@shared/directives/price-adjustment-input.directive';
-import { CloseModalButtonComponent } from '@shared/components/buttons/close-modal-button/close-modal-button.component';
+import { ModalShellComponent } from '@shared/components/modals/modal-shell/modal-shell.component';
+
+// Parámetros de un pedido de vista previa
+interface PreviewRequest {
+  ids: number[];
+  type: BulkAdjustmentType;
+  val: number;
+  rule: string;
+}
 
 @Component({
   selector: 'app-bulk-price-modal',
@@ -38,8 +48,7 @@ import { CloseModalButtonComponent } from '@shared/components/buttons/close-moda
     ClickOutsideDirective,
     ListboxDirective,
     PriceAdjustmentInputDirective,
-    CloseModalButtonComponent,
-    A11yModule,
+    ModalShellComponent,
   ],
   viewProviders: [
     provideIcons({
@@ -52,28 +61,25 @@ import { CloseModalButtonComponent } from '@shared/components/buttons/close-moda
     }),
   ],
   templateUrl: './bulk-price-modal.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BulkPriceModalComponent implements OnDestroy {
+export class BulkPriceModalComponent {
   private apiService = inject(ApiProductService);
   private alertService = inject(AlertService);
 
-  // Inputs / Outputs
   productIds = input.required<number[]>();
   close = output<void>();
   success = output<void>();
 
-  // Signals de Configuración
-  adjustmentType = signal<'percentage' | 'fixed'>('percentage');
+  adjustmentType = signal<BulkAdjustmentType>('percentage');
   adjustmentValue = signal<number>(0);
   roundingRule = signal<string>('none');
 
-  // UI State
-  showRoundingOptions = signal(false); // Para el custom select
+  showRoundingOptions = signal(false);
   previewData = signal<IBulkPricePreviewItem[]>([]);
   loadingPreview = signal(false);
   loadingApply = signal(false);
 
-  // Computeds
   hasErrors = computed(() => this.previewData().some((item) => !item.isValid));
   allInvalid = computed(
     () =>
@@ -81,7 +87,11 @@ export class BulkPriceModalComponent implements OnDestroy {
       this.previewData().every((item) => !item.isValid),
   );
 
-  // Lógica para etiquetas del select
+  protected readonly subtitulo = computed(
+    () =>
+      `Editando ${this.productIds().length} ${this.productIds().length === 1 ? 'producto' : 'productos'}`,
+  );
+
   roundingLabel = computed(() => {
     switch (this.roundingRule()) {
       case 'ceil':
@@ -93,49 +103,66 @@ export class BulkPriceModalComponent implements OnDestroy {
     }
   });
 
-  // Manejo de Debounce para el Input
+  // Valores escritos en el campo, antes de esperar a que se deje de escribir
   private _valueSubject = new Subject<number>();
-  private _valueSub: Subscription;
+
+  // Pedidos de vista previa (null: no hay nada que previsualizar)
+  private previewRequests = new Subject<PreviewRequest | null>();
 
   constructor() {
-    // 1. Configurar Debounce: Espera 500ms de inactividad antes de actualizar el signal
-    this._valueSub = this._valueSubject
-      .pipe(debounceTime(500), distinctUntilChanged())
+    // Espera 500 ms de inactividad antes de actualizar el signal
+    this._valueSubject
+      .pipe(debounceTime(500), distinctUntilChanged(), takeUntilDestroyed())
       .subscribe((val) => {
         this.adjustmentValue.set(val);
       });
 
-    // 2. Efecto Automático: Reacciona a cambios en Tipos, Valor o Regla
+    /*
+    Cada pedido nuevo cancela el anterior (switchMap): así una respuesta lenta de valores viejos
+    no pisa la vista previa de los actuales.
+    */
+    this.previewRequests
+      .pipe(
+        switchMap((req) => {
+          if (!req) {
+            this.previewData.set([]);
+            this.loadingPreview.set(false);
+            return EMPTY;
+          }
+          this.loadingPreview.set(true);
+          return (
+            this.apiService
+              .previewBulkPriceChange(req.ids, req.type, req.val, req.rule)
+              // El aviso del error lo muestra el interceptor
+              .pipe(catchError(() => of(null)))
+          );
+        }),
+        takeUntilDestroyed(),
+      )
+      .subscribe((data) => {
+        if (data) this.previewData.set(data);
+        this.loadingPreview.set(false);
+      });
+
+    // Recalcula la vista previa al cambiar los productos, el tipo, el valor o la regla
     effect(() => {
-      // Leemos los signals para registrar la dependencia
       const ids = this.productIds();
       const type = this.adjustmentType();
       const val = this.adjustmentValue();
       const rule = this.roundingRule();
 
-      // Solo llamar a la API si hay un valor válido (distinto de 0)
-      if (ids.length > 0 && val !== 0) {
-        this.getPreview(ids, type, val, rule);
-      } else {
-        // Si el valor es 0 o vacío, limpiamos la tabla
-        this.previewData.set([]);
-      }
+      this.previewRequests.next(
+        ids.length > 0 && val !== 0 ? { ids, type, val, rule } : null,
+      );
     });
   }
 
-  ngOnDestroy() {
-    this._valueSub.unsubscribe();
-  }
-
-  // --- MÉTODOS DE UI ---
-
-  setAdjustmentType(type: 'percentage' | 'fixed') {
+  setAdjustmentType(type: BulkAdjustmentType) {
     this.adjustmentType.set(type);
   }
 
   onValueInput(event: Event) {
     const rawValue = (event.target as HTMLInputElement).value;
-    // Normalizar separador decimal: coma → punto
     const normalized = rawValue.replace(',', '.');
     // Si está vacío o es solo '-', se parsea a 0 para no disparar llamadas fallidas a la API.
     let parsedValue = normalized ? Number(normalized) : 0;
@@ -143,26 +170,12 @@ export class BulkPriceModalComponent implements OnDestroy {
       parsedValue = 0;
     }
 
-    // Pasamos el valor al Subject para que aplique el debounce
     this._valueSubject.next(parsedValue);
   }
 
   selectRoundingRule(rule: string) {
     this.roundingRule.set(rule);
     this.showRoundingOptions.set(false);
-  }
-
-  private getPreview(ids: number[], type: string, val: number, rule: string) {
-    this.loadingPreview.set(true);
-    this.apiService.previewBulkPriceChange(ids, type, val, rule).subscribe({
-      next: (data) => {
-        this.previewData.set(data);
-        this.loadingPreview.set(false);
-      },
-      error: (err) => {
-        this.loadingPreview.set(false);
-      },
-    });
   }
 
   onApply() {
@@ -179,20 +192,15 @@ export class BulkPriceModalComponent implements OnDestroy {
       .subscribe({
         next: (res) => {
           this.alertService.toast(
-            `${res.updatedCount} productos actualizados.`,
+            `${res.updatedCount} ${res.updatedCount === 1 ? 'producto actualizado' : 'productos actualizados'}.`,
             'success',
           );
           this.loadingApply.set(false);
           this.success.emit();
         },
-        error: (err) => {
+        error: () => {
           this.loadingApply.set(false);
         },
       });
-  }
-
-  @HostListener('document:keydown.escape')
-  onEscapeKey() {
-    this.close.emit();
   }
 }

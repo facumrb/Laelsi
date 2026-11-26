@@ -1,19 +1,19 @@
 import { EntityStateBadgeComponent } from '@admin/components/table-components/entity-state-badge/entity-state-badge.component';
 import { TableActionsComponent } from '@admin/components/table-components/table-actions/table-actions.component';
 import {
+  ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   input,
   output,
   signal,
-  computed,
 } from '@angular/core';
 import { IApiCategory } from '@models/category.model';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   bootstrapBoxSeam,
   bootstrapChevronRight,
-  bootstrapChevronDown,
 } from '@ng-icons/bootstrap-icons';
 import { CategoryProductsModalComponent } from './category-products-modal/category-products-modal.component';
 import { Router } from '@angular/router';
@@ -40,15 +40,16 @@ import { ProductoDelSubarbol } from '@shared/utils/category-tree';
   viewProviders: provideIcons({
     bootstrapBoxSeam,
     bootstrapChevronRight,
-    bootstrapChevronDown,
   }),
   templateUrl: './categories-list.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CategoriesListComponent {
   private router = inject(Router);
   categories = input.required<IApiCategory[]>();
   onEdit = output<IApiCategory>();
   onDelete = output<IApiCategory>();
+  // true cuando hay algún filtro activo: la lista se muestra plana, sin acordeón
   isFilterActive = input<boolean>(false);
 
   // Productos de cada categoría sumando los de sus subcategorías (los calcula la página)
@@ -58,14 +59,14 @@ export class CategoriesListComponent {
   loading = input<boolean>(false);
   protected skeletonRows = SKELETON_ROWS;
 
-  // Estado para el árbol de categorías (acordeón)
+  // Ids de las categorías expandidas en el acordeón
   expandedCategoryIds = signal<Set<number>>(new Set());
 
-  // Categorías que deben renderizarse en el HTML
+  // Categorías que se muestran según el acordeón
   visibleCategories = computed(() => {
     const all = this.categories();
 
-    // Si hay búsqueda activa, anulamos el acordeón (todo lineal)
+    // Con algún filtro activo no hay acordeón: se muestra todo
     if (this.isFilterActive()) return all;
 
     const expanded = this.expandedCategoryIds();
@@ -86,10 +87,18 @@ export class CategoriesListComponent {
     return all.filter((c) => isVisible(c));
   });
 
+  // Ids de las categorías que tienen al menos una hija
+  private parentIds = computed(
+    () =>
+      new Set(
+        this.categories()
+          .map((c) => c.parentId ?? c.parent?.id ?? null)
+          .filter((id): id is number => id !== null),
+      ),
+  );
+
   hasChildren(id: number): boolean {
-    return this.categories().some(
-      (c) => (c.parentId ?? c.parent?.id ?? null) === id,
-    );
+    return this.parentIds().has(id);
   }
 
   toggleExpand(id: number) {
@@ -101,20 +110,20 @@ export class CategoriesListComponent {
     });
   }
 
-  // Estado para el modal
+  // Categoría cuyo modal de productos está abierto
   selectedCategory = signal<IApiCategory | null>(null);
 
-  // Método para abrir el modal
+  // Abre el modal de productos de la categoría
   openProductsModal(category: IApiCategory) {
     this.selectedCategory.set(category);
   }
 
-  // Método para cerrar el modal
+  // Cierra el modal de productos
   closeProductsModal() {
     this.selectedCategory.set(null);
   }
 
-  // Método para navegar a la edición del producto
+  // Cierra el modal y va a la edición del producto
   navigateToProductEdit(product: IProductSummary) {
     this.closeProductsModal();
     this.router.navigate(['/admin/products/edit', product.id]);

@@ -2,27 +2,38 @@ import { HttpClient } from '@angular/common/http';
 import {
   AbstractControl,
   AsyncValidatorFn,
-  FormArray,
-  FormGroup,
   ValidationErrors,
 } from '@angular/forms';
 import { Observable, of, timer } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
-import { environment } from 'src/environments/environment';
+import { environment } from '@environments/environment';
+import {
+  MENSAJE_FORMATO_TELEFONO,
+  PATRON_TELEFONO,
+} from '@shared/utils/telefono';
 
 export class FormUtils {
-  //EXPRESIONES REGULARES
+  // Expresiones regulares
   static namePattern = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9'\\-\\s\\.&]+$";
   static emailPattern = '^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$';
   static numberPattern = '^[0-9]*$';
   static cuitPattern = '^[0-9]{11}$';
-  static phonePattern = '^[+]?[0-9\\-\\s]*$';
+  // Sale de telefono.ts, la única fuente de las reglas del teléfono
+  static phonePattern = PATRON_TELEFONO.source;
   static usernamePattern = '^[a-zA-Z0-9._-]+$';
-  // Solo para el login: el campo acepta un nombre de usuario O un email, así que
-  // admite además @, % y +. Solo filtra caracteres: quien resuelve la cuenta es el backend.
+  /*
+  Solo para el login: el campo acepta un nombre de usuario O un email, así que
+  admite además @, % y +. Solo filtra caracteres: quien resuelve la cuenta es el backend.
+  */
   static loginIdentifierPattern = '^[a-zA-Z0-9._%+@-]+$';
   // Mínimo 8 caracteres y debe tener al menos 1 letra, y 1 número.
   static passwordPattern = '^(?=.*[A-Za-z])(?=.*\\d).{8,}$';
+  // Texto de la regla: lo usan el mensaje de error y la ayuda fija debajo de los campos de contraseña
+  static passwordRule = 'Mínimo 8 caracteres, al menos una letra y un número.';
+
+  // Controles cuya última verificación de unicidad no pudo hacerse (sin red, límite de consultas)
+  private static verificacionesFallidas = new WeakSet<AbstractControl>();
+
   // Validadores para strings reemplazando los nativos para eliminar espacios vacios con trim
   static minLength(minLength: number) {
     return (control: AbstractControl): ValidationErrors | null => {
@@ -44,6 +55,7 @@ export class FormUtils {
     };
   }
 
+  // Texto del primer error de un control. Lo usa app-field-error
   static getTextError(
     errors: ValidationErrors,
     fieldName: string = 'campo',
@@ -83,9 +95,6 @@ export class FormUtils {
         case 'nameTaken':
           return `Este nombre ya está en uso.`;
 
-        case 'mustMatch':
-          return `Las contraseñas no coinciden.`;
-
         case 'passwordsNotEqual':
           return `Las contraseñas no coinciden.`;
 
@@ -102,12 +111,12 @@ export class FormUtils {
 
           // Contraseña (Password)
           if (errors['pattern'].requiredPattern === this.passwordPattern) {
-            return 'La contraseña debe tener al menos 8 caracteres, con al menos una letra y un número.';
+            return this.passwordRule;
           }
 
           // Nombre de Usuario (Username)
           if (errors['pattern'].requiredPattern === this.usernamePattern) {
-            return 'Solo se permiten letras, números, puntos (.) y guiones bajos (_) y guiones medios (-).';
+            return 'Solo letras, números, puntos (.), guiones (-) y guiones bajos (_).';
           }
 
           // Usuario o email (login)
@@ -124,7 +133,7 @@ export class FormUtils {
 
           // Teléfono (Phone)
           if (errors['pattern'].requiredPattern === this.phonePattern) {
-            return 'Solo se permiten números, espacios, guiones (-) y el signo más (+).';
+            return MENSAJE_FORMATO_TELEFONO;
           }
 
           // Solo Números (Number)
@@ -139,37 +148,7 @@ export class FormUtils {
     return null;
   }
 
-  static isValidField(form: FormGroup, fieldName: string): boolean | null {
-    return (
-      !!form.controls[fieldName].errors && form.controls[fieldName].touched
-    );
-  }
-
-  static getFieldError(form: FormGroup, fieldName: string): string | null {
-    if (!form.controls[fieldName]) return null;
-
-    const errors = form.controls[fieldName].errors ?? {};
-
-    return FormUtils.getTextError(errors);
-  }
-
-  static isValidFieldInArray(formArray: FormArray, index: number) {
-    return (
-      formArray.controls[index].errors && formArray.controls[index].touched
-    );
-  }
-
-  static getFieldErrorInArray(
-    formArray: FormArray,
-    index: number,
-  ): string | null {
-    if (formArray.controls.length === 0) return null;
-
-    const errors = formArray.controls[index].errors ?? {};
-
-    return FormUtils.getTextError(errors);
-  }
-
+  // Validador de grupo: marca el segundo campo con passwordsNotEqual si no coincide con el primero
   static isFieldOneEqualFieldTwo(field1: string, field2: string) {
     return (formGroup: AbstractControl) => {
       const field1Value = formGroup.get(field1)?.value;
@@ -199,6 +178,7 @@ export class FormUtils {
     };
   }
 
+  // Rechaza un valor que tiene solo espacios
   static notOnlyWhiteSpace(control: AbstractControl): ValidationErrors | null {
     // Si no hay valor, dejamos que el validador 'required' se encargue
     if (!control.value) {
@@ -210,15 +190,21 @@ export class FormUtils {
     return isValid ? null : { onlyWhitespace: true };
   }
 
-  /**
-   * Validador asíncrono para verificar la unicidad de campos en el backend.
-   *
-   * @param entity Nombre de la entidad (ej: 'Admin', 'Client', 'Product', 'Category')
-   * @param field Nombre del campo a validar (ej: 'email', 'username', 'dni', 'cuit', 'name')
-   * @param http Instancia de HttpClient (inyectada con inject(HttpClient))
-   * @param excludeId ID opcional a excluir de la validación (útil en ediciones)
-   * @returns AsyncValidatorFn que retorna { [field + 'Taken']: true } si el valor ya existe
-   */
+  /*
+  Validador asíncrono para verificar la unicidad de campos en el backend.
+
+  Parámetros:
+  - entity: nombre de la entidad (ej: 'Admin', 'Client', 'Product', 'Category')
+  - field: nombre del campo a validar (ej: 'email', 'username', 'dni', 'cuit', 'name')
+  - http: instancia de HttpClient (inyectada con inject(HttpClient))
+  - excludeId: ID opcional a excluir de la validación (útil en ediciones)
+
+  Devuelve un AsyncValidatorFn que da { [field + 'Taken']: true } si el valor ya existe.
+
+  Si la consulta falla (sin red, o el límite de consultas por minuto de check_field_unique), el control
+  queda válido para no impedir el envío: los índices únicos de la base rechazan el duplicado al guardar.
+  Ese control queda registrado como sin verificar (ver verificacionPendiente) hasta que una consulta responda.
+  */
   static uniqueFieldValidator(
     entity: string,
     field: string,
@@ -226,6 +212,8 @@ export class FormUtils {
     excludeId?: number,
   ): AsyncValidatorFn {
     return (control: AbstractControl): Observable<ValidationErrors | null> => {
+      FormUtils.verificacionesFallidas.delete(control);
+
       if (!control.value || control.pristine) {
         return of(null);
       }
@@ -233,8 +221,10 @@ export class FormUtils {
       return timer(400).pipe(
         switchMap(() => {
           const value = control.value;
-          // La validación la resuelve la función SQL check_field_unique, que se
-          // invoca por la API REST de Supabase
+          /*
+          La validación la resuelve la función SQL check_field_unique, que se
+          invoca por la API REST de Supabase
+          */
           const url = `${environment.supabaseUrl}/rest/v1/rpc/check_field_unique`;
           const body = {
             p_entity: entity,
@@ -245,10 +235,18 @@ export class FormUtils {
 
           return http.post<{ available: boolean }>(url, body).pipe(
             map((res) => (res.available ? null : { [`${field}Taken`]: true })),
-            catchError(() => of(null)),
+            catchError(() => {
+              FormUtils.verificacionesFallidas.add(control);
+              return of(null);
+            }),
           );
         }),
       );
     };
+  }
+
+  // Indica si la última verificación de unicidad del control no pudo hacerse
+  static verificacionPendiente(control: AbstractControl): boolean {
+    return FormUtils.verificacionesFallidas.has(control);
   }
 }

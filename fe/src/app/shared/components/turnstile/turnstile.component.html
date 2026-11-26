@@ -1,0 +1,5 @@
+<!--
+line-height 0: Cloudflare dibuja el iframe en línea dentro de un shadow DOM (adonde no llegan los estilos base de
+Tailwind) y el espacio de línea le sumaba 6 px al alto reservado. El line-height se hereda dentro del shadow DOM
+-->
+<div #container class="flex justify-center" style="line-height: 0"></div>

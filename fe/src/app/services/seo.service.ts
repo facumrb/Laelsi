@@ -3,9 +3,14 @@ import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { Meta } from '@angular/platform-browser';
 import { filter } from 'rxjs/operators';
 
+// Descripción para las rutas que no definen la suya en data.description
 export const DEFAULT_SEO_DESCRIPTION =
   'Librería y papelería Laelsi en Rosario. Impresiones, fotocopias, útiles escolares, artículos de oficina y sellos personalizados.';
 
+/*
+ Actualiza la meta description en cada navegación con data.description de la ruta más profunda, o con la
+ descripción por defecto. Se activa al inyectarlo (lo hace el inicializador de app.config.ts).
+*/
 @Injectable({
   providedIn: 'root',
 })

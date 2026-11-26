@@ -1,11 +1,9 @@
 import { inject } from '@angular/core';
 import { injectQuery } from '@tanstack/angular-query-experimental';
 import { firstValueFrom } from 'rxjs';
-import { ApiAnalyticsService } from '../api-services/api-analytics.service';
+import { ApiAnalyticsService } from '@services/api-services/api-analytics.service';
 
-/**
- * Query reactiva del resumen del panel de analíticas (Panel Admin).
- */
+// Query reactiva del resumen del panel de analíticas (Panel Admin).
 export function injectAnalyticsSummaryQuery() {
   const apiAnalyticsService = inject(ApiAnalyticsService);
 

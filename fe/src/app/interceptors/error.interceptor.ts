@@ -1,9 +1,4 @@
-import {
-  HttpErrorResponse,
-  HttpInterceptorFn,
-  HttpRequest,
-  HttpHandlerFn,
-} from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError, switchMap } from 'rxjs';
 import { ApiErrorService } from '@services/api-services/api-error.service';
@@ -19,8 +14,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       if (error.status === 401 && !req.url.includes('/auth/login')) {
         return authService.refreshToken().pipe(
           switchMap(() => {
-            // El reintento no vuelve a pasar por authInterceptor (va antes en la cadena): por eso el
-            // token nuevo se pone a mano
+            // El reintento no vuelve a pasar por authInterceptor (va antes en la cadena): por eso el token nuevo se pone a mano
             const newToken = authService.getToken();
             const clonedReq = req.clone({
               setHeaders: {

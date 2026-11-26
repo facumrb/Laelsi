@@ -1,6 +1,6 @@
-<div class="animate-fadeIn container mx-auto">
+<div class="animate-fade-in container mx-auto">
   <div class="mb-6 flex flex-col gap-2">
-    <h1 class="text-2xl font-bold text-[#3d4494]">Analíticas</h1>
+    <h1 class="text-2xl font-bold text-brand">Analíticas</h1>
     <p class="text-gray-500">
       Resumen general de la tienda y estadísticas destacadas.
     </p>
@@ -21,6 +21,11 @@
             data-skeleton="stat"
             class="h-8 w-28 animate-pulse rounded bg-gray-200"
           ></div>
+        } @else if (failed()) {
+          <p class="text-2xl font-bold text-gray-400">
+            <span aria-hidden="true">—</span>
+            <span class="sr-only">Sin datos</span>
+          </p>
         } @else {
           <p class="text-2xl font-bold text-gray-900">
             {{ totalRevenue() | currency: "ARS" : "symbol-narrow" : "1.0-0" }}
@@ -46,6 +51,11 @@
             data-skeleton="stat"
             class="h-8 w-16 animate-pulse rounded bg-gray-200"
           ></div>
+        } @else if (failed()) {
+          <p class="text-2xl font-bold text-gray-400">
+            <span aria-hidden="true">—</span>
+            <span class="sr-only">Sin datos</span>
+          </p>
         } @else {
           <p class="text-2xl font-bold text-gray-900">{{ totalOrders() }}</p>
         }
@@ -69,6 +79,11 @@
             data-skeleton="stat"
             class="h-8 w-16 animate-pulse rounded bg-gray-200"
           ></div>
+        } @else if (failed()) {
+          <p class="text-2xl font-bold text-gray-400">
+            <span aria-hidden="true">—</span>
+            <span class="sr-only">Sin datos</span>
+          </p>
         } @else {
           <p class="text-2xl font-bold text-gray-900">{{ totalClients() }}</p>
         }
@@ -92,6 +107,11 @@
             data-skeleton="stat"
             class="h-8 w-16 animate-pulse rounded bg-gray-200"
           ></div>
+        } @else if (failed()) {
+          <p class="text-2xl font-bold text-gray-400">
+            <span aria-hidden="true">—</span>
+            <span class="sr-only">Sin datos</span>
+          </p>
         } @else {
           <p class="text-2xl font-bold text-gray-900">{{ totalProducts() }}</p>
         }
@@ -109,13 +129,13 @@
       <div
         class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center"
       >
-        <div class="flex items-center gap-2 text-[#3d4494]">
+        <div class="flex items-center gap-2 text-brand">
           <ng-icon name="bootstrapCart" class="text-xl"></ng-icon>
           <h2 class="text-lg font-bold">Últimas Órdenes</h2>
         </div>
         <a
           routerLink="/admin/orders"
-          class="inline-block py-1 text-sm font-semibold text-[#3d4494] hover:text-[#2a2f63] hover:underline"
+          class="inline-block py-1 text-sm font-semibold text-brand hover:text-brand-hover hover:underline"
           >Ver todas</a
         >
       </div>
@@ -155,7 +175,7 @@
             <button
               type="button"
               (click)="retry()"
-              class="text-sm font-semibold text-[#3d4494] hover:underline cursor-pointer"
+              class="text-sm font-semibold text-brand hover:underline cursor-pointer"
             >
               Reintentar
             </button>
@@ -217,13 +237,13 @@
       <div
         class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center"
       >
-        <div class="flex items-center gap-2 text-[#3d4494]">
+        <div class="flex items-center gap-2 text-brand">
           <ng-icon name="bootstrapGraphUpArrow" class="text-lg"></ng-icon>
           <h2 class="text-lg font-bold">Top Productos</h2>
         </div>
         <a
           routerLink="/admin/products"
-          class="inline-block py-1 text-sm font-semibold text-[#3d4494] hover:text-[#2a2f63] hover:underline"
+          class="inline-block py-1 text-sm font-semibold text-brand hover:text-brand-hover hover:underline"
           >Ver catálogo</a
         >
       </div>
@@ -273,9 +293,9 @@
               let i = $index
             ) {
               @if (product.totalSold > 0) {
-                <div
+                <a
                   [routerLink]="['/admin/products/edit', product.id]"
-                  class="flex items-center gap-4 px-6 py-3 min-h-21 hover:bg-gray-50 transition-colors cursor-pointer group"
+                  class="flex items-center gap-4 px-6 py-3 min-h-21 hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   <div
                     class="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold text-xs shrink-0"
@@ -292,7 +312,7 @@
                           ? product.photos[0].fileName
                           : null
                       "
-                      [altText]="product.name"
+                      altText=""
                       containerClass="w-full h-full bg-transparent"
                     />
                   </div>
@@ -314,11 +334,11 @@
                       >Ventas</span
                     >
                     <span
-                      class="font-bold text-[#3d4494] bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded text-sm"
+                      class="font-bold text-brand bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded text-sm"
                       >{{ product.totalSold }}</span
                     >
                   </div>
-                </div>
+                </a>
               }
             }
           </div>
@@ -349,5 +369,15 @@
     [order]="order"
     [showClientInfo]="true"
     (close)="closeOrderModal()"
+    (cancelRequested)="orderIdToCancel.set($event)"
+  />
+}
+
+@if (orderIdToCancel()) {
+  <app-cancel-order-modal
+    [orderId]="orderIdToCancel()!"
+    variant="admin"
+    (orderCancelled)="handleOrderCancelled()"
+    (close)="orderIdToCancel.set(null)"
   />
 }

@@ -1,0 +1,114 @@
+/* Barra de navegación de la tienda */
+@layer components {
+  /* .navbar-static-link: links estáticos de la barra (Impresiones, Diseño, Sellos) */
+  .navbar-link,
+  .navbar-static-link {
+    @apply text-sm font-bold text-white tracking-wide drop-shadow-sm transition-colors
+           hover:text-accent-pink focus:outline-hidden focus-visible:underline decoration-accent-pink;
+  }
+
+  .navbar-link {
+    @apply flex items-center gap-1.5;
+  }
+
+  .navbar-link-active {
+    @apply underline decoration-accent-pink decoration-2 underline-offset-4;
+  }
+
+  .navbar-dropdown-item.navbar-dropdown-item-active {
+    @apply text-accent-purple;
+  }
+
+  .navbar-dropdown {
+    @apply absolute top-full left-0 mt-0 pt-3 w-50 opacity-0 invisible
+           transition-[opacity,translate,visibility] duration-200 z-50 translate-y-2;
+  }
+
+  .navbar-dropdown-abierto {
+    @apply opacity-100 visible translate-y-0;
+
+    transition-property: opacity, translate;
+  }
+
+  .navbar-dropdown-container {
+    @apply bg-white rounded-xl shadow-xl overflow-visible border border-black/5 ring-1 ring-black/5;
+  }
+
+  /* Foco del teclado dentro de los menús: contorno hacia adentro, porque el menú tiene bordes redondeados y el
+     contorno hacia afuera quedaría recortado o tapado por el ítem vecino. */
+  .navbar-dropdown-item:focus-visible {
+    @apply bg-gray-100 outline-2 outline-accent-purple -outline-offset-2;
+  }
+
+  .navbar-dropdown-item {
+    @apply relative z-10 block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100
+           font-semibold transition-colors
+           border-b border-gray-50 last:border-0;
+  }
+
+  /* Redondeo para el primer y último item para encajar con el borde del menú contenedor.
+     Cada ítem de un menú va dentro de su propio div (que también aloja a su menú lateral). */
+  .navbar-dropdown-container > div:first-of-type > .navbar-dropdown-item,
+  .navbar-subdropdown > div:first-of-type > .navbar-dropdown-item {
+    @apply rounded-t-xl;
+  }
+
+  .navbar-dropdown-container > div:last-of-type > .navbar-dropdown-item,
+  .navbar-subdropdown > div:last-of-type > .navbar-dropdown-item {
+    @apply border-b-0 rounded-b-xl;
+  }
+
+  /* Menú lateral de cada nivel a partir del tercero (aparece a la derecha del ítem hover).
+     Hay uno dentro de otro, hasta el último nivel que pueden crear los negocios. */
+  .navbar-subdropdown {
+    @apply absolute left-full top-0 ml-2 hidden
+           w-44 bg-white rounded-xl shadow-xl border border-black/5 ring-1 ring-black/5 z-50
+           before:absolute before:-left-3 before:top-0 before:h-full before:w-3;
+  }
+
+  .navbar-subdropdown-abierto {
+    @apply block;
+  }
+
+  /* Triángulo que une el menú principal con el secundario */
+  .navbar-subdropdown::after {
+    content: "";
+    @apply absolute top-3.5 -left-1.5 w-3 h-3 bg-white border-l border-b border-black/5 ring-0 rotate-45 transition-colors;
+    z-index: 20; /* Se mantiene por encima del borde del contenedor para ocultar la unión */
+    box-shadow: -1px 1px 1px -1px rgba(0, 0, 0, 0.1); /* Micro sombra para emparejar con el menú */
+  }
+
+  .navbar-subdropdown:has(
+      > div:first-of-type > .navbar-dropdown-item:hover
+    )::after {
+    @apply bg-gray-100;
+  }
+
+  /* Menú lateral que se abre hacia la IZQUIERDA, cuando a la derecha no hay lugar para todos los niveles (ver
+     medirDireccion en navbar-category-bar.component.ts). Es el mismo menú espejado: el puente que lo une con el
+     ítem y el triángulo pasan al otro lado. Va después de las reglas de arriba para que las pise. */
+  .navbar-subdropdown-izquierda {
+    @apply left-auto right-full ml-0 mr-2 before:left-auto before:-right-3;
+  }
+  .navbar-subdropdown-izquierda::after {
+    @apply left-auto -right-1.5 border-l-0 border-b-0 border-r border-t;
+    box-shadow: 1px -1px 1px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Chevron giratorio al hacer hover sobre una categoría raíz */
+  .navbar-chevron {
+    @apply text-[10px] text-white/70 transition-transform;
+  }
+  .navbar-grupo-abierto .navbar-chevron {
+    @apply rotate-180;
+  }
+
+  /* Chevron lateral (indica submenú a la derecha) */
+  .navbar-chevron-right {
+    @apply text-[10px] -rotate-90 text-gray-400;
+  }
+  /* ... y hacia la izquierda, cuando el menú lateral se abre a ese lado (va después para pisar la de arriba) */
+  .navbar-chevron-izquierda {
+    @apply rotate-90;
+  }
+}

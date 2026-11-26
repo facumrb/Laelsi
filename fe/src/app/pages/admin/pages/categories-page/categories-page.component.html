@@ -1,10 +1,10 @@
-<div class="animate-fadeIn container mx-auto">
+<div class="animate-fade-in container mx-auto">
   <app-categories-toolbar
     [(searchQuery)]="searchQuery"
     [(statusFilter)]="statusFilter"
     [(stockFilter)]="stockFilter"
     (onAdd)="handleNavigateToCreate()"
-    (onOrderChange)="loadCategories()"
+    (onOrderChange)="refreshCategories()"
   />
 
   <app-categories-list
@@ -31,7 +31,8 @@
 
   @if (categoryBlocked()) {
     <app-category-delete-blocked-modal
-      [category]="categoryBlocked()!"
+      [category]="categoryBlocked()!.category"
+      [reason]="categoryBlocked()!.reason"
       (close)="categoryBlocked.set(null)"
     />
   }

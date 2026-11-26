@@ -3,8 +3,20 @@ import { CategoryState } from '@models/category.model';
 import { ProductState } from '@models/product.model';
 
 // Los clientes y los administradores tienen el mismo par Activo / Inactivo, así que alcanza con el texto
-export type EntityState = CategoryState | ProductState | 'Activo' | 'Inactivo' | 'Pausado';
+export type EntityState =
+  | CategoryState
+  | ProductState
+  | 'Activo'
+  | 'Inactivo'
+  | 'Pausado';
 export type BadgeMode = 'table' | 'card';
+
+// Color del punto indicador de cada estado. La usan la insignia y el selector de estado de los formularios
+export function entityStateDotClass(state: EntityState): string {
+  if (state === 'Activo') return 'bg-green-500';
+  if (state === 'Pausado') return 'bg-amber-500';
+  return 'bg-red-500';
+}
 
 @Component({
   selector: 'app-entity-state-badge',
@@ -28,9 +40,5 @@ export class EntityStateBadgeComponent {
   });
 
   // Clase de color del punto indicador según el estado de la entidad.
-  dotClass = computed(() => {
-    if (this.isActive()) return 'bg-green-500';
-    if (this.isPaused()) return 'bg-amber-500';
-    return 'bg-red-500';
-  });
+  dotClass = computed(() => entityStateDotClass(this.state()));
 }

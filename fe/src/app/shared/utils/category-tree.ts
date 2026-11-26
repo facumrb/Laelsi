@@ -3,15 +3,15 @@ import { IProductSummary } from '@models/product.model';
 
 export type CategoriaAplanada = IApiCategory & { depth: number };
 
-/**
- * Pasa el árbol de categorías a una lista plana, con cada categoría seguida de sus hijas y su profundidad
- * (la raíz es 0). Incluye las categorías hasta la profundidad `hastaProfundidad`, inclusive.
- *
- * Lo usan los selectores del panel (categoría padre, categoría de un producto, filtro de productos). Cada
- * uno decide hasta dónde llegar: ver MAX_CATEGORY_DEPTH en @models/category.model.
- *
- * Una categoría se ubica por `parentId` o, si no lo trae, por `parent.id`.
- */
+/*
+Pasa el árbol de categorías a una lista plana, con cada categoría seguida de sus hijas y su profundidad
+(la raíz es 0). Incluye las categorías hasta la profundidad `hastaProfundidad`, inclusive.
+
+Lo usan los selectores del panel (categoría padre, categoría de un producto, filtro de productos). Cada
+uno decide hasta dónde llegar: ver MAX_CATEGORY_DEPTH en @models/category.model.
+
+Una categoría se ubica por `parentId` o, si no lo trae, por `parent.id`.
+*/
 export function aplanarCategorias(
   categorias: IApiCategory[],
   hastaProfundidad: number,
@@ -41,7 +41,8 @@ export type ProductoDelSubarbol = IProductSummary & {
 };
 
 /*
- Devuelve, para cada categoría, sus productos propios más los de todas sus descendientes (hijas, nietas...), sin importar el estado de cada una: el panel ve el árbol completo.
+Devuelve, para cada categoría, sus productos propios más los de todas sus descendientes (hijas, nietas...),
+sin importar el estado de cada una: el panel ve el árbol completo.
 */
 export function productosDelSubarbol(
   categorias: IApiCategory[],
@@ -65,7 +66,7 @@ export function productosDelSubarbol(
 
   const resultado = new Map<number, ProductoDelSubarbol[]>();
   for (const raiz of categorias) {
-    // `visitadas` corta un ciclo si algún dato corrupto lo trajera; `vistos` evita repetir productos
+    // `visitadas` corta un ciclo si algún dato corrupto lo trajera, y `vistos` evita repetir productos
     const visitadas = new Set<number>([raiz.id]);
     const vistos = new Set<number>();
     const productos: ProductoDelSubarbol[] = [];
@@ -87,4 +88,20 @@ export function productosDelSubarbol(
     resultado.set(raiz.id, productos);
   }
   return resultado;
+}
+
+/*
+Breadcrumb de una categoría: de la raíz hasta ella, cada paso con el enlace a su página.
+Lo usan la página de la categoría y la del producto.
+*/
+export function pasosDeCategoria(
+  categoria: IApiCategory,
+): { label: string; url: string }[] {
+  const pasos: { label: string; url: string }[] = [];
+  let actual: IApiCategory | null | undefined = categoria;
+  while (actual) {
+    pasos.unshift({ label: actual.name, url: `/category/${actual.id}` });
+    actual = actual.parent;
+  }
+  return pasos;
 }

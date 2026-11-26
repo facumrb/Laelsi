@@ -1,13 +1,9 @@
-<div class="animate-fadeIn max-w-4xl mx-auto page-container-adaptive">
-  <div class="mb-5 flex items-center justify-between">
-    <div>
-      <h1 class="page-title">
-        {{ isEditMode() ? "Editar Administrador" : "Nuevo Administrador" }}
-      </h1>
-    </div>
-
-    <app-go-back-button></app-go-back-button>
-  </div>
+<div class="animate-fade-in max-w-4xl mx-auto page-container-adaptive">
+  <app-form-page-header
+    class="mb-5"
+    [title]="isEditMode() ? 'Editar Administrador' : 'Nuevo Administrador'"
+    backUrl="/admin/admins"
+  />
 
   <div class="form-card">
     <form [formGroup]="formAdmin" (ngSubmit)="onSubmit()" class="form-body">
@@ -29,7 +25,9 @@
               class="form-input"
               placeholder="Ej: Juan"
             />
-            <app-field-error [control]="formAdmin.controls.name" />
+            <div class="min-h-8">
+              <app-field-error [control]="formAdmin.controls.name" />
+            </div>
           </div>
 
           <div>
@@ -46,7 +44,9 @@
               class="form-input"
               placeholder="Ej: Perez"
             />
-            <app-field-error [control]="formAdmin.controls.lastName" />
+            <div class="min-h-8">
+              <app-field-error [control]="formAdmin.controls.lastName" />
+            </div>
           </div>
 
           <div>
@@ -65,10 +65,12 @@
               class="form-input"
               placeholder="Ej: 12345678"
             />
-            <app-field-error
-              [control]="formAdmin.controls.dni"
-              validLabel="DNI disponible"
-            />
+            <div class="min-h-8">
+              <app-field-error
+                [control]="formAdmin.controls.dni"
+                validLabel="DNI disponible"
+              />
+            </div>
           </div>
 
           <div>
@@ -87,7 +89,9 @@
               class="form-input"
               placeholder="Ej: 3415555555"
             />
-            <app-field-error [control]="formAdmin.controls.phone" />
+            <div class="min-h-8">
+              <app-field-error [control]="formAdmin.controls.phone" />
+            </div>
           </div>
         </div>
       </div>
@@ -110,10 +114,12 @@
               class="form-input"
               placeholder="Ej: jperez"
             />
-            <app-field-error
-              [control]="formAdmin.controls.username"
-              validLabel="Usuario disponible"
-            />
+            <div class="min-h-8">
+              <app-field-error
+                [control]="formAdmin.controls.username"
+                validLabel="Usuario disponible"
+              />
+            </div>
           </div>
 
           <div>
@@ -130,10 +136,12 @@
               class="form-input"
               placeholder="Ej: juan@ejemplo.com"
             />
-            <app-field-error
-              [control]="formAdmin.controls.email"
-              validLabel="Email disponible"
-            />
+            <div class="min-h-8">
+              <app-field-error
+                [control]="formAdmin.controls.email"
+                validLabel="Email disponible"
+              />
+            </div>
           </div>
 
           <div>
@@ -143,32 +151,15 @@
                 <span class="text-red-500">*</span>
               }
             </label>
-            <div
-              class="password-field rounded-lg border border-gray-300 shadow-sm focus-within:[outline:auto]"
-            >
-              <input
-                [type]="passwordVisible() ? 'text' : 'password'"
-                id="password"
-                name="password"
-                formControlName="password"
-                maxlength="100"
-                autocomplete="new-password"
-                class="password-field-input p-2.5 text-sm text-gray-900"
-                placeholder="{{
-                  isEditMode()
-                    ? 'Dejar vacío para mantener la actual'
-                    : 'Mínimo 8 caracteres, 1 letra, 1 número.'
-                }}"
-              />
-
-              <app-password-toggle-button
-                [(visible)]="passwordVisible"
-                [show]="showEyeIcon()"
-              />
-            </div>
-            <div class="min-h-8">
-              <app-field-error [control]="formAdmin.controls.password" />
-            </div>
+            <app-password-input
+              [control]="formAdmin.controls.password"
+              inputId="password"
+              describedBy="password-hint"
+            />
+            <app-password-rule-hint
+              [control]="formAdmin.controls.password"
+              [keepHint]="isEditMode()"
+            />
           </div>
 
           <div>
@@ -178,37 +169,23 @@
                 <span class="text-red-500">*</span>
               }
             </label>
-            <div
-              class="password-field rounded-lg border border-gray-300 shadow-sm focus-within:[outline:auto]"
-            >
-              <input
-                [type]="confirmPasswordVisible() ? 'text' : 'password'"
-                id="confirmPassword"
-                name="confirmPassword"
-                formControlName="confirmPassword"
-                maxlength="100"
-                autocomplete="new-password"
-                class="password-field-input p-2.5 text-sm text-gray-900"
-                placeholder="{{
-                  isEditMode()
-                    ? 'Repetir nueva contraseña'
-                    : 'Repetir la contraseña ingresada'
-                }}"
-              />
-
-              <app-password-toggle-button
-                [(visible)]="confirmPasswordVisible"
-                [show]="showConfirmEyeIcon()"
-              />
+            <app-password-input
+              [control]="formAdmin.controls.confirmPassword"
+              inputId="confirmPassword"
+              [placeholder]="
+                isEditMode() ? 'Repetir nueva contraseña' : 'Repetir contraseña'
+              "
+            />
+            <div class="min-h-8">
+              <app-field-error [control]="formAdmin.controls.confirmPassword" />
             </div>
-            <app-field-error [control]="formAdmin.controls.confirmPassword" />
           </div>
 
-          <div class="flex justify-center md:justify-start pt-2 md:col-span-2">
+          <div class="flex justify-center sm:justify-start pt-2 sm:col-span-2">
             <div class="w-full">
               <app-photo-manager
                 [currentPhoto]="currentPhoto()"
-                [userFullName]="fullName"
+                [userFullName]="fullName()"
               ></app-photo-manager>
             </div>
           </div>
@@ -219,24 +196,16 @@
         <app-audit-info
           [createdAt]="auditCreatedAt()"
           [updatedAt]="auditUpdatedAt()"
-          [isActive]="true"
+          [isActive]="initialState() === 'Activo'"
           [statusDate]="auditStatusDate()"
         />
       }
 
-      <div class="form-footer">
-        <button type="button" routerLink="/admin/admins" class="btn-secondary">
-          Cancelar
-        </button>
-
-        <button
-          type="submit"
-          [disabled]="!formAdmin.valid || !hasRealChanges"
-          class="btn-primary px-8"
-        >
-          {{ isEditMode() ? "Guardar Cambios" : "Crear Administrador" }}
-        </button>
-      </div>
+      <app-form-actions
+        cancelUrl="/admin/admins"
+        [submitLabel]="isEditMode() ? 'Guardar Cambios' : 'Crear Administrador'"
+        [submitDisabled]="!formAdmin.valid || !hasRealChanges() || saving()"
+      />
     </form>
   </div>
 </div>

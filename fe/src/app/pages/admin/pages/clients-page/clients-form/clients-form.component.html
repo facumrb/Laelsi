@@ -1,13 +1,9 @@
-<div class="animate-fadeIn max-w-4xl mx-auto page-container-adaptive">
-  <div class="mb-5 flex items-center justify-between">
-    <div>
-      <h1 class="page-title">
-        {{ isEditMode() ? "Editar Cliente" : "Nuevo Cliente" }}
-      </h1>
-    </div>
-
-    <app-go-back-button></app-go-back-button>
-  </div>
+<div class="animate-fade-in max-w-4xl mx-auto page-container-adaptive">
+  <app-form-page-header
+    class="mb-5"
+    [title]="isEditMode() ? 'Editar Cliente' : 'Nuevo Cliente'"
+    backUrl="/admin/clients"
+  />
 
   <div class="form-card">
     <form [formGroup]="formClient" (ngSubmit)="onSubmit()" class="form-body">
@@ -27,7 +23,9 @@
               class="form-input"
               placeholder="Ej: Juan"
             />
-            <app-field-error [control]="formClient.controls.name" />
+            <div class="min-h-8">
+              <app-field-error [control]="formClient.controls.name" />
+            </div>
           </div>
 
           <div>
@@ -42,7 +40,9 @@
               class="form-input"
               placeholder="Ej: Perez"
             />
-            <app-field-error [control]="formClient.controls.lastName" />
+            <div class="min-h-8">
+              <app-field-error [control]="formClient.controls.lastName" />
+            </div>
           </div>
 
           <div>
@@ -59,10 +59,12 @@
               class="form-input"
               placeholder="Ej: 12345678"
             />
-            <app-field-error
-              [control]="formClient.controls.dni"
-              validLabel="DNI disponible"
-            />
+            <div class="min-h-8">
+              <app-field-error
+                [control]="formClient.controls.dni"
+                validLabel="DNI disponible"
+              />
+            </div>
           </div>
 
           <div>
@@ -79,7 +81,9 @@
               class="form-input"
               placeholder="Ej: 3415555555"
             />
-            <app-field-error [control]="formClient.controls.phone" />
+            <div class="min-h-8">
+              <app-field-error [control]="formClient.controls.phone" />
+            </div>
           </div>
         </div>
       </div>
@@ -102,10 +106,12 @@
               class="form-input"
               placeholder="Ej: jperez"
             />
-            <app-field-error
-              [control]="formClient.controls.username"
-              validLabel="Usuario disponible"
-            />
+            <div class="min-h-8">
+              <app-field-error
+                [control]="formClient.controls.username"
+                validLabel="Usuario disponible"
+              />
+            </div>
           </div>
 
           <div>
@@ -122,10 +128,12 @@
               class="form-input"
               placeholder="Ej: juan@ejemplo.com"
             />
-            <app-field-error
-              [control]="formClient.controls.email"
-              validLabel="Email disponible"
-            />
+            <div class="min-h-8">
+              <app-field-error
+                [control]="formClient.controls.email"
+                validLabel="Email disponible"
+              />
+            </div>
           </div>
 
           <div>
@@ -135,32 +143,15 @@
                 <span class="text-red-500">*</span>
               }
             </label>
-            <div
-              class="password-field rounded-lg border border-gray-300 shadow-sm focus-within:[outline:auto]"
-            >
-              <input
-                [type]="passwordVisible() ? 'text' : 'password'"
-                id="password"
-                name="password"
-                formControlName="password"
-                maxlength="100"
-                autocomplete="new-password"
-                class="password-field-input p-2.5 text-sm text-gray-900"
-                placeholder="{{
-                  isEditMode()
-                    ? 'Dejar vacío para mantener la actual'
-                    : 'Mínimo 8 caracteres, 1 letra, 1 número.'
-                }}"
-              />
-
-              <app-password-toggle-button
-                [(visible)]="passwordVisible"
-                [show]="showEyeIcon()"
-              />
-            </div>
-            <div class="min-h-8">
-              <app-field-error [control]="formClient.controls.password" />
-            </div>
+            <app-password-input
+              [control]="formClient.controls.password"
+              inputId="password"
+              describedBy="password-hint"
+            />
+            <app-password-rule-hint
+              [control]="formClient.controls.password"
+              [keepHint]="isEditMode()"
+            />
           </div>
 
           <div>
@@ -170,37 +161,25 @@
                 <span class="text-red-500">*</span>
               }
             </label>
-            <div
-              class="password-field rounded-lg border border-gray-300 shadow-sm focus-within:[outline:auto]"
-            >
-              <input
-                [type]="confirmPasswordVisible() ? 'text' : 'password'"
-                id="confirmPassword"
-                name="confirmPassword"
-                formControlName="confirmPassword"
-                maxlength="100"
-                autocomplete="new-password"
-                class="password-field-input p-2.5 text-sm text-gray-900"
-                placeholder="{{
-                  isEditMode()
-                    ? 'Repetir nueva contraseña'
-                    : 'Repetir la contraseña ingresada'
-                }}"
-              />
-
-              <app-password-toggle-button
-                [(visible)]="confirmPasswordVisible"
-                [show]="showConfirmEyeIcon()"
+            <app-password-input
+              [control]="formClient.controls.confirmPassword"
+              inputId="confirmPassword"
+              [placeholder]="
+                isEditMode() ? 'Repetir nueva contraseña' : 'Repetir contraseña'
+              "
+            />
+            <div class="min-h-8">
+              <app-field-error
+                [control]="formClient.controls.confirmPassword"
               />
             </div>
-            <app-field-error [control]="formClient.controls.confirmPassword" />
           </div>
 
-          <div class="flex justify-center md:justify-start pt-2 md:col-span-2">
+          <div class="flex justify-center sm:justify-start pt-2 sm:col-span-2">
             <div class="w-full">
               <app-photo-manager
                 [currentPhoto]="currentPhoto()"
-                [userFullName]="fullName"
+                [userFullName]="fullName()"
               ></app-photo-manager>
             </div>
           </div>
@@ -211,92 +190,9 @@
         <h2 class="form-section-title">Datos de Facturación</h2>
 
         <div class="form-grid-2">
-          <div class="relative" (clickOutside)="isFiscalMenuOpen.set(false)">
-            <label for="fiscalConditionBtn" class="form-label">
-              Condición Fiscal
-            </label>
-
-            <button
-              type="button"
-              id="fiscalConditionBtn"
-              (click)="toggleFiscalMenu()"
-              aria-haspopup="listbox"
-              [attr.aria-expanded]="isFiscalMenuOpen()"
-              class="select-trigger"
-            >
-              <span class="block truncate text-gray-900 font-medium">
-                {{
-                  formClient.get("fiscalCondition")?.value ||
-                    "Seleccione una condición"
-                }}
-              </span>
-
-              <span class="select-chevron-wrapper pr-3">
-                <ng-icon
-                  name="bootstrapChevronDown"
-                  class="text-gray-400 text-sm transition-transform duration-200"
-                  [class.rotate-180]="isFiscalMenuOpen()"
-                ></ng-icon>
-              </span>
-            </button>
-
-            @if (isFiscalMenuOpen()) {
-              <ul
-                class="select-dropdown"
-                appListbox
-                (closed)="isFiscalMenuOpen.set(false)"
-              >
-                @for (condition of fiscalConditions; track condition) {
-                  <li
-                    role="option"
-                    tabindex="-1"
-                    [attr.aria-selected]="
-                      formClient.get('fiscalCondition')?.value === condition
-                    "
-                    (click)="selectFiscalCondition(condition)"
-                    class="select-option"
-                  >
-                    <div class="flex items-center">
-                      <span
-                        class="h-2 w-2 shrink-0 rounded-full mr-3"
-                        [class]="
-                          condition === 'Consumidor Final'
-                            ? 'bg-gray-400'
-                            : condition === 'Responsable Inscripto'
-                              ? 'bg-blue-500'
-                              : condition === 'Monotributista'
-                                ? 'bg-orange-500'
-                                : 'bg-green-500'
-                        "
-                      ></span>
-
-                      <span
-                        class="block truncate"
-                        [class.font-semibold]="
-                          formClient.get('fiscalCondition')?.value === condition
-                        "
-                      >
-                        {{ condition }}
-                      </span>
-                    </div>
-
-                    @if (
-                      formClient.get("fiscalCondition")?.value === condition
-                    ) {
-                      <span
-                        class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-900"
-                      >
-                        <ng-icon
-                          name="bootstrapCheckLg"
-                          class="text-xl"
-                        ></ng-icon>
-                      </span>
-                    }
-                  </li>
-                }
-              </ul>
-            }
-          </div>
+          <app-fiscal-condition-select
+            [control]="formClient.controls.fiscalCondition"
+          />
 
           <div>
             <label for="cuit" class="form-label">
@@ -314,10 +210,12 @@
               class="form-input"
               placeholder="Ej: 20123456789"
             />
-            <app-field-error
-              [control]="formClient.controls.cuit"
-              validLabel="CUIT disponible"
-            />
+            <div class="min-h-8">
+              <app-field-error
+                [control]="formClient.controls.cuit"
+                validLabel="CUIT disponible"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -425,24 +323,16 @@
         <app-audit-info
           [createdAt]="auditCreatedAt()"
           [updatedAt]="auditUpdatedAt()"
-          [isActive]="true"
+          [isActive]="initialState() === 'Activo'"
           [statusDate]="auditStatusDate()"
         />
       }
 
-      <div class="form-footer">
-        <button type="button" (click)="location.back()" class="btn-secondary">
-          Cancelar
-        </button>
-
-        <button
-          type="submit"
-          [disabled]="!formClient.valid || !hasRealChanges"
-          class="btn-primary px-8"
-        >
-          {{ isEditMode() ? "Guardar Cambios" : "Crear Cliente" }}
-        </button>
-      </div>
+      <app-form-actions
+        cancelUrl="/admin/clients"
+        [submitLabel]="isEditMode() ? 'Guardar Cambios' : 'Crear Cliente'"
+        [submitDisabled]="!formClient.valid || !hasRealChanges() || saving()"
+      />
     </form>
   </div>
 </div>

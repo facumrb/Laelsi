@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -16,6 +17,7 @@ import { bootstrapChevronDown } from '@ng-icons/bootstrap-icons';
   imports: [RouterLink, NgIconComponent],
   viewProviders: [provideIcons({ bootstrapChevronDown })],
   templateUrl: './navbar-accordion-item.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NavbarAccordionItemComponent {
   category = input.required<IApiCategory>();
@@ -36,14 +38,10 @@ export class NavbarAccordionItemComponent {
   }
 
   // Se ofrecen hijas hasta el último nivel que pueden crear los negocios (MAX_CATEGORY_DEPTH)
-  get hasChildren(): boolean {
-    const cat = this.category();
-    return !!(
-      cat.children &&
-      cat.children.length > 0 &&
-      this.depth() < MAX_CATEGORY_DEPTH
-    );
-  }
+  hasChildren = computed(
+    () =>
+      !!this.category().children?.length && this.depth() < MAX_CATEGORY_DEPTH,
+  );
 
   toggleExpand(): void {
     this.isExpanded.update((v) => !v);

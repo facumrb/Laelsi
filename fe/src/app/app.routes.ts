@@ -22,7 +22,6 @@ export const routes: Routes = [
   // no existen en el servidor. Estas páginas solo usan componentes sin servicios del navegador.
   {
     path: 'privacidad',
-    title: 'Política de Privacidad | Laelsi',
     data: {
       description:
         'Política de Privacidad de Laelsi: qué datos personales recopilamos, para qué los usamos y cómo ejercer tus derechos.',
@@ -34,7 +33,6 @@ export const routes: Routes = [
   },
   {
     path: 'terminos',
-    title: 'Términos y Condiciones | Laelsi',
     data: {
       description:
         'Términos y Condiciones de Laelsi: uso del sitio, compras, pagos, entrega y derecho de revocación.',

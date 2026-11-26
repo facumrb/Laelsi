@@ -1,8 +1,17 @@
-import { Component, computed, input, signal } from '@angular/core';
-import { environment } from 'src/environments/environment';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  signal,
+} from '@angular/core';
+import { environment } from '@environments/environment';
+
+const SIN_IMAGEN = 'assets/Webp/no-image.webp';
 
 @Component({
   selector: 'app-product-image',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './product-image.component.html',
 })
 export class ProductImageComponent {
@@ -21,22 +30,17 @@ export class ProductImageComponent {
   // Sin valor no se escribe el atributo fetchpriority en el img
   priority = input<'high' | 'low' | 'auto' | null>(null);
 
-  hasError = signal(false);
+  // URL que no se pudo cargar: solo esa se reemplaza por la imagen por defecto
+  private failedUrl = signal<string | null>(null);
 
-  displayUrl = computed(() => {
-    const url = this.imageUrl();
-
-    if (!url || url.trim() === '') {
-      return 'assets/Webp/no-image.webp';
-    }
-
-    if (this.hasError()) {
-      return 'assets/Webp/no-image.webp';
-    }
+  // URL final de la imagen, sin tener en cuenta los errores de carga
+  private resolvedUrl = computed(() => {
+    const url = this.imageUrl()?.trim();
+    if (!url) return SIN_IMAGEN;
 
     // Si ya es una URL absoluta, base64, o asset estático
     if (
-      url.startsWith('http') ||
+      /^https?:\/\//.test(url) ||
       url.startsWith('data:') ||
       url.startsWith('assets/')
     ) {
@@ -47,7 +51,12 @@ export class ProductImageComponent {
     return `${environment.productImagesUrl}${url}`;
   });
 
+  displayUrl = computed(() => {
+    const url = this.resolvedUrl();
+    return url === this.failedUrl() ? SIN_IMAGEN : url;
+  });
+
   handleImageError() {
-    this.hasError.set(true);
+    this.failedUrl.set(this.resolvedUrl());
   }
 }

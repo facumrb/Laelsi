@@ -1,6 +1,6 @@
-<div class="animate-fadeIn">
+<div class="animate-fade-in">
   <div
-    class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-neutral-200 relative overflow-hidden group mb-4"
+    class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-200 relative overflow-hidden group mb-4"
   >
     <div class="flex items-center gap-3 relative z-10">
       <div
@@ -13,14 +13,25 @@
           Historial de Compras
         </h1>
         <p class="text-xs md:text-sm font-medium text-gray-500">
-          Revisa el estado y detalle de tus pedidos
+          Revisá el estado y el detalle de tus pedidos
         </p>
       </div>
     </div>
   </div>
 
   <div class="space-y-4">
-    @if (orders().length === 0) {
+    @if (loading() && orders().length === 0) {
+      <div
+        class="bg-white p-16 rounded-2xl border border-gray-200 flex justify-center shadow-sm"
+        aria-busy="true"
+      >
+        <p role="status" class="sr-only">Cargando pedidos…</p>
+        <div
+          class="animate-spin rounded-full h-10 w-10 border-b-4 border-brand"
+          aria-hidden="true"
+        ></div>
+      </div>
+    } @else if (orders().length === 0) {
       <div
         class="bg-white p-16 rounded-2xl border border-dashed border-gray-300 text-center flex flex-col items-center justify-center shadow-sm"
       >
@@ -34,15 +45,15 @@
         </div>
         <h2 class="text-xl font-bold text-gray-700 mb-2">Aún no hay compras</h2>
         <p class="text-gray-500 mb-6 max-w-sm">
-          Todavía no has realizado ningún pedido. ¡Explora nuestros productos!
+          Todavía no hiciste ningún pedido. ¡Explorá nuestros productos!
         </p>
       </div>
     } @else {
       @for (pedido of orders(); track pedido.id) {
         <div
-          class="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden"
+          class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
         >
-          <!-- Header del Pedido -->
+          <!-- Encabezado del pedido -->
           <div
             class="bg-gray-50/50 px-6 py-5 border-b border-gray-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4"
           >
@@ -62,24 +73,14 @@
             <div
               class="flex flex-wrap sm:flex-nowrap items-center justify-between lg:justify-end gap-4 sm:gap-6 w-full lg:w-auto mt-2 lg:mt-0"
             >
+              @let estado = estadoDe(pedido.status);
               <span
                 [class]="
-                  getStatusClass(pedido.status) +
+                  estado.clase +
                   ' w-32 justify-center px-3.5 py-1.5 rounded-lg border text-sm font-bold flex items-center gap-2 shadow-sm'
                 "
               >
-                <ng-icon
-                  [name]="
-                    pedido.status === 'Pendiente'
-                      ? 'bootstrapClockHistory'
-                      : pedido.status === 'Pagado'
-                        ? 'bootstrapBoxSeam'
-                        : pedido.status === 'Entregado' ||
-                            pedido.status === 'Enviado'
-                          ? 'bootstrapCheckCircle'
-                          : 'bootstrapXCircle'
-                  "
-                ></ng-icon>
+                <ng-icon [name]="estado.icono"></ng-icon>
                 {{ pedido.status }}
               </span>
 
@@ -90,7 +91,7 @@
                   Total del Pedido
                 </p>
                 <p
-                  class="text-lg sm:text-xl font-black text-[#3d4494] leading-none"
+                  class="text-lg sm:text-xl font-black text-brand leading-none"
                 >
                   {{
                     pedido.totalAmount
@@ -102,7 +103,7 @@
               <button
                 type="button"
                 (click)="openModal(pedido)"
-                class="w-full sm:w-auto mt-2 sm:mt-0 sm:ml-2 bg-[#3d4494]/10 text-[#3d4494] hover:bg-[#3d4494] hover:text-white border border-[#3d4494]/20 px-4 py-2.5 sm:py-2 rounded-xl font-bold transition-all duration-200 shadow-sm text-sm shrink-0 flex items-center justify-center gap-2 cursor-pointer"
+                class="w-full sm:w-auto mt-2 sm:mt-0 sm:ml-2 bg-brand/10 text-brand hover:bg-brand hover:text-white border border-brand/20 px-4 py-2.5 sm:py-2 rounded-xl font-bold transition-all duration-200 shadow-sm text-sm shrink-0 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <ng-icon name="bootstrapBoxSeam" class="text-lg"></ng-icon>
                 <span>Ver detalle</span>
@@ -122,21 +123,20 @@
   }
 </div>
 
-<!-- Renderizar modal de detalle solo si hay un pedido seleccionado -->
-@if (selectedOrder()) {
+<!-- Detalle del pedido seleccionado -->
+@if (selectedOrder(); as order) {
   <app-order-detail-modal
-    [order]="selectedOrder()!"
+    [order]="order"
     (close)="closeModal()"
-    (onCancel)="handleCancel($event)"
+    (cancelRequested)="handleCancel($event)"
   />
 }
 
-@if (orderIdToCancel()) {
+@if (orderIdToCancel(); as orderId) {
   <app-cancel-order-modal
-    [orderId]="orderIdToCancel()!"
+    [orderId]="orderId"
     variant="client"
     (orderCancelled)="handleOrderCancelled()"
     (close)="orderIdToCancel.set(null)"
   />
 }
-

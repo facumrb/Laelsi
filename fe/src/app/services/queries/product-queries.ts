@@ -5,8 +5,12 @@ import {
   keepPreviousData,
 } from '@tanstack/angular-query-experimental';
 import { firstValueFrom } from 'rxjs';
-import { ApiProductService } from '../api-services/api-product.service';
-import { ICreateProduct, IUpdateProduct } from '../../models/product.model';
+import { ApiProductService } from '@services/api-services/api-product.service';
+import {
+  BulkAdjustmentType,
+  ICreateProduct,
+  IUpdateProduct,
+} from '@models/product.model';
 import { injectInvalidateCatalog } from './catalog-cache';
 
 export interface IProductQueryFilters {
@@ -21,9 +25,7 @@ export interface IProductQueryFilters {
   limit?: number;
 }
 
-/**
- * Query reactiva de productos activos (Tienda pública)
- */
+// Query reactiva de productos activos (Tienda pública)
 export function injectActiveProductsQuery(
   filtersSignal: Signal<IProductQueryFilters>,
   options?: { enabled?: Signal<boolean> | boolean },
@@ -61,6 +63,7 @@ export function injectActiveProductsQuery(
             ),
           );
         }
+        // Esta rama no se utiliza actualmente: la búsqueda siempre trae un término y la categoría un ID
         return firstValueFrom(apiProductService.getActiveProducts(page, limit));
       },
       staleTime: 1000 * 60 * 3, // 3 minutos
@@ -78,9 +81,7 @@ export function injectActiveProductsQuery(
   });
 }
 
-/**
- * Query reactiva de todos los productos (Panel Admin)
- */
+// Query reactiva de todos los productos (Panel Admin)
 export function injectAllProductsQuery(
   filtersSignal: Signal<IProductQueryFilters>,
 ) {
@@ -109,10 +110,10 @@ export function injectAllProductsQuery(
   });
 }
 
-/**
- * Query reactiva para el detalle de un producto (Página de producto).
- * Trae el producto aunque esté inactivo: la página muestra el aviso de "no disponible".
- */
+/*
+ Query reactiva para el detalle de un producto (Página de producto).
+ Trae el producto aunque esté inactivo: la página muestra el aviso de "no disponible".
+*/
 export function injectProductDetailQuery(idSignal: Signal<number>) {
   const apiProductService = inject(ApiProductService);
 
@@ -127,9 +128,8 @@ export function injectProductDetailQuery(idSignal: Signal<number>) {
   });
 }
 
-/**
- * Mutación para crear un producto
- */
+// Este método no se utiliza actualmente
+// Mutación para crear un producto
 export function injectAddProductMutation() {
   const apiProductService = inject(ApiProductService);
   const invalidateCatalog = injectInvalidateCatalog();
@@ -143,9 +143,7 @@ export function injectAddProductMutation() {
   }));
 }
 
-/**
- * Mutación para actualizar un producto existente
- */
+// Mutación para actualizar un producto existente
 export function injectUpdateProductMutation() {
   const apiProductService = inject(ApiProductService);
   const invalidateCatalog = injectInvalidateCatalog();
@@ -159,9 +157,7 @@ export function injectUpdateProductMutation() {
   }));
 }
 
-/**
- * Mutación para eliminar un producto
- */
+// Mutación para eliminar un producto
 export function injectDeleteProductMutation() {
   const apiProductService = inject(ApiProductService);
   const invalidateCatalog = injectInvalidateCatalog();
@@ -175,9 +171,8 @@ export function injectDeleteProductMutation() {
   }));
 }
 
-/**
- * Mutación para el cambio masivo de precios
- */
+// Este método no se utiliza actualmente
+// Mutación para el cambio masivo de precios
 export function injectBulkPriceMutation() {
   const apiProductService = inject(ApiProductService);
   const invalidateCatalog = injectInvalidateCatalog();
@@ -190,7 +185,7 @@ export function injectBulkPriceMutation() {
       roundingRule,
     }: {
       productIds: number[];
-      adjustmentType: string;
+      adjustmentType: BulkAdjustmentType;
       adjustmentValue: number;
       roundingRule?: string;
     }) =>
@@ -222,9 +217,8 @@ export function injectHomeQuery() {
   }));
 }
 
-/**
- * Query de los más vendidos generales (Página principal)
- */
+// Este método no se utiliza actualmente
+// Query de los más vendidos generales (Página principal)
 export function injectBestSellersQuery(limit: number = 10) {
   const apiProductService = inject(ApiProductService);
 
@@ -235,9 +229,8 @@ export function injectBestSellersQuery(limit: number = 10) {
   }));
 }
 
-/**
- * Query de los más vendidos por categoría (Carruseles de la página principal)
- */
+// Este método no se utiliza actualmente
+// Query de los más vendidos por categoría (Carruseles de la página principal)
 export function injectBestSellersByCategoryQuery(
   categoryIdSignal: Signal<number>,
   limit: number = 10,

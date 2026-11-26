@@ -1,6 +1,6 @@
-<section class="container animate-fadeIn mx-auto max-w-5xl p-4">
+<section class="container animate-fade-in mx-auto max-w-5xl p-4">
   <div class="mb-5 text-center">
-    <h1 class="text-4xl font-bold text-[#3d4494]">¿Tenés dudas?</h1>
+    <h1 class="text-4xl font-bold text-brand">¿Tenés dudas?</h1>
     <p class="mt-3 text-gray-600">
       Acá respondemos las consultas más comunes sobre compras, envíos y
       servicios de Laelsi.
@@ -11,34 +11,34 @@
     @for (faq of faqs; track $index) {
       <div
         class="rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-md overflow-hidden"
-        [class.border-[#037971]]="openIndex() === $index"
+        [class.border-accent-teal]="openIndex() === $index"
         [class.ring-1]="openIndex() === $index"
-        [class.ring-[#037971]]="openIndex() === $index"
+        [class.ring-accent-teal]="openIndex() === $index"
       >
         <button
           type="button"
           (click)="toggleFaq($index)"
-          class="flex w-full items-center justify-between p-6 text-left focus:outline-none focus-visible:bg-gray-50 cursor-pointer"
+          class="flex w-full items-center justify-between p-6 text-left focus:outline-hidden focus-visible:bg-gray-50 cursor-pointer"
           [attr.aria-expanded]="openIndex() === $index"
           [attr.aria-controls]="'faq-answer-' + $index"
           [id]="'faq-question-' + $index"
         >
           <span
             class="text-lg font-bold transition-colors pr-8"
-            [class.text-[#037971]]="openIndex() === $index"
+            [class.text-accent-teal]="openIndex() === $index"
             [class.text-gray-800]="openIndex() !== $index"
           >
             {{ faq.question }}
           </span>
           <span
             class="flex items-center justify-center shrink-0 w-8 h-8 rounded-full bg-gray-100 transition-colors"
-            [class.bg-[#037971]/10]="openIndex() === $index"
+            [class.bg-accent-teal/10]="openIndex() === $index"
           >
             <ng-icon
               name="bootstrapChevronDown"
               class="text-xl transition-transform duration-300"
               [class.rotate-180]="openIndex() === $index"
-              [class.text-[#037971]]="openIndex() === $index"
+              [class.text-accent-teal]="openIndex() === $index"
               [class.text-gray-500]="openIndex() !== $index"
             ></ng-icon>
           </span>

@@ -1,8 +1,8 @@
-<div class="animate-fadeIn">
+<div class="animate-fade-in">
   <form [formGroup]="formPerfil" (ngSubmit)="onSubmit()" class="space-y-6">
     <!-- Personales -->
     <div
-      class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-neutral-200 relative z-30 group"
+      class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-200 relative z-30 group"
     >
       <div class="flex items-center gap-3 mb-6">
         <div
@@ -10,7 +10,7 @@
         >
           <ng-icon
             name="bootstrapPerson"
-            class="text-2xl text-[#037971]"
+            class="text-2xl text-accent-teal"
           ></ng-icon>
         </div>
         <div>
@@ -42,9 +42,11 @@
             minlength="2"
             maxlength="100"
             placeholder="Ej: Juan"
-            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 focus:bg-white outline-none transition-all font-medium"
+            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 focus:bg-white outline-hidden transition-all font-medium"
           />
-          <app-field-error [control]="formPerfil.controls.name" />
+          <div class="min-h-8">
+            <app-field-error [control]="formPerfil.controls.name" />
+          </div>
         </div>
         <div>
           <label
@@ -60,9 +62,11 @@
             minlength="2"
             maxlength="100"
             placeholder="Ej: Perez"
-            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 focus:bg-white outline-none transition-all font-medium"
+            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 focus:bg-white outline-hidden transition-all font-medium"
           />
-          <app-field-error [control]="formPerfil.controls.lastName" />
+          <div class="min-h-8">
+            <app-field-error [control]="formPerfil.controls.lastName" />
+          </div>
         </div>
         <div>
           <label
@@ -80,12 +84,14 @@
             inputmode="numeric"
             appNumericInput
             placeholder="Ej: 12345678"
-            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 focus:bg-white outline-none transition-all font-medium"
+            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 focus:bg-white outline-hidden transition-all font-medium"
           />
-          <app-field-error
-            [control]="formPerfil.controls.dni"
-            validLabel="DNI disponible"
-          />
+          <div class="min-h-8">
+            <app-field-error
+              [control]="formPerfil.controls.dni"
+              validLabel="DNI disponible"
+            />
+          </div>
         </div>
         <div>
           <label
@@ -103,9 +109,11 @@
             inputmode="tel"
             appPhoneInput
             placeholder="Ej: 3415555555"
-            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 focus:bg-white outline-none transition-all font-medium"
+            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 focus:bg-white outline-hidden transition-all font-medium"
           />
-          <app-field-error [control]="formPerfil.controls.phone" />
+          <div class="min-h-8">
+            <app-field-error [control]="formPerfil.controls.phone" />
+          </div>
         </div>
         <div class="sm:col-span-2">
           <label
@@ -121,9 +129,9 @@
             inputmode="email"
             maxlength="255"
             placeholder="Ej: juan@ejemplo.com"
-            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 focus:bg-white outline-none transition-all font-medium"
+            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 focus:bg-white outline-hidden transition-all font-medium"
           />
-          <div class="min-h-9 sm:min-h-0">
+          <div class="min-h-8">
             <app-field-error
               [control]="formPerfil.controls.email"
               validLabel="Email disponible"
@@ -135,7 +143,7 @@
 
     <!-- Facturación -->
     <div
-      class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-neutral-200 relative z-20 group"
+      class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-200 relative z-20 group"
     >
       <div class="flex items-center gap-3 mb-6">
         <div
@@ -143,7 +151,7 @@
         >
           <ng-icon
             name="bootstrapReceipt"
-            class="text-2xl text-[#3d4494]"
+            class="text-2xl text-brand"
           ></ng-icon>
         </div>
         <div>
@@ -175,14 +183,17 @@
             inputmode="numeric"
             appNumericInput
             placeholder="Ej: 20123456789"
-            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-[#3d4494]/20 focus:border-[#3d4494] focus:bg-white outline-none transition-all font-medium"
+            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-brand/20 focus:border-brand focus:bg-white outline-hidden transition-all font-medium"
           />
-          <app-field-error
-            [control]="formPerfil.controls.cuit"
-            validLabel="CUIT disponible"
-          />
+          <div class="min-h-8">
+            <app-field-error
+              [control]="formPerfil.controls.cuit"
+              validLabel="CUIT disponible"
+            />
+          </div>
         </div>
 
+        @let fiscalCondition = formPerfil.controls.fiscalCondition.value;
         <div class="relative" (clickOutside)="isFiscalMenuOpen.set(false)">
           <label
             for="fiscalConditionBtn"
@@ -197,12 +208,12 @@
             (click)="toggleFiscalMenu()"
             aria-haspopup="listbox"
             [attr.aria-expanded]="isFiscalMenuOpen()"
-            class="relative w-full cursor-pointer bg-gray-50 rounded-xl border border-gray-200 p-3.5 text-left transition-all font-medium text-gray-800 hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-[#3d4494]/20 focus:border-[#3d4494] focus:bg-white"
+            class="relative w-full cursor-pointer bg-gray-50 rounded-xl border border-gray-200 p-3.5 text-left transition-all font-medium text-gray-800 hover:bg-gray-100 focus:outline-hidden focus:ring-4 focus:ring-brand/20 focus:border-brand focus:bg-white"
           >
             <span class="block truncate">
               {{
-                formPerfil.get("fiscalCondition")?.value ||
-                  "Seleccione una condición"
+                fiscalCondition ||
+                  "Elegí una condición"
               }}
             </span>
 
@@ -226,7 +237,7 @@
                   role="option"
                   tabindex="-1"
                   [attr.aria-selected]="
-                    formPerfil.get('fiscalCondition')?.value === condition
+                    fiscalCondition === condition
                   "
                   (click)="selectFiscalCondition(condition)"
                   class="select-option"
@@ -235,16 +246,16 @@
                     <span
                       class="block truncate"
                       [class.font-bold]="
-                        formPerfil.get('fiscalCondition')?.value === condition
+                        fiscalCondition === condition
                       "
                     >
                       {{ condition }}
                     </span>
                   </div>
 
-                  @if (formPerfil.get("fiscalCondition")?.value === condition) {
+                  @if (fiscalCondition === condition) {
                     <span
-                      class="absolute inset-y-0 right-0 flex items-center pr-4 text-[#3d4494]"
+                      class="absolute inset-y-0 right-0 flex items-center pr-4 text-brand"
                     >
                       <ng-icon
                         name="bootstrapCheckLg"
@@ -256,13 +267,14 @@
               }
             </ul>
           }
+          <div class="min-h-8" aria-hidden="true"></div>
         </div>
       </div>
     </div>
 
     <!-- Dirección -->
     <div
-      class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-neutral-200 relative z-10 group"
+      class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-200 relative z-10 group"
     >
       <div class="flex items-center gap-3 mb-6">
         <div
@@ -285,7 +297,9 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 relative">
+      <div
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 relative"
+      >
         <div class="sm:col-span-2 md:col-span-3">
           <label
             for="street"
@@ -299,7 +313,7 @@
             formControlName="street"
             maxlength="100"
             placeholder="Ej: Av. San Martín"
-            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 focus:bg-white outline-none transition-all font-medium"
+            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 focus:bg-white outline-hidden transition-all font-medium"
           />
         </div>
         <div>
@@ -317,7 +331,7 @@
             inputmode="numeric"
             appNumericInput
             placeholder="Ej: 1234"
-            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 focus:bg-white outline-none transition-all font-medium"
+            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 focus:bg-white outline-hidden transition-all font-medium"
           />
         </div>
         <div>
@@ -333,7 +347,7 @@
             formControlName="floor"
             maxlength="5"
             placeholder="Ej: 1"
-            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 focus:bg-white outline-none transition-all font-medium"
+            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 focus:bg-white outline-hidden transition-all font-medium"
           />
         </div>
         <div>
@@ -349,7 +363,7 @@
             formControlName="apartment"
             maxlength="5"
             placeholder="Ej: B"
-            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 focus:bg-white outline-none transition-all font-medium"
+            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 focus:bg-white outline-hidden transition-all font-medium"
           />
         </div>
         <div class="md:col-span-2">
@@ -365,7 +379,7 @@
             formControlName="city"
             maxlength="100"
             placeholder="Ej: Rosario"
-            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 focus:bg-white outline-none transition-all font-medium"
+            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 focus:bg-white outline-hidden transition-all font-medium"
           />
         </div>
         <div>
@@ -381,7 +395,7 @@
             formControlName="province"
             maxlength="100"
             placeholder="Ej: Santa Fe"
-            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 focus:bg-white outline-none transition-all font-medium"
+            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 focus:bg-white outline-hidden transition-all font-medium"
           />
         </div>
         <div>
@@ -398,25 +412,25 @@
             maxlength="10"
             inputmode="numeric"
             placeholder="Ej: 2000"
-            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 focus:bg-white outline-none transition-all font-medium"
+            class="w-full p-3.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 focus:bg-white outline-hidden transition-all font-medium"
           />
         </div>
       </div>
     </div>
 
-    <div class="flex flex-wrap justify-end gap-3 pt-2">
+    <div class="flex justify-end gap-2 sm:flex-wrap sm:gap-3 pt-2">
       <button
         type="button"
         (click)="discardChanges()"
         [disabled]="saving() || !hasChanges()"
-        class="bg-white text-gray-700 border border-gray-300 px-8 py-4 rounded-xl font-bold shadow-sm hover:bg-gray-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 cursor-pointer"
+        class="grow sm:grow-0 bg-white text-gray-700 border border-gray-300 px-3 sm:px-8 py-3 sm:py-4 text-sm sm:text-base rounded-xl font-bold shadow-sm hover:bg-gray-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 cursor-pointer"
       >
         Cancelar cambios
       </button>
       <button
         type="submit"
-        [disabled]="saving() || !formPerfil.valid || !hasChanges()"
-        class="bg-[#3d4494] text-white px-10 py-4 rounded-xl font-bold shadow-xl shadow-[#3d4494]/30 hover:bg-[#2d336b] hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:hover:translate-y-0 disabled:cursor-not-allowed flex items-center gap-3 active:scale-95 cursor-pointer"
+        [disabled]="!canSubmit()"
+        class="grow sm:grow-0 bg-brand text-white px-3 sm:px-10 py-3 sm:py-4 text-sm sm:text-base rounded-xl font-bold shadow-xl shadow-brand/30 hover:bg-brand-hover hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:hover:translate-y-0 disabled:cursor-not-allowed flex items-center justify-center gap-2 sm:gap-3 active:scale-95 cursor-pointer"
       >
         @if (saving()) {
           <span

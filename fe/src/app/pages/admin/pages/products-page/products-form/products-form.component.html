@@ -1,13 +1,9 @@
-<div class="animate-fadeIn max-w-5xl mx-auto">
-  <div class="mb-6 flex items-center justify-between">
-    <div>
-      <h1 class="page-title">
-        {{ isEditMode() ? "Editar Producto" : "Nuevo Producto" }}
-      </h1>
-    </div>
-
-    <app-go-back-button></app-go-back-button>
-  </div>
+<div class="animate-fade-in max-w-5xl mx-auto">
+  <app-form-page-header
+    class="mb-6"
+    [title]="isEditMode() ? 'Editar Producto' : 'Nuevo Producto'"
+    backUrl="/admin/products"
+  />
 
   <div class="form-card">
     <form [formGroup]="formProduct" (ngSubmit)="onSubmit()" class="form-body">
@@ -60,102 +56,22 @@
             id="brand"
             name="brand"
             formControlName="brand"
+            maxlength="100"
             class="form-input"
             placeholder="Ej: Samsung"
           />
-          <app-field-error [control]="formProduct.controls.brand" />
+          <app-field-error
+            [control]="formProduct.controls.brand"
+            [maxLength]="100"
+          />
         </div>
 
-        <div
-          class="sm:col-span-3 lg:col-span-2 relative"
-          (clickOutside)="showStateMenu.set(false)"
-        >
-          <label for="state" class="form-label">
-            Estado <span class="text-red-500">*</span>
-          </label>
-          <button
-            type="button"
-            id="state"
-            (click)="toggleStateMenu()"
-            aria-haspopup="listbox"
-            [attr.aria-expanded]="showStateMenu()"
-            class="select-trigger focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
-          >
-            <span class="flex items-center gap-2">
-              <span
-                class="h-2.5 w-2.5 rounded-full transition-colors"
-                [class]="
-                  formProduct.get('state')?.value === 'Activo'
-                    ? 'bg-green-500'
-                    : formProduct.get('state')?.value === 'Pausado'
-                      ? 'bg-amber-500'
-                      : 'bg-red-500'
-                "
-              ></span>
-              <span class="block truncate">{{
-                formProduct.get("state")?.value
-              }}</span>
-            </span>
-            <span class="select-chevron-wrapper">
-              <ng-icon
-                name="bootstrapChevronDown"
-                class="text-gray-400 transition-transform duration-200"
-                [class.rotate-180]="showStateMenu()"
-              ></ng-icon>
-            </span>
-          </button>
-
-          @if (showStateMenu()) {
-            <ul
-              class="select-dropdown"
-              appListbox
-              (closed)="showStateMenu.set(false)"
-            >
-              @for (option of ["Activo", "Pausado", "Inactivo"]; track option) {
-                <li
-                  role="option"
-                  tabindex="-1"
-                  [attr.aria-selected]="
-                    formProduct.get('state')?.value === option
-                  "
-                  (click)="selectState(option)"
-                  class="select-option"
-                >
-                  <div class="flex items-center">
-                    <span
-                      class="h-2.5 w-2.5 rounded-full mr-2"
-                      [class]="
-                        option === 'Activo'
-                          ? 'bg-green-500'
-                          : option === 'Pausado'
-                            ? 'bg-amber-500'
-                            : 'bg-red-500'
-                      "
-                    ></span>
-                    <span
-                      [class.font-semibold]="
-                        formProduct.get('state')?.value === option
-                      "
-                    >
-                      {{ option }}
-                    </span>
-                  </div>
-                  @if (formProduct.get("state")?.value === option) {
-                    <span
-                      class="absolute inset-y-0 right-0 flex items-center pr-4"
-                    >
-                      <ng-icon
-                        name="bootstrapCheckLg"
-                        class="text-lg"
-                      ></ng-icon>
-                    </span>
-                  }
-                </li>
-              }
-            </ul>
-          }
-          <app-field-error [control]="formProduct.controls.state" />
-        </div>
+        <app-state-select
+          class="sm:col-span-3 lg:col-span-2"
+          [control]="formProduct.controls.state"
+          [options]="stateOptions"
+          triggerClass="focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
+        />
 
         <div class="sm:col-span-6 lg:col-span-2">
           <app-product-category-select
@@ -181,7 +97,7 @@
               name="price"
               formControlName="price"
               placeholder="0"
-              min="0"
+              min="1"
               inputmode="decimal"
               appNumericInput
               class="form-input pl-7"
@@ -227,7 +143,7 @@
         </div>
 
         <div class="sm:col-span-6 pt-4 border-t border-gray-100">
-          <app-photo-manager [initialPhotos]="initialPhotos()" />
+          <app-product-photo-manager [initialPhotos]="initialPhotos()" />
         </div>
       </div>
 
@@ -240,25 +156,12 @@
         />
       }
 
-      <div
-        class="mt-4 pt-4 flex items-center justify-end gap-x-4 border-t border-gray-100"
-      >
-        <button
-          type="button"
-          (click)="location.back()"
-          class="btn-secondary px-4 py-2"
-        >
-          Cancelar
-        </button>
-
-        <button
-          type="submit"
-          [disabled]="!formProduct.valid || !hasRealChanges"
-          class="btn-primary py-2"
-        >
-          {{ isEditMode() ? "Guardar Cambios" : "Crear Producto" }}
-        </button>
-      </div>
+      <app-form-actions
+        cancelUrl="/admin/products"
+        submitClass=""
+        [submitLabel]="isEditMode() ? 'Guardar Cambios' : 'Crear Producto'"
+        [submitDisabled]="!formProduct.valid || !hasRealChanges() || saving()"
+      />
     </form>
   </div>
 </div>

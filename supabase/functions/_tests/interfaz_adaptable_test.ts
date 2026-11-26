@@ -52,8 +52,9 @@ Deno.test('diálogo: etiquetas en varias líneas o con ">" en un valor se leen b
   assert.deepEqual(reglas('<div cdkTrapFocusAutoCapture class="x">solo la captura automática</div>'), []);
 });
 
-Deno.test('diálogo: el modal compartido elsi-modal-overlay se exceptúa porque su tope vive en styles.css', () => {
-  assert.deepEqual(reglas('<div cdkTrapFocus cdkTrapFocusAutoCapture class="elsi-modal-overlay">…</div>'), []);
+Deno.test('diálogo: la tarjeta de app-modal-shell se exceptúa porque su tope vive en ALTOS de modal-shell.component.ts', () => {
+  assert.deepEqual(reglas('<div #tarjeta cdkTrapFocus role="dialog" class="flex flex-col" [class]="clasesTarjeta()">…</div>'), []);
+  assert.deepEqual(reglas('<div cdkTrapFocus class="flex flex-col" [class]="otrasClases()">…</div>'), ['dialogo-sin-alto-maximo']);
 });
 
 Deno.test('los comentarios HTML no cuentan, y cada hallazgo dice en qué línea está', () => {
@@ -129,8 +130,17 @@ const clasesDe = (css: string, selector: string) => {
   return new Set(aplicadas.split(/\s+/).filter(Boolean));
 };
 
+// Los estilos globales: fe/src/styles.css más los parciales que importa desde fe/src/styles/
+const leerEstilos = async () => {
+  const raiz = new URL('../../../fe/src/', import.meta.url);
+  const partes = [await Deno.readTextFile(new URL('styles.css', raiz))];
+  const parciales = [...Deno.readDirSync(new URL('styles/', raiz))].map((e) => e.name).filter((n) => n.endsWith('.css')).sort();
+  for (const nombre of parciales) partes.push(await Deno.readTextFile(new URL('styles/' + nombre, raiz)));
+  return partes.join('\n');
+};
+
 Deno.test('las tarjetas del panel son una grilla de dos columnas por debajo de lg y una tabla desde lg', async () => {
-  const css = await Deno.readTextFile(new URL('../../../fe/src/styles.css', import.meta.url));
+  const css = await leerEstilos();
   const fila = clasesDe(css, 'admin-table-row');
   const primera = clasesDe(css, 'admin-table-cell-first');
   const celda = clasesDe(css, 'admin-table-cell');
@@ -153,39 +163,48 @@ Deno.test('las tarjetas del panel son una grilla de dos columnas por debajo de l
 const leer = (ruta: string) => Deno.readTextFile(new URL('../../../fe/src/' + ruta, import.meta.url));
 
 Deno.test('los formularios usan dos columnas desde sm y el pie de formulario envuelve', async () => {
-  const css = await leer('styles.css');
+  const css = await leerEstilos();
   const grilla = clasesDe(css, 'form-grid-2');
   const pie = clasesDe(css, 'form-footer');
 
   assert.ok(grilla.has('grid-cols-1') && grilla.has('sm:grid-cols-2'), 'form-grid-2: una columna y dos desde sm');
   assert.ok(!grilla.has('md:grid-cols-2'), 'form-grid-2 ya no espera hasta md');
-  assert.ok(pie.has('flex-wrap'), 'form-footer envuelve: en 320 px dos botones no entran en una fila');
+  assert.ok(pie.has('flex-col-reverse') && pie.has('items-stretch'), 'form-footer apila los botones a lo ancho en celulares, con el de enviar arriba');
+  assert.ok(pie.has('sm:flex-row') && pie.has('sm:items-center'), 'form-footer vuelve a una fila desde sm');
+  assert.ok(pie.has('sm:flex-wrap'), 'form-footer envuelve desde sm si los dos botones no entran en una fila');
 });
 
 Deno.test('el registro pone sus campos en dos columnas desde sm', async () => {
   const html = await leer('app/pages/auth/pages/register-page/register-page.component.html');
+  const grilla = new Set(html.match(/class="(grid grid-cols-1[^"]*)"/)?.[1].split(/\s+/) ?? []);
 
-  assert.match(html, /grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-12/);
-  assert.ok(!/grid grid-cols-1 lg:grid-cols-2/.test(html), 'el registro ya no espera hasta lg');
+  assert.ok(grilla.has('grid-cols-1') && grilla.has('sm:grid-cols-2'), 'una columna en celulares y dos desde sm');
+  assert.ok(!grilla.has('lg:grid-cols-2') && !grilla.has('md:grid-cols-2'), 'el registro no espera hasta md ni lg');
 });
 
+// Los modales usan app-modal-shell: la tarjeta scrollea entera en ventanas bajas y el cuerpo deja de scrollear aparte
 Deno.test('el detalle del pedido y reordenar categorías scrollean enteros en ventanas bajas (alto máximo 480 px)', async () => {
   for (const ruta of [
     'app/shared/components/modals/order-detail-modal/order-detail-modal.component.html',
     'app/pages/admin/pages/categories-page/categories-toolbar/components/categories-order-modal/categories-order-modal.component.html',
   ]) {
-    const html = await leer(ruta);
-    assert.ok(html.includes('[@media(max-height:480px)]:overflow-y-auto'), `${ruta}: el panel scrollea entero en ventanas bajas`);
-    assert.ok(html.includes('[@media(max-height:480px)]:overflow-visible'), `${ruta}: el cuerpo no scrollea aparte en ventanas bajas`);
+    assert.ok((await leer(ruta)).includes('<app-modal-shell'), `${ruta}: usa app-modal-shell`);
   }
+
+  const shell = await leer('app/shared/components/modals/modal-shell/modal-shell.component.html');
+  assert.ok(shell.includes('[@media(max-height:480px)]:overflow-y-auto'), 'la tarjeta del shell scrollea entera en ventanas bajas');
+
+  const css = await leerEstilos();
+  const ventanaBaja = css.match(/@media \(max-height: 480px\) \{\s*\.modal-body,\s*\[modalForm\] \{([^}]*)\}/)?.[1] ?? '';
+  assert.match(ventanaBaja, /overflow: visible/, 'el cuerpo y el formulario del shell no scrollean aparte en ventanas bajas');
 });
 
-Deno.test('el encabezado del panel muestra solo el ícono de "Ver Tienda" por debajo de 400 px, con nombre accesible', async () => {
+Deno.test('el enlace a la tienda del encabezado del panel tiene nombre accesible con su texto visible', async () => {
   const html = await leer('app/pages/admin/layout/navbar/navbar.component.html');
 
-  // El nombre accesible contiene el texto visible ("Ver Tienda"): si no, quien dicta "clic en Ver Tienda" no lo alcanza
+  // El nombre accesible contiene el texto visible ("Tienda"): si no, quien dicta "clic en Tienda" no lo alcanza
   assert.match(html, /aria-label="Ver Tienda[^"]*"/);
-  assert.match(html, /<span class="hidden min-\[400px\]:inline[^"]*">\s*Ver Tienda\s*<\/span>/);
+  assert.match(html, /<span class="[^"]*">\s*Tienda\s*<\/span>/);
 });
 
 // El contador del carrito era un círculo de 20 px fijos: con texto de 12 px, un número de tres dígitos se salía.
@@ -199,10 +218,19 @@ Deno.test('el contador del carrito crece con el número en vez de tener un ancho
   assert.ok(!/(^|\s)w-5(\s|$)/.test(contador), 'el contador no tiene un ancho fijo de 20 px (w-5)');
 });
 
-Deno.test('el modal compartido de styles.css (elsi-modal-card) topa su alto y scrollea por dentro', async () => {
-  const css = await Deno.readTextFile(new URL('../../../fe/src/styles.css', import.meta.url));
-  const regla = css.match(/\.elsi-modal-card\s*\{([^}]*)\}/)?.[1] ?? '';
+Deno.test('la tarjeta de app-modal-shell topa su alto en todas sus alturas y el cuerpo scrollea por dentro', async () => {
+  const ts = await leer('app/shared/components/modals/modal-shell/modal-shell.component.ts');
+  const altos = ts.match(/const ALTOS[^=]*=\s*\{([^}]*)\}/)?.[1] ?? '';
+  const valores = [...altos.matchAll(/:\s*'([^']*)'/g)].map((m) => m[1]);
 
-  assert.match(regla, /max-h-\[\d+d?vh\]/, 'elsi-modal-card necesita un alto máximo en vh');
-  assert.match(regla, /overflow-y-auto/, 'elsi-modal-card necesita scroll interno');
+  assert.ok(valores.length >= 3, 'no se encontraron las alturas (ALTOS) del shell');
+  for (const clases of valores) {
+    assert.match(clases, /(?:^|\s)(?:max-h|h)-\[\d+d?vh\]/, `la altura "${clases}" necesita un tope en vh o dvh`);
+  }
+
+  const shell = await leer('app/shared/components/modals/modal-shell/modal-shell.component.html');
+  assert.ok(shell.includes('[class]="clasesTarjeta()"'), 'la tarjeta toma sus clases de clasesTarjeta()');
+
+  const css = await leerEstilos();
+  assert.match(css.match(/\.modal-body\s*\{([^}]*)\}/)?.[1] ?? '', /overflow-y-auto/, 'modal-body necesita scroll interno');
 });

@@ -20,22 +20,26 @@ export type UserState = 'Activo' | 'Inactivo';
 // Filtro de las pestañas de Administradores y Clientes
 export type UserStateFilter = UserState | 'Todos';
 
+// Filtro de condición fiscal del listado de clientes
+export type FiscalConditionFilter = FiscalCondition | 'Todos';
+
 // ==========================================================
 // MODELOS DE LECTURA (READ / GET)
 // ==========================================================
 
-// Interfaz Base de Usuario (sin password)
+// Sin contraseña: vive en Supabase Auth.
+// Nombre, apellido, DNI y teléfono pueden ser null, ya que son opcionales para un cliente.
 export interface IApiUser {
   id: number;
-  name: string;
-  lastName: string;
-  dni: string;
-  phone: string;
+  name: string | null;
+  lastName: string | null;
+  dni: string | null;
+  phone: string | null;
   username: string;
   email: string;
   role: UserRole;
-  photo: IApiUserPhoto | null; // Puede ser null si el usuario no cargo una foto de perfil
-  state?: UserState; // Ausente = Activo (datos anteriores a la columna de estado)
+  photo: IApiUserPhoto | null; // null si el usuario no cargó una foto de perfil
+  state: UserState;
 
   // Las fechas vienen como string ISO desde la API
   createdAt: string;
@@ -43,10 +47,9 @@ export interface IApiUser {
   deletedAt?: string | null;
 }
 
-// Interfaz Admin
 export interface IApiAdmin extends IApiUser {}
 
-// Interfaz Client (Hereda de User + Dirección + Facturación)
+// Agrega los datos de envío y facturación
 export interface IApiClient extends IApiUser {
   cuit?: string;
   fiscalCondition?: FiscalCondition;
@@ -63,16 +66,19 @@ export interface IApiClient extends IApiUser {
 // MODELOS DE CREACIÓN (CREATE / POST)
 // ==========================================================
 
-// Helper para excluir campos automáticos
-// (el estado tampoco se envía al crear ni al editar: se cambia con su propia ruta, PATCH /:id/state)
-type OmitAutoFields = 'id' | 'photo' | 'state' | 'createdAt' | 'updatedAt' | 'deletedAt';
+// Campos que no se envían al crear ni al editar. El estado se cambia con su propia ruta, PATCH /:id/state
+type OmitAutoFields =
+  | 'id'
+  | 'photo'
+  | 'state'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'deletedAt';
 
-// Para crear Admin
 export type ICreateAdmin = Omit<IApiAdmin, OmitAutoFields> & {
   password: string;
 };
 
-// Para crear Cliente
 export type ICreateClient = Omit<IApiClient, OmitAutoFields> & {
   password: string;
 };
@@ -81,7 +87,11 @@ export type ICreateClient = Omit<IApiClient, OmitAutoFields> & {
 // MODELOS DE ACTUALIZACIÓN (UPDATE / PUT / PATCH)
 // ==========================================================
 
-export type IUpdateClient = Partial<Omit<IApiClient, OmitAutoFields>> & {
+export type IUpdateClient = Partial<
+  Omit<IApiClient, OmitAutoFields | 'streetNumber'>
+> & {
+  // null borra la altura guardada
+  streetNumber?: number | null;
   password?: string;
   // La contraseña ACTUAL: el servidor la exige para que una persona cambie su propio email o contraseña
   currentPassword?: string;

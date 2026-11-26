@@ -8,8 +8,7 @@ export const guestGuard: CanActivateFn = (route, state) => {
 
   // Si YA está logueado, no debería estar aquí. Lo mandamos al home.
   if (authService.isLoggedIn()) {
-    router.navigate(['/']);
-    return false;
+    return router.createUrlTree(['/']);
   }
 
   // Si NO está logueado, puede pasar.

@@ -1,0 +1,79 @@
+/* Tarjeta de producto, control de agregar al carrito y efectos de elevación */
+@layer components {
+  /* ── Componentes de producto (cliente) ── */
+  .elsi-product-card {
+    @apply relative flex flex-col h-full bg-white rounded-2xl shadow-sm hover:shadow-md hover:border-gray-300 hover:-translate-y-1 border border-gray-200 transition-[box-shadow,border-color,translate] duration-300 overflow-hidden;
+  }
+
+  .elsi-price {
+    @apply font-black text-gray-900 tracking-tight;
+  }
+
+  .elsi-brand-label {
+    @apply text-xs font-bold text-accent-teal uppercase tracking-wide mb-1 truncate;
+  }
+
+  /* Flechas de la galería: aparecen al pasar el mouse por el grupo, y siempre visibles en pantallas táctiles */
+  .elsi-glass-nav {
+    @apply bg-white/80 backdrop-blur-sm text-gray-800 rounded-full shadow-md cursor-pointer
+           opacity-0 transition-[opacity,background-color,color] duration-300 hover:bg-accent-pink hover:text-white
+           group-hover:opacity-100;
+  }
+  @media (hover: none) {
+    .elsi-glass-nav:not(:disabled) {
+      @apply opacity-100;
+    }
+  }
+
+  /* ── Estilos compartidos del control de agregar al carrito ── */
+  .elsi-add-to-cart-container {
+    @apply flex justify-center items-center w-full;
+  }
+
+  .elsi-add-initial-btn {
+    @apply w-full h-9 sm:h-10 px-2 flex items-center justify-center rounded-xl bg-brand text-white
+           text-sm font-bold whitespace-nowrap
+           hover:bg-brand-hover transition-colors duration-300 shadow-md cursor-pointer
+           disabled:bg-gray-300 disabled:cursor-not-allowed
+           motion-safe:animate-pop-in;
+  }
+
+  .elsi-add-initial-btn.btn-full {
+    @apply h-14 font-black text-lg tracking-tight shadow-lg;
+  }
+
+  .elsi-quantity-pill {
+    @apply flex items-center bg-gray-100 rounded-full p-1 shadow-inner border border-gray-200/50
+           transition-all duration-300 w-full h-9 sm:h-10
+           motion-safe:animate-pop-in;
+  }
+
+  .elsi-quantity-pill.pill-full {
+    @apply w-full h-14 px-2;
+  }
+
+  .pill-btn {
+    @apply flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full text-gray-700
+           transition-[background-color,box-shadow,scale,opacity] duration-200 hover:bg-white hover:shadow-sm active:scale-95
+           disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer text-sm sm:text-base;
+  }
+
+  .pill-full .pill-btn {
+    @apply w-12 h-12 text-xl;
+  }
+
+  .quantity-value {
+    @apply flex-1 text-center text-xs sm:text-sm text-gray-900 font-bold tabular-nums;
+  }
+
+  .pill-full .quantity-value {
+    @apply text-xl;
+  }
+
+  /* ── Efectos de Elevación ── */
+  /* Solo con dispositivos que tienen hover: en pantallas táctiles el elemento no queda levantado después de tocarlo */
+  .elsi-hover-elevate {
+    @apply relative transition-[translate,scale,box-shadow,border-color,background-color] duration-300 ease-out
+           hover:-translate-y-1 hover:scale-[1.005] hover:shadow-xl hover:border-gray-200 hover:z-10 hover:bg-white;
+  }
+}

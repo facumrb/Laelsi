@@ -15,7 +15,7 @@
         @if (showFilterMenu()) {
           <div
             id="filter-dropdown"
-            class="absolute right-0 md:right-auto md:left-0 mt-3 w-80 max-w-[95vw] origin-top-right rounded-2xl bg-white shadow-2xl ring-1 ring-gray-950/5 z-50 border border-gray-100 transition-all"
+            class="absolute right-0 md:right-auto md:left-0 mt-3 w-80 max-w-[95vw] origin-top-right rounded-2xl bg-white shadow-2xl ring-1 ring-gray-950/5 z-(--z-dropdown) border border-gray-100 transition-all"
             role="region"
             aria-label="Opciones de filtro"
           >
@@ -45,7 +45,7 @@
               <button
                 type="button"
                 (click)="limpiar()"
-                class="cursor-pointer w-full mt-4 px-3 py-2.5 text-xs font-bold uppercase tracking-wide text-[#3d4494] bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors focus:outline-none focus:ring-2 focus:ring-[#3d4494] focus:ring-offset-1"
+                class="cursor-pointer w-full mt-4 px-3 py-2.5 text-xs font-bold uppercase tracking-wide text-brand bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors focus:outline-hidden focus:ring-2 focus:ring-brand focus:ring-offset-1"
               >
                 Limpiar todos los filtros
               </button>

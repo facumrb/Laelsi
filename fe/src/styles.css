@@ -1,563 +1,107 @@
 @import "tailwindcss";
 
-/* La barra de categorías (menús que se abren con mouse o teclado) solo se muestra donde se puede usar: un
-   dispositivo con hover y puntero fino, y una pantalla de al menos 1100 px (68,75 rem), que es lo que ocupan sus
-   menús de varios niveles. En cualquier otro lado (teléfono, tablet, teléfono en horizontal) se usa el menú móvil
-   con acordeón, aunque la pantalla sea ancha: tocar una categoría de la barra navegaba directo a su página y el
-   desplegable no se podía abrir. La barra, el botón hamburguesa y el menú móvil usan esta misma variante para que
-   siempre se vea uno de los dos y nunca los dos ni ninguno. */
+/* Estilos de componentes compartidos, uno por archivo en styles/ */
+@import "./styles/admin-tablas.css";
+@import "./styles/formularios.css";
+@import "./styles/contenido.css";
+@import "./styles/select.css";
+@import "./styles/navbar.css";
+@import "./styles/breadcrumbs.css";
+@import "./styles/producto.css";
+@import "./styles/modales.css";
+
 @custom-variant barra-hover (@media (min-width: 68.75rem) and (hover: hover) and (pointer: fine));
 
 @theme {
-  /* 1. Defines la variable de la animación */
-  --animate-fadeIn: fadeIn 0.2s ease-in-out;
+  --animate-fade-in: fade-in 0.2s ease-in-out;
+  /* Entrada de la tarjeta de un modal. Se usa con motion-safe: para respetar prefers-reduced-motion. */
+  --animate-modal-in: modal-in 0.2s ease-out;
+  /* Entrada del botón de agregar al carrito y del selector de cantidad */
+  --animate-pop-in: pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  /* Salto del contador del carrito cuando cambia la cantidad */
+  --animate-bump: bump 0.3s ease-out;
+
+  --color-brand: #3d4494;
+  --color-brand-hover: #2a2f63;
+  /* Rosa de la navbar (hover y subrayado de los links) */
+  --color-accent-pink: #f4abac;
+  /* Violeta del ítem activo y del foco en los menús de la navbar */
+  --color-accent-purple: #5a2a8a;
+  /* Verde azulado de la etiqueta de marca de los productos */
+  --color-accent-teal: #037971;
+  /* Coral de la línea bajo el título de sección */
+  --color-accent-coral: #ea6c6c;
+  /* Verde azulado claro (hover del botón del carrito y foco del buscador) */
+  --color-accent-teal-light: #049a8f;
+  /* Verde de los botones de WhatsApp */
+  --color-whatsapp: #0f8477;
+  --color-whatsapp-hover: #075e54;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes modal-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes bump {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.25);
+    }
+  }
 }
 
-/* 2. Los keyframes van FUERA del bloque @theme */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+@theme static {
+  --z-dropdown: 20;
+  --z-header: 50;
+  --z-drawer: 60;
+  --z-modal: 100;
+  --z-modal-nested: 110;
+  --z-blocking: 200;
+  --z-toast: 1060;
 }
 
-/* 3. Estilos base globales */
+/* Estilos base globales */
 @layer base {
   ng-icon {
     @apply shrink-0;
   }
 }
 
-/* 4. Estilos de componentes compartidos */
-@layer components {
-  .admin-table-body {
-    @apply block;
-    @media (min-width: 1024px) {
-      display: table-row-group;
-    }
-  }
-
-  /* Por debajo de lg la fila es una tarjeta de DOS columnas (ID 64); desde lg, una fila de tabla */
-  .admin-table-row {
-    @apply grid grid-cols-2 relative lg:static bg-white rounded-xl shadow border border-gray-200 mb-4 mt-4 lg:mt-0 lg:mb-0 lg:table-row lg:shadow-none lg:border-0 lg:rounded-none hover:bg-gray-50 transition-colors;
-  }
-
-  @media (max-width: 1023px) {
-    .admin-table-row.bg-indigo-50 td {
-      border-color: transparent !important;
-    }
-  }
-
-  .admin-table-cell-first {
-    @apply col-span-2 lg:col-span-1 min-w-0 px-5 pt-6 pb-2 border-b border-gray-50 lg:border-b lg:border-gray-100 lg:px-6 lg:py-4 lg:table-cell lg:align-middle;
-  }
-
-  /* Una columna; si el contenido es largo o quedaría solo, la plantilla agrega max-sm:col-span-2 o col-span-2 */
-  .admin-table-cell {
-    @apply col-span-1 min-w-0 px-5 py-2 border-b border-gray-50 lg:border-b lg:border-gray-100 lg:px-6 lg:py-4 lg:table-cell lg:align-middle;
-  }
-
-  .admin-table-cell-last {
-    @apply col-span-2 lg:col-span-1 min-w-0 px-5 pt-2 pb-5 lg:px-6 lg:py-4 lg:table-cell lg:align-middle lg:border-b lg:border-gray-100;
-  }
-
-  .admin-table-header-cell {
-    @apply px-6 py-4 font-semibold uppercase tracking-wider;
-  }
-
-  .admin-table-mobile-label {
-    @apply font-bold uppercase text-gray-600;
-  }
-  @media (min-width: 1024px) {
-    .admin-table-mobile-label {
-      display: none !important;
-    }
-  }
-
-  /* ── Formularios ── */
-  .form-label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
-  }
-
-  .form-input {
-    @apply block w-full rounded-lg border-gray-300 border p-2.5 text-gray-900 shadow-sm text-sm;
-  }
-
-  /* Campo de contraseña con el botón del ojo FUERA del input: las extensiones (Bitwarden, etc.) dibujan su ícono
-     en el borde derecho del input, así queda a la izquierda del ojo en vez de taparlo. El borde y el foco van en
-     el contenedor (.password-field), cuyo aspecto define cada plantilla. */
-  .password-field {
-    @apply flex w-full items-center bg-white transition-all;
-  }
-
-  .password-field-input {
-    @apply min-w-0 flex-1 border-0 bg-transparent outline-none focus:ring-0;
-  }
-
-  .form-card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden;
-  }
-
-  /* ── Tarjetas Admin ── */
-  .admin-stat-card {
-    @apply bg-white rounded-xl shadow-sm border border-neutral-200
-           p-6 flex items-start justify-between gap-4
-           transition-all duration-300
-           hover:shadow-md hover:border-[#3d4494]/30;
-  }
-
-  .admin-section-card {
-    @apply bg-white rounded-xl shadow-sm border border-neutral-200
-           overflow-hidden flex flex-col h-full;
-  }
-
-  .form-body {
-    @apply p-6 md:p-8;
-  }
-
-  .form-section-title {
-    @apply text-lg font-semibold text-gray-800 mb-3 border-b pb-2;
-  }
-
-  .form-grid-2 {
-    @apply grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3;
-  }
-
-  .form-footer {
-    @apply pt-6 flex flex-wrap items-center justify-end gap-x-4 gap-y-2 border-t border-gray-100;
-  }
-
-  /* ── Botones ── */
-  .btn-primary {
-    @apply cursor-pointer rounded-md bg-[#3d4494] px-6 py-2.5 text-sm font-semibold
-           text-white shadow-sm enabled:hover:bg-[#2a2f63] transition-colors
-           focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-[#3d4494]
-           disabled:bg-gray-300 disabled:cursor-not-allowed;
-  }
-
-  .btn-secondary {
-    @apply cursor-pointer rounded-md bg-white px-5 py-2.5 text-sm font-semibold
-           text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300
-           hover:bg-gray-50 transition-colors;
-  }
-
-  /* ── Títulos ── */
-  .page-title {
-    @apply text-2xl font-bold text-[#3d4494];
-  }
-
-  /* ── Textos legales (Política de Privacidad y Términos y Condiciones) ── */
-  .legal-content {
-    @apply leading-relaxed text-gray-600;
-  }
-
-  .legal-content h2 {
-    @apply mt-8 mb-1 border-b border-neutral-100 pb-2 text-xl font-bold text-[#3d4494];
-  }
-
-  .legal-content h3 {
-    @apply mt-5 mb-1 font-bold text-gray-800;
-  }
-
-  .legal-content p {
-    @apply mt-2;
-  }
-
-  .legal-content ul {
-    @apply mt-2 list-disc space-y-1.5 pl-6;
-  }
-
-  .legal-content a {
-    @apply font-semibold text-[#3d4494] underline hover:text-[#2a2f63];
-  }
-
-  .legal-content strong {
-    @apply font-semibold text-gray-800;
-  }
-
-  .legal-content .legal-box {
-    @apply mt-4 rounded-2xl border border-neutral-200 bg-neutral-50 p-4 text-sm;
-  }
-
-  /* ── Select desplegable ── */
-  .select-trigger {
-    @apply relative w-full cursor-pointer bg-white rounded-2xl border border-gray-300
-           py-2.5 pl-4 pr-10 text-left shadow-sm transition-all duration-200 text-sm
-           hover:bg-gray-50 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900;
-  }
-
-  .select-dropdown {
-    @apply absolute z-20 mt-2 w-full max-h-70 overflow-auto rounded-2xl bg-white
-           text-base shadow-lg ring-1 ring-gray-900 focus:outline-none sm:text-sm
-           animate-fadeIn;
-  }
-
-  .select-option {
-    @apply relative cursor-pointer select-none py-2.5 pl-4 pr-9 text-gray-900 hover:bg-gray-100 transition-colors;
-  }
-
-  .select-chevron-wrapper {
-    @apply pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2;
-  }
-
-  /* ── Tablas Admin ── */
-  .table-container {
-    @apply w-full bg-gray-50 lg:bg-white lg:rounded-lg lg:shadow-md
-           lg:border lg:border-gray-200;
-  }
-
-  .table-base {
-    @apply w-full text-left text-sm text-gray-500 border-separate
-           border-spacing-0 table-fixed;
-  }
-
-  .table-header {
-    @apply hidden bg-[#3d4494] text-white;
-    @media (min-width: 1024px) {
-      display: table-header-group;
-    }
-  }
-
-  .table-th {
-    @apply px-6 py-4 font-semibold uppercase tracking-wider;
-  }
-
-  .table-cell-indented {
-    @apply flex flex-col;
-  }
-
-  .table-parent-info {
-    @apply text-[10px] text-gray-500 font-medium ml-4;
-  }
-
-  /* ── Barra de herramientas (toolbar) ── */
-  .toolbar-container {
-    @apply flex flex-col lg:flex-row justify-between items-start
-           lg:items-center gap-4 mb-6;
-  }
-
-  /* ── Barra de navegación (navbar) ── */
-  .navbar-link {
-    @apply text-sm font-bold text-white tracking-wide drop-shadow-sm transition-colors
-           hover:text-[#f4abac] focus:outline-none focus:underline decoration-[#f4abac]
-           flex items-center gap-1.5;
-  }
-
-  .navbar-link-active {
-    @apply underline decoration-[#f4abac] decoration-2 underline-offset-4;
-  }
-
-  .navbar-dropdown-item.navbar-dropdown-item-active {
-    @apply text-[#5a2a8a];
-  }
-
-  .navbar-dropdown {
-    @apply absolute top-full left-0 mt-0 pt-3 w-50 opacity-0 invisible
-           transition-all duration-200 z-50 translate-y-2;
-  }
-  /* Ya no se abre con :group-hover. La clase la pone el componente (navbar-category-bar.component.ts) tanto al pasar
-     el mouse como al enfocar con el teclado, y se la saca con Esc: con :hover no había forma de abrirlo ni de cerrarlo
-     sin mouse. */
-  .navbar-dropdown-abierto {
-    @apply opacity-100 visible translate-y-0;
-    /* Al abrir, `visibility` cambia en el acto: si entrara en la transición (transition-all de .navbar-dropdown), el
-       menú seguiría "hidden" durante el primer instante y no se le podría enfocar un ítem enseguida (flecha abajo).
-       Al cerrar vale la regla base, que sí transiciona `visibility` y conserva el fundido. */
-    transition-property: opacity, translate;
-  }
-
-  .navbar-dropdown-container {
-    @apply bg-white rounded-xl shadow-xl overflow-visible border border-black/5 ring-1 ring-black/5;
-  }
-
-  /* Foco del teclado dentro de los menús: contorno hacia adentro, porque el menú tiene bordes redondeados y el
-     contorno hacia afuera quedaría recortado o tapado por el ítem vecino. */
-  .navbar-dropdown-item:focus-visible {
-    @apply bg-gray-100 outline-2 outline-[#5a2a8a] -outline-offset-2;
-  }
-
-  .navbar-dropdown-item {
-    @apply relative z-10 block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100
-           font-semibold transition-colors
-           border-b border-gray-50 last:border-0;
-  }
-
-  /* Redondeo para el primer y último item para encajar con el borde del menú contenedor.
-     Cada ítem de un menú va dentro de su propio div (que también aloja a su menú lateral). */
-  .navbar-dropdown-container > div:first-of-type > .navbar-dropdown-item,
-  .navbar-subdropdown > div:first-of-type > .navbar-dropdown-item {
-    @apply rounded-t-xl;
-  }
-
-  .navbar-dropdown-container > div:last-of-type > .navbar-dropdown-item,
-  .navbar-subdropdown > div:last-of-type > .navbar-dropdown-item {
-    @apply border-b-0 rounded-b-xl;
-  }
-
-  /* Menú lateral de cada nivel a partir del tercero (aparece a la derecha del ítem hover).
-     Hay uno dentro de otro, hasta el último nivel que pueden crear los negocios. */
-  .navbar-subdropdown {
-    @apply absolute left-full top-0 ml-2 hidden
-           w-44 bg-white rounded-xl shadow-xl border border-black/5 ring-1 ring-black/5 z-50
-           before:absolute before:-left-3 before:top-0 before:h-full before:w-3;
-  }
-  /* Ya no se abre con :hover. La clase la pone el componente (navbar-category-bar.component.ts) para poder esperar
-     un momento antes de cerrar o de pasar de un ítem al vecino: con :hover el menú se cerraba apenas el puntero
-     salía de la fila, y al ir en diagonal hacia el menú lateral se cruzaba la fila de al lado y se perdía. */
-  .navbar-subdropdown-abierto {
-    @apply block;
-  }
-
-  /* Triángulo que une el menú principal con el secundario */
-  .navbar-subdropdown::after {
-    content: "";
-    @apply absolute top-3.5 -left-1.5 w-3 h-3 bg-white border-l border-b border-black/5 ring-0 rotate-45 transition-colors;
-    z-index: 20; /* Se mantiene por encima del borde del contenedor para ocultar la unión */
-    box-shadow: -1px 1px 1px -1px rgba(0, 0, 0, 0.1); /* Micro sombra para emparejar con el menú */
-  }
-
-  .navbar-subdropdown:has(
-      > div:first-of-type > .navbar-dropdown-item:hover
-    )::after {
-    @apply bg-gray-100;
-  }
-
-  /* Menú lateral que se abre hacia la IZQUIERDA, cuando a la derecha no hay lugar para todos los niveles (ver
-     medirDireccion en navbar-category-bar.component.ts). Es el mismo menú espejado: el puente que lo une con el
-     ítem y el triángulo pasan al otro lado. Va después de las reglas de arriba para que las pise. */
-  .navbar-subdropdown-izquierda {
-    @apply left-auto right-full ml-0 mr-2 before:left-auto before:-right-3;
-  }
-  .navbar-subdropdown-izquierda::after {
-    @apply left-auto -right-1.5 border-l-0 border-b-0 border-r border-t;
-    box-shadow: 1px -1px 1px -1px rgba(0, 0, 0, 0.1);
-  }
-
-  /* Chevron giratorio al hacer hover sobre una categoría raíz */
-  .navbar-chevron {
-    @apply text-[10px] text-white/70 transition-transform;
-  }
-  .navbar-grupo-abierto .navbar-chevron {
-    @apply rotate-180;
-  }
-
-  /* Chevron lateral (indica submenú a la derecha) */
-  .navbar-chevron-right {
-    @apply text-[10px] -rotate-90 text-gray-400;
-  }
-  /* ... y hacia la izquierda, cuando el menú lateral se abre a ese lado (va después para pisar la de arriba) */
-  .navbar-chevron-izquierda {
-    @apply rotate-90;
-  }
-
-  /* Links estáticos de la barra (Impresiones, Diseño, Sellos) */
-  .navbar-static-link {
-    @apply text-sm font-bold text-white tracking-wide drop-shadow-sm transition-colors
-           hover:text-[#f4abac] focus:outline-none focus:underline decoration-[#f4abac];
-  }
-
-  /* ── Migas de pan (breadcrumbs) ── */
-  .breadcrumb-nav {
-    @apply block mb-2 py-1;
-  }
-
-  .breadcrumb-list {
-    @apply flex flex-wrap items-center gap-x-1 gap-y-1 md:gap-x-2;
-  }
-
-  .breadcrumb-item {
-    @apply inline-flex items-center;
-  }
-
-  .breadcrumb-link {
-    @apply inline-flex items-center text-sm md:text-base font-medium text-gray-500
-           hover:text-[#3d4494] transition-colors;
-  }
-
-  .breadcrumb-separator {
-    @apply text-gray-400 text-xs mx-1;
-  }
-
-  .breadcrumb-current {
-    @apply ml-1 text-sm md:text-base font-semibold text-[#3d4494] wrap-break-word;
-  }
-
-  .breadcrumb-ellipsis {
-    @apply ml-1 text-sm md:text-base text-gray-400 select-none;
-  }
-
-  /* ── Estructura y secciones ── */
-  .section-header {
-    @apply mb-4 border-b-2 border-[#EA6C6C] pb-4;
-  }
-
-  .section-title {
-    @apply text-3xl font-black uppercase text-gray-900;
-  }
-
-  .product-grid {
-    @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6;
-  }
-
-  /* ── Paginación ── */
-  .pagination-container {
-    @apply flex flex-col items-center gap-2 mt-8 mb-4;
-  }
-
-  .pagination-controls {
-    @apply flex items-center justify-center gap-2;
-  }
-
-  .pagination-btn {
-    @apply cursor-pointer flex items-center justify-center w-10 h-10 rounded-lg
-           border border-gray-200 text-gray-700 transition-colors
-           hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200
-           disabled:opacity-50 disabled:cursor-not-allowed
-           disabled:hover:bg-transparent disabled:hover:text-gray-700 disabled:hover:border-gray-200;
-  }
-
-  .pagination-btn-active {
-    @apply cursor-default flex items-center justify-center w-10 h-10 rounded-lg
-           bg-emerald-600 text-white font-medium shadow-sm transition-colors;
-  }
-
-  .pagination-info {
-    @apply text-sm text-gray-500;
-  }
-
-  /* ── Utilidades ── */
-  .scrollbar-hide {
-    -ms-overflow-style: none; /* IE y Edge */
-    scrollbar-width: none; /* Firefox */
-  }
-
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none; /* Chrome, Safari y Opera */
-  }
-
-  /* ── Componentes de producto (cliente) ── */
-  .elsi-product-card {
-    @apply relative flex flex-col h-full bg-white rounded-2xl shadow-sm hover:shadow-md hover:border-neutral-300 hover:-translate-y-1 border border-neutral-200 transition-all duration-300 overflow-hidden;
-  }
-
-  .elsi-price {
-    @apply font-black text-gray-900 tracking-tight;
-  }
-
-  .elsi-brand-label {
-    @apply text-xs font-bold text-[#037971] uppercase tracking-wide mb-1 truncate;
-  }
-
-  .elsi-glass-nav {
-    @apply bg-white/80 backdrop-blur-sm text-gray-800 rounded-full shadow-md cursor-pointer
-           opacity-0 transition-all duration-300 hover:bg-[#f4abac] hover:text-white;
-  }
-  .group:hover .elsi-glass-nav {
-    @apply opacity-100;
-  }
-  @media (hover: none) {
-    .elsi-glass-nav:not(:disabled) {
-      @apply opacity-100;
-    }
-  }
-
-  /* ── Modales ── */
-  .elsi-modal-overlay {
-    @apply fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4;
-  }
-
-  .elsi-modal-card {
-    /* max-h y overflow-y-auto: en una ventana baja (celular apaisado) el cartel no se sale de la pantalla (ID 64) */
-    @apply bg-white rounded-2xl shadow-xl max-w-md w-full p-6 text-center max-h-[90vh] overflow-y-auto;
-    animation: fadeIn 0.3s ease-out;
-  }
-
-  .elsi-modal-icon-container {
-    @apply mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100;
-  }
-
-  .elsi-modal-title {
-    @apply text-xl font-bold text-gray-900 mb-2;
-  }
-
-  .elsi-modal-text {
-    @apply text-gray-500 mb-6;
-  }
-
-  .elsi-btn-primary-full {
-    @apply w-full bg-[#3d4494] hover:bg-[#2a2f63] text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer;
-  }
-
-  /* ── Estilos compartidos del control de agregar al carrito ── */
-  .elsi-add-to-cart-container {
-    @apply flex justify-center items-center w-full;
-  }
-
-  .elsi-add-initial-btn {
-    @apply w-full h-9 sm:h-10 px-2 flex items-center justify-center rounded-xl bg-[#3d4494] text-white
-           text-sm font-bold whitespace-nowrap
-           hover:bg-[#2a2f63] transition-all duration-300 shadow-md cursor-pointer
-           disabled:bg-gray-300 disabled:cursor-not-allowed;
-    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-
-  .elsi-add-initial-btn.btn-full {
-    @apply w-full h-14 rounded-xl font-black text-lg tracking-tight shadow-lg;
-  }
-
-  .elsi-quantity-pill {
-    @apply flex items-center bg-gray-100 rounded-full p-1 shadow-inner border border-gray-200/50
-           transition-all duration-300 w-full h-9 sm:h-10;
-    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-
-  .elsi-quantity-pill.pill-full {
-    @apply w-full h-14 px-2;
-  }
-
-  .pill-btn {
-    @apply flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full text-gray-700
-           transition-all duration-200 hover:bg-white hover:shadow-sm active:scale-95
-           disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer text-sm sm:text-base;
-  }
-
-  .pill-full .pill-btn {
-    @apply w-12 h-12 text-xl;
-  }
-
-  .quantity-value {
-    @apply flex-1 text-center text-xs sm:text-sm text-gray-900 font-bold tabular-nums;
-  }
-
-  .pill-full .quantity-value {
-    @apply text-xl;
-  }
-
-  /* ── Efectos de Elevación ── */
-  .elsi-hover-elevate {
-    @apply relative transition-all duration-300 ease-out will-change-transform;
-  }
-
-  .elsi-hover-elevate:hover {
-    @apply -translate-y-1 scale-[1.005] shadow-xl border-gray-200 z-10 bg-white;
-  }
-
-  /* ── Layouts adaptables ── */
-  .page-container-adaptive {
-    @apply min-h-[calc(100vh-(--spacing(32)))] flex flex-col;
-  }
-}
-
-/* Keyframes globales */
-@keyframes popIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
+/* ── Utilidades ── */
+/* Oculta la barra de desplazamiento sin quitar el desplazamiento. Es @utility para admitir variantes (md:, lg:) */
+@utility scrollbar-hide {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
   }
 }

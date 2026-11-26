@@ -1,4 +1,4 @@
-<div class="animate-fadeIn container mx-auto">
+<div class="animate-fade-in container mx-auto">
   <app-clients-toolbar
     [(searchQuery)]="searchQuery"
     [(fiscalFilter)]="fiscalFilter"
@@ -24,7 +24,9 @@
 
   @if (clientToDelete()) {
     <app-confirm-delete-modal
-      [entityName]="clientToDelete()!.name + ' ' + clientToDelete()!.lastName"
+      [entityName]="
+        clientToDelete()! | nombrePersona: clientToDelete()!.username
+      "
       entityType="cliente"
       [canDeactivate]="true"
       [allowPermanentDelete]="false"

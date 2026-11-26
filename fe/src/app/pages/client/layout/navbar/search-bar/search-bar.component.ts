@@ -1,23 +1,21 @@
-import { Component, signal, inject, DestroyRef } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  signal,
+  inject,
+  DestroyRef,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { CurrencyPipe } from '@angular/common';
 import { IApiProduct } from '@models/product.model';
 import { ApiProductService } from '@services/api-services/api-product.service';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { bootstrapSearch } from '@ng-icons/bootstrap-icons';
-import {
-  catchError,
-  debounceTime,
-  distinctUntilChanged,
-  filter,
-  of,
-  Subject,
-  switchMap,
-  tap,
-} from 'rxjs';
+import { catchError, EMPTY, of, Subject, switchMap, tap, timer } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
 import { ProductImageComponent } from '@shared/components/product-image/product-image.component';
+import { precioVigente } from '@shared/utils/precio-vigente';
 
 // Cantidad de sugerencias que se piden al servicio y que se muestran en el autocompletado.
 const MAX_SUGERENCIAS = 6;
@@ -34,6 +32,7 @@ const MAX_SUGERENCIAS = 6;
     bootstrapSearch,
   }),
   templateUrl: './search-bar.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SearchBarComponent {
   private readonly router = inject(Router);
@@ -53,63 +52,58 @@ export class SearchBarComponent {
   }
 
   /*
-   Inicializa el flujo reactivo de búsqueda.
-   - debounceTime: Espera 300ms cuando el usuario deja de escribir.
-   - filter: Solo dispara peticiones para cadenas largas (más de 2 caracteres).
+  Inicializa el flujo reactivo de búsqueda.
+  Cada término nuevo cancela lo anterior (la espera y la petición en curso), así una respuesta vieja no
+  vuelve a abrir las sugerencias. Con más de 2 caracteres espera 300 ms sin tipeo y recién ahí busca.
+  Con menos, limpia los resultados en el acto. Cancelar es mandar un término vacío (cancelarBusqueda).
   */
   private initSearchFlow(): void {
     this.searchSubject
       .pipe(
-        debounceTime(300),
-        distinctUntilChanged(),
-        tap((term) => {
-          if (term.length > 2) {
-            this.isLoading.set(true);
-          } else {
-            // Limpia si se vació el input o tiene muy pocos caracteres
-            this.isLoading.set(false);
-            this.showResults.set(false);
-            this.results.set([]);
+        switchMap((term) => {
+          if (term.length <= 2) {
+            this.limpiarResultados();
+            return EMPTY;
           }
+          return timer(300).pipe(
+            tap(() => this.isLoading.set(true)),
+            switchMap(() =>
+              this.apiProductService
+                .searchProducts(term, 1, MAX_SUGERENCIAS)
+                .pipe(catchError(() => of(null))),
+            ),
+          );
         }),
-        filter((term) => term.length > 2),
-        switchMap((term) =>
-          this.apiProductService.searchProducts(term, 1, MAX_SUGERENCIAS).pipe(
-            catchError(() => {
-              return of({
-                data: [],
-                total: 0,
-                page: 1,
-                limit: 16,
-                totalPages: 0,
-              } as any);
-            }),
-          ),
-        ),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe({
-        next: (products) => {
-          this.results.set(products.data.slice(0, MAX_SUGERENCIAS));
-          this.showResults.set(products.data.length > 0);
-          this.isLoading.set(false);
-        },
-        error: () => {
-          this.isLoading.set(false);
-        },
+      .subscribe((respuesta) => {
+        const productos = respuesta?.data.slice(0, MAX_SUGERENCIAS) ?? [];
+        this.results.set(productos);
+        this.showResults.set(productos.length > 0);
+        this.isLoading.set(false);
       });
+  }
+
+  // Vacía las sugerencias y apaga el indicador de carga.
+  private limpiarResultados(): void {
+    this.isLoading.set(false);
+    this.showResults.set(false);
+    this.results.set([]);
+  }
+
+  // Corta la búsqueda pendiente o en curso y cierra las sugerencias.
+  private cancelarBusqueda(): void {
+    this.searchSubject.next('');
   }
 
   // Extrae del producto el monto del precio marcado como 'actual'.
   getProductPrice(product: IApiProduct): number {
-    const currentPrice = product.prices?.find((p) => p.isCurrent);
-    return currentPrice ? currentPrice.amount : 0;
+    return precioVigente(product.prices)?.amount ?? 0;
   }
 
   // Extrae la denominación (USD, ARS, etc) del precio activo del producto.
   getProductCurrency(product: IApiProduct): string {
-    const currentPrice = product.prices?.find((p) => p.isCurrent);
-    return currentPrice ? currentPrice.currency : 'ARS';
+    return precioVigente(product.prices)?.currency ?? 'ARS';
   }
 
   // Registra cada tipeo del usuario y lo inserta en el flujo reactivo de búsqueda.
@@ -119,7 +113,7 @@ export class SearchBarComponent {
   }
 
   goToProduct(productId: number): void {
-    this.showResults.set(false);
+    this.cancelarBusqueda();
     this.query.set('');
     this.router.navigate(['/product', productId]);
   }
@@ -127,14 +121,18 @@ export class SearchBarComponent {
   handleFullSearch(): void {
     const currentQuery = this.query().trim();
     if (currentQuery) {
-      this.showResults.set(false);
+      this.cancelarBusqueda();
       this.router.navigate(['/search'], { queryParams: { q: currentQuery } });
     }
   }
 
+  // Esc o clic afuera: cierra las sugerencias y corta la búsqueda pendiente, para que no se vuelvan a abrir solas.
+  cerrarSugerencias(): void {
+    this.cancelarBusqueda();
+  }
+
   clearSearch(): void {
     this.query.set('');
-    this.results.set([]);
-    this.showResults.set(false);
+    this.cancelarBusqueda();
   }
 }

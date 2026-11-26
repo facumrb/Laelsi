@@ -20,6 +20,11 @@ export enum PaymentMethod {
 // MODELOS DE LECTURA (READ / GET)
 // ==========================================================
 
+// Filtros del listado de órdenes
+export type OrderStatusFilter = OrderState | 'Todos';
+export type DeliveryMethodFilter = DeliveryMethod | 'Todos';
+export type PaymentMethodFilter = PaymentMethod | 'Todos';
+
 export interface IApiOrderLine {
   id: number;
   quantity: number;
@@ -41,10 +46,10 @@ export interface IApiOrder {
   dateTime: string;
   client: {
     id: number;
-    name: string;
-    lastName: string;
+    // Pueden ser null: la página de registro y el acceso con Google no piden nombre, apellido ni teléfono
+    name: string | null;
+    lastName: string | null;
     email: string;
-    // Puede ser null: el registro rápido y el acceso con Google no piden teléfono
     phone: string | null;
   };
   items: IApiOrderLine[];

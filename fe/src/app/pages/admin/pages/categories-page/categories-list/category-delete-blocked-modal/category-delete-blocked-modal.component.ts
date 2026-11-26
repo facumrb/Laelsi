@@ -1,26 +1,20 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  HostListener,
   input,
   output,
 } from '@angular/core';
-import { A11yModule } from '@angular/cdk/a11y';
-import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { provideIcons } from '@ng-icons/core';
 import { bootstrapExclamationTriangle } from '@ng-icons/bootstrap-icons';
-import { CloseModalButtonComponent } from '@shared/components/buttons/close-modal-button/close-modal-button.component';
+import { ModalShellComponent } from '@shared/components/modals/modal-shell/modal-shell.component';
 import { IApiCategory } from '@models/category.model';
 
-import { BackdropCloseDirective } from '@shared/directives/backdrop-close.directive';
+// Por qué no se puede borrar la categoría
+export type DeleteBlockReason = 'productos' | 'subcategorias';
 
 @Component({
   selector: 'app-category-delete-blocked-modal',
-  imports: [
-    BackdropCloseDirective,
-    A11yModule,
-    NgIconComponent,
-    CloseModalButtonComponent,
-  ],
+  imports: [ModalShellComponent],
   viewProviders: [
     provideIcons({
       bootstrapExclamationTriangle,
@@ -31,14 +25,10 @@ import { BackdropCloseDirective } from '@shared/directives/backdrop-close.direct
 })
 export class CategoryDeleteBlockedModalComponent {
   category = input.required<IApiCategory>();
+  reason = input<DeleteBlockReason>('productos');
   close = output<void>();
 
   onClose(): void {
     this.close.emit();
-  }
-
-  @HostListener('document:keydown.escape')
-  onEscapeKey(): void {
-    this.onClose();
   }
 }

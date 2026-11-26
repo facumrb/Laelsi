@@ -1,14 +1,17 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { environment } from 'src/environments/environment';
-import { IPaginatedResult } from '../../models/pagination.model';
+import { environment } from '@environments/environment';
+import { IPaginatedResult } from '@models/pagination.model';
 import {
   IApiOrder,
   ICreateOrder,
   OrderState,
   DeliveryMethod,
+  IUpdateOrderStatus,
+  IUpdateDeliveryMethod,
 } from '@models/order.model';
+import { IApiResponse } from '@models/api-response.model';
 
 @Injectable({
   providedIn: 'root',
@@ -38,16 +41,14 @@ export class ApiOrderService {
       params = params.set('paymentMethod', filters.paymentMethod);
 
     return this.http
-      .get<{
-        message: string;
-        data: IPaginatedResult<IApiOrder>;
-      }>(this.apiUrl, { params })
+      .get<IApiResponse<IPaginatedResult<IApiOrder>>>(this.apiUrl, { params })
       .pipe(map((response) => response.data));
   }
 
+  // Este método no se utiliza actualmente
   getOrderById(id: number): Observable<IApiOrder> {
     return this.http
-      .get<{ message: string; data: IApiOrder }>(`${this.apiUrl}/${id}`)
+      .get<IApiResponse<IApiOrder>>(`${this.apiUrl}/${id}`)
       .pipe(map((response) => response.data));
   }
 
@@ -58,10 +59,9 @@ export class ApiOrderService {
   ): Observable<IPaginatedResult<IApiOrder>> {
     const params = new HttpParams().set('page', page).set('limit', limit);
     return this.http
-      .get<{
-        message: string;
-        data: IPaginatedResult<IApiOrder>;
-      }>(`${this.apiUrl}/client/${clientId}`, { params })
+      .get<
+        IApiResponse<IPaginatedResult<IApiOrder>>
+      >(`${this.apiUrl}/client/${clientId}`, { params })
       .pipe(map((response) => response.data));
   }
 
@@ -75,18 +75,14 @@ export class ApiOrderService {
       : undefined;
 
     return this.http
-      .post<{ message: string; data: IApiOrder }>(this.apiUrl, order, { headers })
+      .post<IApiResponse<IApiOrder>>(this.apiUrl, order, { headers })
       .pipe(map((response) => response.data));
   }
 
   updateStatus(id: number, status: OrderState): Observable<IApiOrder> {
+    const body: IUpdateOrderStatus = { status };
     return this.http
-      .patch<{ message: string; data: IApiOrder }>(
-        `${this.apiUrl}/${id}/status`,
-        {
-          status,
-        },
-      )
+      .patch<IApiResponse<IApiOrder>>(`${this.apiUrl}/${id}/status`, body)
       .pipe(map((response) => response.data));
   }
 
@@ -94,20 +90,17 @@ export class ApiOrderService {
     id: number,
     deliveryMethod: DeliveryMethod,
   ): Observable<IApiOrder> {
+    const body: IUpdateDeliveryMethod = { deliveryMethod };
     return this.http
-      .patch<{
-        message: string;
-        data: IApiOrder;
-      }>(`${this.apiUrl}/${id}/delivery-method`, { deliveryMethod })
+      .patch<
+        IApiResponse<IApiOrder>
+      >(`${this.apiUrl}/${id}/delivery-method`, body)
       .pipe(map((response) => response.data));
   }
 
   cancelOrder(id: number): Observable<IApiOrder> {
     return this.http
-      .patch<{
-        message: string;
-        data: IApiOrder;
-      }>(`${this.apiUrl}/${id}/cancel`, {})
+      .patch<IApiResponse<IApiOrder>>(`${this.apiUrl}/${id}/cancel`, {})
       .pipe(map((response) => response.data));
   }
 }
