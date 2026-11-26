@@ -8,7 +8,7 @@
 
   <app-orders-list
     class="mt-6 block"
-    [orders]="ordersFiltered()"
+    [orders]="orders()"
     [isFilterActive]="filtersActive()"
     [loading]="loading()"
     (onUpdateStatus)="handleUpdateStatus($event)"

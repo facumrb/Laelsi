@@ -1,19 +1,21 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
   linkedSignal,
   signal,
 } from '@angular/core';
-import { IApiProduct, ProductState } from '@models/product.model';
+import {
+  IApiProduct,
+  ProductState,
+  ProductStateFilter,
+  ProductStockFilter,
+} from '@models/product.model';
 import { IApiCategory } from '@models/category.model';
 import { AlertService } from '@services/alert.service';
 import { ProductsListComponent } from './products-list/products-list.component';
-import {
-  ProductsToolbarComponent,
-  StatusFilter,
-  StockFilter,
-} from './products-toolbar/products-toolbar.component';
+import { ProductsToolbarComponent } from './products-toolbar/products-toolbar.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { BulkPriceModalComponent } from './products-toolbar/components/bulk-price-modal/bulk-price-modal.component';
@@ -36,6 +38,7 @@ import { injectInvalidateCatalog } from '@services/queries/catalog-cache';
     ConfirmDeleteModalComponent,
   ],
   templateUrl: './products-page.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductsPageComponent {
   private alertService = inject(AlertService);
@@ -43,14 +46,16 @@ export class ProductsPageComponent {
   private route = inject(ActivatedRoute);
 
   searchQuery = signal('');
-  statusFilter = signal<StatusFilter>('Todos');
-  stockFilter = signal<StockFilter>('Todos');
+  statusFilter = signal<ProductStateFilter>('Todos');
+  stockFilter = signal<ProductStockFilter>('Todos');
   categoryFilter = signal<number | 'Todos'>('Todos');
   productToDelete = signal<IApiProduct | null>(null);
 
-  // Al cambiar cualquier filtro, reseteamos a página 1. No hace falta recargar a mano:
-  // la página forma parte de la queryKey y TanStack Query pide los datos al server.
-  // La primera vez (cuando todavía no hay valor previo) se toma la página de la URL.
+  /*
+  Al cambiar cualquier filtro se vuelve a la página 1. No hace falta recargar a mano: la página
+  forma parte de la queryKey y TanStack Query pide los datos al servidor. La primera vez (cuando
+  todavía no hay valor previo) se toma la página de la URL.
+  */
   currentPage = linkedSignal<unknown, number>({
     source: () => [
       this.searchQuery(),
@@ -84,7 +89,8 @@ export class ProductsPageComponent {
   private deleteMutation = injectDeleteProductMutation();
   private invalidateCatalog = injectInvalidateCatalog();
 
-  private productsRaw = computed(() => this.productsQuery.data()?.data ?? []);
+  // Productos de la página actual
+  products = computed(() => this.productsQuery.data()?.data ?? []);
   totalPages = computed(() => this.productsQuery.data()?.totalPages ?? 1);
   loading = computed(() => this.productsQuery.isPending());
 
@@ -101,10 +107,7 @@ export class ProductsPageComponent {
     );
   });
 
-  productsFiltered = computed(() => {
-    return [...this.productsRaw()];
-  });
-
+  // Ids de los productos seleccionados para actualizar precios
   selectedIds = signal<number[]>([]);
 
   handleBulkPriceUpdate() {
@@ -117,10 +120,10 @@ export class ProductsPageComponent {
 
   handleBulkSuccess() {
     this.showBulkModal.set(false);
-    // El modal aplica los precios llamando a la API directamente,
-    // así que invalidamos el caché para recargar los productos.
+    // El modal aplica los precios llamando a la API directamente: se invalida la caché
     this.invalidateCatalog();
-    this.selectedIds.set([]); // Limpiar selección tras éxito
+    // Se limpia la selección
+    this.selectedIds.set([]);
   }
 
   onPageChange(page: number) {
@@ -146,7 +149,7 @@ export class ProductsPageComponent {
 
   confirmDeactivateProduct() {
     const product = this.productToDelete();
-    if (!product) return;
+    if (!product || this.updateMutation.isPending()) return;
 
     this.updateMutation.mutate(
       { id: product.id, product: { state: ProductState.Inactivo } },
@@ -161,7 +164,7 @@ export class ProductsPageComponent {
 
   confirmPauseProduct() {
     const product = this.productToDelete();
-    if (!product) return;
+    if (!product || this.updateMutation.isPending()) return;
 
     this.updateMutation.mutate(
       { id: product.id, product: { state: ProductState.Pausado } },
@@ -176,7 +179,7 @@ export class ProductsPageComponent {
 
   confirmDeleteProduct() {
     const product = this.productToDelete();
-    if (!product) return;
+    if (!product || this.deleteMutation.isPending()) return;
 
     // La mutación invalida el caché: se recarga desde el servidor para que la paginación se recalcule
     this.deleteMutation.mutate(product.id, {

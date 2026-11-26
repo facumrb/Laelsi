@@ -169,7 +169,9 @@ Deno.test('los formularios usan dos columnas desde sm y el pie de formulario env
 
   assert.ok(grilla.has('grid-cols-1') && grilla.has('sm:grid-cols-2'), 'form-grid-2: una columna y dos desde sm');
   assert.ok(!grilla.has('md:grid-cols-2'), 'form-grid-2 ya no espera hasta md');
-  assert.ok(pie.has('flex-wrap'), 'form-footer envuelve: en 320 px dos botones no entran en una fila');
+  assert.ok(pie.has('flex-col-reverse') && pie.has('items-stretch'), 'form-footer apila los botones a lo ancho en celulares, con el de enviar arriba');
+  assert.ok(pie.has('sm:flex-row') && pie.has('sm:items-center'), 'form-footer vuelve a una fila desde sm');
+  assert.ok(pie.has('sm:flex-wrap'), 'form-footer envuelve desde sm si los dos botones no entran en una fila');
 });
 
 Deno.test('el registro pone sus campos en dos columnas desde sm', async () => {

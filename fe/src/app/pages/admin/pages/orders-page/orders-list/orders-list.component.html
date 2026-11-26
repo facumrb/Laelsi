@@ -23,7 +23,7 @@
         } @else {
           @for (order of orders(); track order.id; let isLast = $last) {
             <tr class="admin-table-row">
-              <!-- ID Column -->
+              <!-- ID -->
               <td
                 class="admin-table-cell-first sm:col-span-1 font-bold"
                 [class.lg:rounded-bl-lg]="isLast"
@@ -41,7 +41,7 @@
                 </span>
               </td>
 
-              <!-- Client Column -->
+              <!-- Cliente -->
               <td
                 class="admin-table-cell max-sm:col-span-2 sm:max-lg:pt-6 group"
                 [class.lg:border-b-0]="isLast"
@@ -63,7 +63,7 @@
                 </div>
               </td>
 
-              <!-- Delivery Method Column -->
+              <!-- Método de entrega -->
               <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
                 <span class="admin-table-mobile-label block mb-1 text-xs"
                   >Método:</span
@@ -91,7 +91,7 @@
                     }}
                   </div>
 
-                  @if (canTranslateDelivery(order)) {
+                  @if (canChangeDelivery(order)) {
                     <button
                       (click)="
                         onUpdateDelivery.emit({
@@ -111,7 +111,7 @@
                 </div>
               </td>
 
-              <!-- Status Column -->
+              <!-- Estado -->
               <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
                 <span class="admin-table-mobile-label block mb-1 text-xs"
                   >Estado:</span
@@ -125,7 +125,7 @@
                 </div>
               </td>
 
-              <!-- Payment Method Column -->
+              <!-- Método de pago -->
               <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
                 <span class="admin-table-mobile-label block mb-1 text-xs"
                   >Pago:</span
@@ -135,7 +135,7 @@
                 </div>
               </td>
 
-              <!-- Total Column -->
+              <!-- Total -->
               <td class="admin-table-cell" [class.lg:border-b-0]="isLast">
                 <span class="admin-table-mobile-label block mb-1 text-xs"
                   >Total:</span
@@ -145,7 +145,7 @@
                 </span>
               </td>
 
-              <!-- Actions Column -->
+              <!-- Acciones -->
               <td
                 class="admin-table-cell-last"
                 [class.lg:rounded-br-lg]="isLast"
@@ -158,7 +158,7 @@
                     >Acciones:</span
                   >
 
-                  <!-- Ver Detalle Button -->
+                  <!-- Ver el detalle -->
                   <button
                     (click)="onViewDetails.emit(order)"
                     class="cursor-pointer w-32 h-8 flex items-center justify-center border border-gray-300 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors shadow-sm truncate"
@@ -167,7 +167,7 @@
                     Detalle
                   </button>
 
-                  <!-- Next Status Buttons -->
+                  <!-- Botones para pasar al estado siguiente -->
                   @for (nextState of getNextStates(order); track nextState) {
                     <button
                       (click)="
@@ -182,7 +182,7 @@
                     </button>
                   }
 
-                  <!-- Cancel Button -->
+                  <!-- Cancelar, o la etiqueta del estado final -->
                   @if (
                     order.status !== OrderState.Cancelled &&
                     order.status !== OrderState.Delivered

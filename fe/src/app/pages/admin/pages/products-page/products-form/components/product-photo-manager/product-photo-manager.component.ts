@@ -1,5 +1,6 @@
 import {
   afterNextRender,
+  ChangeDetectionStrategy,
   Component,
   computed,
   DestroyRef,
@@ -24,7 +25,7 @@ import {
 } from '@ng-icons/bootstrap-icons';
 
 @Component({
-  selector: 'app-photo-manager',
+  selector: 'app-product-photo-manager',
   imports: [NgIconComponent, ProductImageComponent],
   viewProviders: [
     provideIcons({
@@ -34,9 +35,10 @@ import {
       bootstrapChevronRight,
     }),
   ],
-  templateUrl: './photo-manager.component.html',
+  templateUrl: './product-photo-manager.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PhotoManagerComponent {
+export class ProductPhotoManagerComponent {
   private photoService = inject(ApiPhotoService);
   private alertService = inject(AlertService);
   private destroyRef = inject(DestroyRef);
@@ -52,17 +54,19 @@ export class PhotoManagerComponent {
   private galleryContent =
     viewChild.required<ElementRef<HTMLElement>>('galleryContent');
 
-  //Recibimos las fotos cuando estamos en modo Edición
+  // Fotos que ya tiene el producto (llegan en modo edición)
   initialPhotos = input<IApiProductPhoto[]>([]);
 
+  // Fotos que se muestran, en su orden actual (viejas y nuevas)
   gallery = signal<IUiPhoto[]>([]);
-  photosToDeleteIds: number[] = [];
+  // Ids de las fotos viejas que se quitaron y hay que borrar al guardar
+  photosToDeleteIds = signal<number[]>([]);
 
   // Orden original de los IDs, para detectar cambios de orden en el modo edición
   private originalOrder = signal<number[]>([]);
 
   constructor() {
-    // Escuchamos cambios en el input (cuando carga el producto en el padre)
+    // Arma la galería cuando el padre termina de cargar el producto
     effect(() => {
       const photos = this.initialPhotos();
       if (photos && photos.length > 0) {
@@ -160,10 +164,10 @@ export class PhotoManagerComponent {
 
     valid.forEach((file) => {
       const reader = new FileReader();
-      reader.onload = (e: any) => {
+      reader.onload = () => {
         const newPhoto: IUiPhoto = {
           uiId: `new-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
-          src: e.target.result,
+          src: reader.result as string,
           file: file,
           isNew: true,
         };
@@ -195,14 +199,29 @@ export class PhotoManagerComponent {
   }
 
   removePhoto(index: number) {
-    this.gallery.update((current) => {
-      const photo = current[index];
-      if (!photo.isNew && photo.originalId) {
-        this.photosToDeleteIds.push(photo.originalId);
-      }
-      return current.filter((_, i) => i !== index);
-    });
+    const photo = this.gallery()[index];
+    if (!photo) return;
+    if (!photo.isNew && photo.originalId) {
+      const id = photo.originalId;
+      this.photosToDeleteIds.update((ids) => [...ids, id]);
+    }
+    this.gallery.update((current) => current.filter((_, i) => i !== index));
   }
+
+  // true si las fotos viejas que quedan no están en su orden original
+  private orderChanged = computed(() => {
+    // Solo se miran las fotos viejas
+    const currentOrderIds = this.gallery()
+      .filter((p) => !p.isNew && p.originalId)
+      .map((p) => p.originalId!);
+    const original = this.originalOrder();
+
+    // Si la cantidad cambió, el orden también
+    if (currentOrderIds.length !== original.length) return true;
+
+    // Se comparan los ids uno por uno, en su posición
+    return currentOrderIds.some((id, i) => id !== original[i]);
+  });
 
   hasChanges = computed(() => {
     // A. ¿Hay fotos nuevas?
@@ -210,52 +229,40 @@ export class PhotoManagerComponent {
     if (hasNewPhotos) return true;
 
     // B. ¿Hay fotos marcadas para borrar?
-    if (this.photosToDeleteIds.length > 0) return true;
+    if (this.photosToDeleteIds().length > 0) return true;
 
     // C. ¿Cambió el orden?
-    const currentOrderIds = this.gallery()
-      .filter((p) => !p.isNew && p.originalId) // Solo miramos las viejas
-      .map((p) => p.originalId!);
-
-    // Comparamos arrays: Si la longitud cambió o el orden es distinto
-    if (currentOrderIds.length !== this.originalOrder().length) return true;
-
-    // Comparamos ID por ID en su posición
-    for (let i = 0; i < currentOrderIds.length; i++) {
-      if (currentOrderIds[i] !== this.originalOrder()[i]) return true;
-    }
-
-    return false;
+    return this.orderChanged();
   });
 
   // Estado de la galería que el padre guarda y restaura como borrador al ir a crear una categoría.
   getCurrentState() {
     return {
       gallery: this.gallery(),
-      photosToDeleteIds: [...this.photosToDeleteIds],
+      photosToDeleteIds: [...this.photosToDeleteIds()],
     };
   }
 
   restoreState(state: { gallery: IUiPhoto[]; photosToDeleteIds: number[] }) {
     this.gallery.set(state.gallery);
-    this.photosToDeleteIds = state.photosToDeleteIds;
+    this.photosToDeleteIds.set(state.photosToDeleteIds);
   }
 
-  // Lo llama el componente padre al guardar el producto.
-  saveChanges(productId: number): Observable<any> {
-    const tasks: Observable<any>[] = [];
+  // Lo llama el componente padre al guardar el producto
+  saveChanges(productId: number): Observable<unknown> {
+    const tasks: Observable<unknown>[] = [];
 
-    // 1. Borrar fotos
-    if (this.photosToDeleteIds.length > 0) {
-      // Creamos un array de observables de borrado
-      const deleteTasks = this.photosToDeleteIds.map((id) =>
+    // 1. Borrar las fotos que se quitaron
+    const toDelete = this.photosToDeleteIds();
+    if (toDelete.length > 0) {
+      // Un pedido de borrado por foto, todos juntos en una sola tarea
+      const deleteTasks = toDelete.map((id) =>
         this.photoService.deleteProductPhoto(id),
       );
-      // Los agregamos a la cola principal
       tasks.push(forkJoin(deleteTasks));
     }
 
-    // 2. Subir Nuevas
+    // 2. Subir las nuevas
     const newPhotos = this.gallery().filter((p) => p.isNew && p.file);
 
     if (newPhotos.length > 0) {
@@ -271,7 +278,7 @@ export class PhotoManagerComponent {
       tasks.push(this.photoService.uploadProductPhotos(productId, fd));
     }
 
-    // 3. Reordenar Viejas
+    // 3. Reordenar las viejas (solo si cambió su orden o se agregaron o quitaron fotos)
     const orderPayload = this.gallery()
       .map((photo, index) => {
         if (!photo.isNew && photo.originalId) {
@@ -281,11 +288,13 @@ export class PhotoManagerComponent {
       })
       .filter((item): item is { id: number; order: number } => item !== null);
 
-    if (orderPayload.length > 0) {
+    const needsReorder =
+      this.orderChanged() || newPhotos.length > 0 || toDelete.length > 0;
+    if (orderPayload.length > 0 && needsReorder) {
       tasks.push(this.photoService.reorderProductPhotos(orderPayload));
     }
 
-    // Si no hay tareas, devolvemos un observable vacío inmediato
+    // Sin tareas, se devuelve un observable que termina enseguida
     if (tasks.length === 0) return of(true);
 
     return forkJoin(tasks);

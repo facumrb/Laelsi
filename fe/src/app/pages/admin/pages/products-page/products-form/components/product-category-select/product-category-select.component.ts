@@ -1,12 +1,13 @@
 import {
+  ChangeDetectionStrategy,
   Component,
-  input,
   computed,
-  signal,
-  output,
   effect,
+  input,
+  output,
+  signal,
 } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl } from '@angular/forms';
 import { IApiCategory, MAX_CATEGORY_DEPTH } from '@models/category.model';
 import { aplanarCategorias } from '@shared/utils/category-tree';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -22,7 +23,6 @@ import { FieldErrorComponent } from '@shared/validators/field-error/field-error.
 @Component({
   selector: 'app-product-category-select',
   imports: [
-    ReactiveFormsModule,
     ClickOutsideDirective,
     ListboxDirective,
     NgIconComponent,
@@ -36,6 +36,7 @@ import { FieldErrorComponent } from '@shared/validators/field-error/field-error.
     }),
   ],
   templateUrl: './product-category-select.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductCategorySelectComponent {
   control = input.required<FormControl<IApiCategory | null>>();
@@ -45,8 +46,10 @@ export class ProductCategorySelectComponent {
 
   showCategoryMenu = signal(false);
 
-  // Categorías en formato árbol plano, de la raíz hasta el último nivel que pueden crear los negocios: un
-  // producto se puede cargar en cualquiera de ellas
+  /*
+  Categorías en orden de árbol, de la raíz hasta el último nivel que se puede crear: un producto
+  se puede cargar en cualquiera de ellas.
+  */
   hierarchicalCategories = computed(() =>
     aplanarCategorias(this.categories(), MAX_CATEGORY_DEPTH),
   );
@@ -54,7 +57,7 @@ export class ProductCategorySelectComponent {
   // Categoría elegida, sincronizada con el control (así se redibuja aunque el padre sea OnPush)
   value = signal<IApiCategory | null>(null);
 
-  // Nombre de la categoria seleccionada
+  // Nombre de la categoría seleccionada
   selectedCategoryName = computed(
     () => this.value()?.name ?? 'Seleccione una categoría',
   );

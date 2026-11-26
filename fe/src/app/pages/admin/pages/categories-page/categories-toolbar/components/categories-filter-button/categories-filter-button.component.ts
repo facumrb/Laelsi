@@ -1,19 +1,20 @@
-import { Component, model, signal, computed } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  model,
+  signal,
+} from '@angular/core';
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
 import { FilterButtonComponent } from '@shared/components/buttons/filter-button/filter-button.component';
 import {
   FilterAccordionComponent,
   FilterOption,
 } from '@shared/components/filter-accordion/filter-accordion.component';
-
-export type StockFilter =
-  | 'Todos'
-  | 'ConProductos'
-  | 'SinProductos'
-  | 'MasProductos'
-  | 'MenosProductos';
-
-export type StatusFilter = 'Todos' | 'Activo' | 'Inactivo';
+import {
+  CategoryStateFilter,
+  CategoryStockFilter,
+} from '@models/category.model';
 
 @Component({
   selector: 'app-categories-filter-button',
@@ -23,10 +24,11 @@ export type StatusFilter = 'Todos' | 'Activo' | 'Inactivo';
     FilterAccordionComponent,
   ],
   templateUrl: './categories-filter-button.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CategoriesFilterButtonComponent {
-  statusFilter = model.required<StatusFilter>();
-  stockFilter = model.required<StockFilter>();
+  statusFilter = model.required<CategoryStateFilter>();
+  stockFilter = model.required<CategoryStockFilter>();
 
   showFilterMenu = signal(false);
 

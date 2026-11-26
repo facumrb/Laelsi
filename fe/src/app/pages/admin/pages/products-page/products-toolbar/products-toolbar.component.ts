@@ -1,21 +1,18 @@
-import { Component, input, model, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  model,
+  output,
+} from '@angular/core';
 import { IApiCategory } from '@models/category.model';
+import { ProductStateFilter, ProductStockFilter } from '@models/product.model';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { bootstrapCurrencyDollar } from '@ng-icons/bootstrap-icons';
 import { CreateEntityButtonComponent } from '@admin/components/toolbar-components/create-entity-button/create-entity-button.component';
 import { ToolbarTitleComponent } from '@admin/components/toolbar-components/toolbar-title/toolbar-title.component';
 import { SearchInputComponent } from '@admin/components/toolbar-components/search-input/search-input.component';
 import { ProductsFilterButtonComponent } from './components/products-filter-button/products-filter-button.component';
-
-export type StockFilter =
-  | 'Todos'
-  | 'AltoStock' // Productos con stock > 10
-  | 'BajoStock' // Productos con stock <= 10
-  | 'SinStock' // Productos con stock = 0
-  | 'MasProductos' // Productos de Mayor a menor stock
-  | 'MenosProductos'; // Productos de Menor a mayor stock
-
-export type StatusFilter = 'Todos' | 'Activo' | 'Pausado' | 'Inactivo';
 
 @Component({
   selector: 'app-products-toolbar',
@@ -30,18 +27,21 @@ export type StatusFilter = 'Todos' | 'Activo' | 'Pausado' | 'Inactivo';
     bootstrapCurrencyDollar,
   }),
   templateUrl: './products-toolbar.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductsToolbarComponent {
   searchQuery = model.required<string>();
-  statusFilter = model.required<StatusFilter>();
-  stockFilter = model.required<StockFilter>();
+  statusFilter = model.required<ProductStateFilter>();
+  stockFilter = model.required<ProductStockFilter>();
+  categoryFilter = model.required<number | 'Todos'>();
+  // Categorías que se ofrecen en el filtro
+  categories = input.required<IApiCategory[]>();
+  // true si hay productos seleccionados (habilita "Actualizar precios")
   hasSelection = input<boolean>(false);
 
-  // Output para avisar que hicieron clic en "Agregar"
+  // Avisa que se pidió crear un producto
   onAdd = output<void>();
 
+  // Avisa que se pidió actualizar los precios de los productos seleccionados
   onBulkPriceUpdate = output<void>();
-
-  categoryFilter = model.required<number | 'Todos'>();
-  categories = input.required<IApiCategory[]>();
 }

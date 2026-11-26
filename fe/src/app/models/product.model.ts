@@ -13,6 +13,18 @@ export enum ProductState {
   Pausado = 'Pausado',
 }
 
+// Filtro de estado del listado de productos
+export type ProductStateFilter = ProductState | 'Todos';
+
+// Filtro y orden por stock del listado de productos
+export type ProductStockFilter =
+  | 'Todos'
+  | 'AltoStock' // Stock mayor a 10
+  | 'BajoStock' // Stock de 10 o menos
+  | 'SinStock' // Stock en 0
+  | 'MasProductos' // De mayor a menor stock
+  | 'MenosProductos'; // De menor a mayor stock
+
 export interface IApiPrice {
   id: number;
   amount: number;
@@ -132,7 +144,6 @@ export interface IProductDraftForm {
   stock?: number | null;
   state?: ProductState | null;
   category?: IApiCategory | null;
-  photos?: any[] | null;
   createdAt?: string | null;
   updatedAt?: string | null;
   deletedAt?: string | null;

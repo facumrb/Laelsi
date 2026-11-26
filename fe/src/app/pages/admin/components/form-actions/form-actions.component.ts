@@ -29,16 +29,19 @@ export class FormActionsComponent {
   // Clases extra del botón de envío
   submitClass = input<string>('px-8');
 
-  // Ruta de "Cancelar"; si es null, se emite cancelClick
+  // Texto del botón secundario
+  cancelLabel = input<string>('Cancelar');
+
+  // Ruta del botón secundario (si es null, se emite cancelClick)
   cancelUrl = input<string | null>(null);
 
-  // Deshabilita "Cancelar"
+  // Deshabilita el botón secundario
   cancelDisabled = input<boolean>(false);
 
-  // Se emite al tocar "Cancelar" cuando no hay cancelUrl
+  // Se emite al tocar el botón secundario cuando no hay cancelUrl
   cancelClick = output<void>();
 
-  // Con cancelUrl navega ahí (navigateByUrl respeta la query, si la trae); si no, avisa al padre
+  // Con cancelUrl navega ahí (navigateByUrl respeta la query, si la trae), si no avisa al padre
   onCancel() {
     const url = this.cancelUrl();
     if (url) {

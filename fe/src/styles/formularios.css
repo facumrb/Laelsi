@@ -49,8 +49,10 @@
     @apply grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3;
   }
 
+  /* En celulares los botones se apilan a lo ancho (el de enviar arriba), desde sm van en una fila */
   .form-footer {
-    @apply pt-6 flex flex-wrap items-center justify-end gap-x-4 gap-y-2 border-t border-gray-100;
+    @apply pt-6 flex flex-col-reverse items-stretch gap-3 border-t border-gray-100
+           sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-x-4 sm:gap-y-2;
   }
 
   /* ── Botones ── */

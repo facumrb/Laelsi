@@ -20,6 +20,11 @@ export enum PaymentMethod {
 // MODELOS DE LECTURA (READ / GET)
 // ==========================================================
 
+// Filtros del listado de órdenes
+export type OrderStatusFilter = OrderState | 'Todos';
+export type DeliveryMethodFilter = DeliveryMethod | 'Todos';
+export type PaymentMethodFilter = PaymentMethod | 'Todos';
+
 export interface IApiOrderLine {
   id: number;
   quantity: number;

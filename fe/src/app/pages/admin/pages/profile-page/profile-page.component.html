@@ -11,17 +11,13 @@
       (ngSubmit)="onSubmit()"
       class="form-body"
     >
-      <!-- Photo Selection -->
+      <!-- Foto -->
       <div class="mb-4 pb-4">
         <h2 class="form-section-title">Foto de Perfil</h2>
         <div class="w-full">
           <app-photo-manager
             [currentPhoto]="currentPhoto()"
-            [userFullName]="
-              formEditProfile.get('name')?.value +
-              ' ' +
-              formEditProfile.get('lastName')?.value
-            "
+            [userFullName]="fullName()"
           ></app-photo-manager>
         </div>
       </div>
@@ -29,7 +25,7 @@
       <div class="mb-2">
         <h2 class="form-section-title">Información de Contacto</h2>
         <div class="form-grid-2">
-          <!-- Name -->
+          <!-- Nombre -->
           <div>
             <label for="name" class="form-label">
               Nombre <span class="text-red-500">*</span>
@@ -49,7 +45,7 @@
             </div>
           </div>
 
-          <!-- Last Name -->
+          <!-- Apellido -->
           <div>
             <label for="lastName" class="form-label">
               Apellido <span class="text-red-500">*</span>
@@ -94,7 +90,7 @@
             </div>
           </div>
 
-          <!-- Phone -->
+          <!-- Teléfono -->
           <div>
             <label for="phone" class="form-label">
               Teléfono <span class="text-red-500">*</span>
@@ -121,7 +117,7 @@
       <div class="mb-4">
         <h2 class="form-section-title">Credenciales de Acceso</h2>
         <div class="form-grid-2">
-          <!-- Username -->
+          <!-- Usuario -->
           <div>
             <label for="username" class="form-label">
               Nombre de Usuario <span class="text-red-500">*</span>
@@ -201,8 +197,11 @@
 
       <app-form-actions
         submitLabel="Actualizar Perfil"
-        [submitDisabled]="!formEditProfile.valid || !hasRealChanges"
-        [cancelDisabled]="!hasRealChanges"
+        [submitDisabled]="
+          !formEditProfile.valid || !hasRealChanges() || saving()
+        "
+        cancelLabel="Descartar cambios"
+        [cancelDisabled]="!hasRealChanges() || saving()"
         (cancelClick)="discardChanges()"
       />
     </form>

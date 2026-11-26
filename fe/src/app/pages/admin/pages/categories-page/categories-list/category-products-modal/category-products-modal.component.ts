@@ -1,12 +1,17 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { IApiCategory } from '@models/category.model';
 import { IProductSummary } from '@models/product.model';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   bootstrapSearch,
-  bootstrapBoxSeam,
   bootstrapPencilSquare,
-  bootstrapArrowRightShort,
 } from '@ng-icons/bootstrap-icons';
 import {
   ModalShellComponent,
@@ -28,12 +33,11 @@ import { ProductoDelSubarbol } from '@shared/utils/category-tree';
   viewProviders: [
     provideIcons({
       bootstrapSearch,
-      bootstrapBoxSeam,
       bootstrapPencilSquare,
-      bootstrapArrowRightShort,
     }),
   ],
   templateUrl: './category-products-modal.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CategoryProductsModalComponent {
   category = input.required<IApiCategory>();

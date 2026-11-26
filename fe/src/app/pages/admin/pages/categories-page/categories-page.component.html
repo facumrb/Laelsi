@@ -4,7 +4,7 @@
     [(statusFilter)]="statusFilter"
     [(stockFilter)]="stockFilter"
     (onAdd)="handleNavigateToCreate()"
-    (onOrderChange)="loadCategories()"
+    (onOrderChange)="refreshCategories()"
   />
 
   <app-categories-list
@@ -31,7 +31,8 @@
 
   @if (categoryBlocked()) {
     <app-category-delete-blocked-modal
-      [category]="categoryBlocked()!"
+      [category]="categoryBlocked()!.category"
+      [reason]="categoryBlocked()!.reason"
       (close)="categoryBlocked.set(null)"
     />
   }

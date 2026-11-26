@@ -1,4 +1,11 @@
-import { Component, model, signal, input, computed } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  model,
+  signal,
+} from '@angular/core';
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
 import { ListboxDirective } from '@shared/directives/listbox.directive';
 import { FilterButtonComponent } from '@shared/components/buttons/filter-button/filter-button.component';
@@ -7,7 +14,7 @@ import {
   bootstrapChevronDown,
   bootstrapCheckLg,
 } from '@ng-icons/bootstrap-icons';
-import { StockFilter, StatusFilter } from '../../products-toolbar.component';
+import { ProductStateFilter, ProductStockFilter } from '@models/product.model';
 import { IApiCategory, MAX_CATEGORY_DEPTH } from '@models/category.model';
 import { aplanarCategorias } from '@shared/utils/category-tree';
 import {
@@ -26,10 +33,11 @@ import {
   ],
   viewProviders: [provideIcons({ bootstrapChevronDown, bootstrapCheckLg })],
   templateUrl: './products-filter-button.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductsFilterButtonComponent {
-  statusFilter = model.required<StatusFilter>();
-  stockFilter = model.required<StockFilter>();
+  statusFilter = model.required<ProductStateFilter>();
+  stockFilter = model.required<ProductStockFilter>();
   categoryFilter = model.required<number | 'Todos'>();
   categories = input.required<IApiCategory[]>();
 
@@ -52,9 +60,12 @@ export class ProductsFilterButtonComponent {
     { value: 'MenosProductos', label: 'Menor a mayor' },
   ];
 
-  // Categorías en formato árbol plano, de la raíz hasta el último nivel que pueden crear los negocios
-  hierarchicalCategories = computed(() => aplanarCategorias(this.categories(), MAX_CATEGORY_DEPTH));
+  // Categorías en orden de árbol, de la raíz hasta el último nivel que se puede crear
+  hierarchicalCategories = computed(() =>
+    aplanarCategorias(this.categories(), MAX_CATEGORY_DEPTH),
+  );
 
+  // Nombre de la categoría elegida en el filtro
   selectedCategoryName = computed(() => {
     const selected = this.categoryFilter();
     if (selected === 'Todos') {

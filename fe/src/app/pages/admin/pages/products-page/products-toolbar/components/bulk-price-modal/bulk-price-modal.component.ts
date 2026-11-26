@@ -1,16 +1,17 @@
 import {
+  ChangeDetectionStrategy,
   Component,
+  computed,
+  effect,
   inject,
   input,
   output,
   signal,
-  computed,
-  effect,
-  OnDestroy,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CurrencyPipe } from '@angular/common';
-import { Subject, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { catchError, EMPTY, of, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   bootstrapEye,
@@ -30,6 +31,14 @@ import { ClickOutsideDirective } from '@shared/directives/click-outside.directiv
 import { ListboxDirective } from '@shared/directives/listbox.directive';
 import { PriceAdjustmentInputDirective } from '@shared/directives/price-adjustment-input.directive';
 import { ModalShellComponent } from '@shared/components/modals/modal-shell/modal-shell.component';
+
+// Parámetros de un pedido de vista previa
+interface PreviewRequest {
+  ids: number[];
+  type: BulkAdjustmentType;
+  val: number;
+  rule: string;
+}
 
 @Component({
   selector: 'app-bulk-price-modal',
@@ -52,8 +61,9 @@ import { ModalShellComponent } from '@shared/components/modals/modal-shell/modal
     }),
   ],
   templateUrl: './bulk-price-modal.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BulkPriceModalComponent implements OnDestroy {
+export class BulkPriceModalComponent {
   private apiService = inject(ApiProductService);
   private alertService = inject(AlertService);
 
@@ -93,15 +103,45 @@ export class BulkPriceModalComponent implements OnDestroy {
     }
   });
 
+  // Valores escritos en el campo, antes de esperar a que se deje de escribir
   private _valueSubject = new Subject<number>();
-  private _valueSub: Subscription;
+
+  // Pedidos de vista previa (null: no hay nada que previsualizar)
+  private previewRequests = new Subject<PreviewRequest | null>();
 
   constructor() {
     // Espera 500 ms de inactividad antes de actualizar el signal
-    this._valueSub = this._valueSubject
-      .pipe(debounceTime(500), distinctUntilChanged())
+    this._valueSubject
+      .pipe(debounceTime(500), distinctUntilChanged(), takeUntilDestroyed())
       .subscribe((val) => {
         this.adjustmentValue.set(val);
+      });
+
+    /*
+    Cada pedido nuevo cancela el anterior (switchMap): así una respuesta lenta de valores viejos
+    no pisa la vista previa de los actuales.
+    */
+    this.previewRequests
+      .pipe(
+        switchMap((req) => {
+          if (!req) {
+            this.previewData.set([]);
+            this.loadingPreview.set(false);
+            return EMPTY;
+          }
+          this.loadingPreview.set(true);
+          return (
+            this.apiService
+              .previewBulkPriceChange(req.ids, req.type, req.val, req.rule)
+              // El aviso del error lo muestra el interceptor
+              .pipe(catchError(() => of(null)))
+          );
+        }),
+        takeUntilDestroyed(),
+      )
+      .subscribe((data) => {
+        if (data) this.previewData.set(data);
+        this.loadingPreview.set(false);
       });
 
     // Recalcula la vista previa al cambiar los productos, el tipo, el valor o la regla
@@ -111,16 +151,10 @@ export class BulkPriceModalComponent implements OnDestroy {
       const val = this.adjustmentValue();
       const rule = this.roundingRule();
 
-      if (ids.length > 0 && val !== 0) {
-        this.getPreview(ids, type, val, rule);
-      } else {
-        this.previewData.set([]);
-      }
+      this.previewRequests.next(
+        ids.length > 0 && val !== 0 ? { ids, type, val, rule } : null,
+      );
     });
-  }
-
-  ngOnDestroy() {
-    this._valueSub.unsubscribe();
   }
 
   setAdjustmentType(type: BulkAdjustmentType) {
@@ -144,24 +178,6 @@ export class BulkPriceModalComponent implements OnDestroy {
     this.showRoundingOptions.set(false);
   }
 
-  private getPreview(
-    ids: number[],
-    type: BulkAdjustmentType,
-    val: number,
-    rule: string,
-  ) {
-    this.loadingPreview.set(true);
-    this.apiService.previewBulkPriceChange(ids, type, val, rule).subscribe({
-      next: (data) => {
-        this.previewData.set(data);
-        this.loadingPreview.set(false);
-      },
-      error: (err) => {
-        this.loadingPreview.set(false);
-      },
-    });
-  }
-
   onApply() {
     if (this.allInvalid()) return;
     this.loadingApply.set(true);
@@ -176,13 +192,13 @@ export class BulkPriceModalComponent implements OnDestroy {
       .subscribe({
         next: (res) => {
           this.alertService.toast(
-            `${res.updatedCount} productos actualizados.`,
+            `${res.updatedCount} ${res.updatedCount === 1 ? 'producto actualizado' : 'productos actualizados'}.`,
             'success',
           );
           this.loadingApply.set(false);
           this.success.emit();
         },
-        error: (err) => {
+        error: () => {
           this.loadingApply.set(false);
         },
       });

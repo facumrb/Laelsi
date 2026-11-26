@@ -2,15 +2,15 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   inject,
   OnInit,
   signal,
   viewChild,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Location } from '@angular/common';
 import { FormPageHeaderComponent } from '@admin/components/form-page-header/form-page-header.component';
 import { FormActionsComponent } from '@admin/components/form-actions/form-actions.component';
 import { PasswordInputComponent } from '@shared/components/inputs/password/password-input/password-input.component';
@@ -23,6 +23,7 @@ import {
   IUpdateClient,
   UserRole,
   FiscalCondition,
+  UserState,
 } from '@models/user.model';
 import { IApiUserPhoto } from '@models/photo.model';
 import { HttpClient } from '@angular/common/http';
@@ -65,7 +66,7 @@ export class ClientsFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private routeActive = inject(ActivatedRoute);
-  private location = inject(Location);
+  private destroyRef = inject(DestroyRef);
   private clientService = inject(ApiClientService);
   private alertService = inject(AlertService);
   private http = inject(HttpClient);
@@ -79,10 +80,11 @@ export class ClientsFormComponent implements OnInit {
   // Hay un guardado en curso: evita el doble envío
   saving = signal(false);
 
-  // Signal para guardar el estado inicial del formulario
+  // Valor inicial del formulario, para detectar cambios al editar
   initialFormValue = signal<string>('');
 
-  // Auditoría (signals de auditoria solo lectura)
+  // Datos de auditoría (solo lectura)
+  initialState = signal<UserState>('Activo');
   auditCreatedAt = signal<string | null>(null);
   auditUpdatedAt = signal<string | null>(null);
   auditStatusDate = signal<string | null>(null);
@@ -180,15 +182,16 @@ export class ClientsFormComponent implements OnInit {
 
   ngOnInit() {
     this.checkEditMode();
+    // La contraseña es obligatoria al crear y opcional al editar
     if (!this.isEditMode()) {
-      this.formClient.get('password')?.addValidators(Validators.required);
-      this.formClient
-        .get('confirmPassword')
-        ?.addValidators(Validators.required);
+      this.formClient.controls.password.addValidators(Validators.required);
+      this.formClient.controls.confirmPassword.addValidators(
+        Validators.required,
+      );
     }
   }
 
-  checkEditMode() {
+  private checkEditMode() {
     const id = this.routeActive.snapshot.paramMap.get('id');
     if (id) {
       this.loadClientData(+id);
@@ -217,51 +220,54 @@ export class ClientsFormComponent implements OnInit {
     );
   }
 
-  loadClientData(id: number) {
+  private loadClientData(id: number) {
     this.clientId.set(id);
     this.isEditMode.set(true);
 
-    this.clientService.getClientById(id).subscribe({
-      next: (client) => {
-        this.currentPhoto.set(client.photo);
+    this.clientService
+      .getClientById(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (client) => {
+          this.currentPhoto.set(client.photo);
 
-        this.formClient.patchValue({
-          name: client.name ?? '',
-          lastName: client.lastName ?? '',
-          dni: client.dni ?? '',
-          phone: client.phone ?? '',
-          username: client.username,
-          email: client.email,
+          this.formClient.patchValue({
+            name: client.name ?? '',
+            lastName: client.lastName ?? '',
+            dni: client.dni ?? '',
+            phone: client.phone ?? '',
+            username: client.username,
+            email: client.email,
 
-          // Mapeo de campos extra
-          cuit: client.cuit || '',
-          fiscalCondition:
-            client.fiscalCondition || FiscalCondition.ConsumidorFinal,
-          street: client.street || '',
-          streetNumber: client.streetNumber
-            ? client.streetNumber.toString()
-            : '',
-          city: client.city || '',
-          province: client.province || '',
-          postalCode: client.postalCode || '',
-          floor: client.floor || '',
-          apartment: client.apartment || '',
-        });
+            // Mapeo de campos extra
+            cuit: client.cuit || '',
+            fiscalCondition:
+              client.fiscalCondition || FiscalCondition.ConsumidorFinal,
+            street: client.street || '',
+            streetNumber: client.streetNumber
+              ? client.streetNumber.toString()
+              : '',
+            city: client.city || '',
+            province: client.province || '',
+            postalCode: client.postalCode || '',
+            floor: client.floor || '',
+            apartment: client.apartment || '',
+          });
 
-        // Auditoría
-        this.auditCreatedAt.set(client.createdAt);
-        this.auditUpdatedAt.set(client.updatedAt);
-        this.auditStatusDate.set(client.deletedAt || client.createdAt);
+          this.auditCreatedAt.set(client.createdAt);
+          this.auditUpdatedAt.set(client.updatedAt);
+          this.auditStatusDate.set(client.deletedAt || client.createdAt);
+          this.initialState.set(client.state);
 
-        this.setupAsyncValidators(id);
+          this.setupAsyncValidators(id);
 
-        const formSnapshot = this.formClient.getRawValue();
-        this.initialFormValue.set(JSON.stringify(formSnapshot));
-      },
-      error: () => {
-        this.location.back();
-      },
-    });
+          const formSnapshot = this.formClient.getRawValue();
+          this.initialFormValue.set(JSON.stringify(formSnapshot));
+        },
+        error: () => {
+          this.router.navigate(['/admin/clients']);
+        },
+      });
   }
 
   // Valor actual del formulario como señal
@@ -274,7 +280,7 @@ export class ClientsFormComponent implements OnInit {
     () => `${this.formValue().name ?? ''} ${this.formValue().lastName ?? ''}`,
   );
 
-  // Indica si hay algo para guardar: al crear siempre; al editar, si cambió el formulario o la foto
+  // Indica si hay algo para guardar: al crear siempre, al editar si cambió el formulario o la foto
   hasRealChanges = computed(() => {
     if (!this.isEditMode()) return true;
     const formHasChanges =
@@ -300,7 +306,6 @@ export class ClientsFormComponent implements OnInit {
     const optionalText = (value: string) =>
       editing ? value : value || undefined;
 
-    // Construimos el objeto base
     const baseData = {
       name: formValue.name,
       lastName: formValue.lastName,
@@ -334,35 +339,21 @@ export class ClientsFormComponent implements OnInit {
         }
       : baseData;
 
-    // Guardar datos
     const clientId = this.clientId();
     const request$: Observable<IApiClient> =
       editing && clientId
         ? this.clientService.updateClient(clientId, clientData as IUpdateClient)
         : this.clientService.addClient(clientData as ICreateClient);
 
-    // Procesar foto y guardar
     // Si falla la foto se muestra solo el aviso: sweetalert2 muestra un toast por vez
     let photoFailed = false;
 
     request$
       .pipe(
         switchMap((res) => {
-          const userId = editing ? clientId : res.id;
-
-          if (!userId) {
-            console.error(
-              'No se pudo obtener el ID del usuario para subir la foto',
-              res,
-            );
-            return of(null);
-          }
-
-          if (this.photoManager().hasChanges()) {
-            return this.savePhotoOrWarn(userId, () => (photoFailed = true));
-          }
-
-          return of(null);
+          if (!this.photoManager().hasChanges()) return of(null);
+          const userId = clientId ?? res.id;
+          return this.savePhotoOrWarn(userId, () => (photoFailed = true));
         }),
         finalize(() => this.saving.set(false)),
       )
@@ -372,14 +363,17 @@ export class ClientsFormComponent implements OnInit {
           if (!photoFailed) {
             this.alertService.toast('Guardado exitosamente', 'success');
           }
-          this.router.navigate(['/admin/clients']); // Redirección al listado de clientes
+          this.router.navigate(['/admin/clients']);
         },
         // El aviso del error lo muestra el interceptor
         error: () => undefined,
       });
   }
 
-  // Sube o borra la foto. Si falla, el cliente ya quedó guardado: se avisa, se llama a onFail y se sigue igual
+  /*
+  Sube o borra la foto. Si falla, el cliente ya quedó guardado: se avisa, se llama a onFail y se
+  sigue igual.
+  */
   private savePhotoOrWarn(userId: number, onFail: () => void) {
     return this.photoManager()
       .saveChanges(userId)

@@ -2,15 +2,15 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   inject,
   OnInit,
   signal,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Location } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormPageHeaderComponent } from '@admin/components/form-page-header/form-page-header.component';
 import { FormActionsComponent } from '@admin/components/form-actions/form-actions.component';
@@ -50,22 +50,22 @@ export class CategoriesFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private routeActive = inject(ActivatedRoute);
-  private location = inject(Location);
+  private destroyRef = inject(DestroyRef);
   private categoryService = inject(ApiCategoryService);
   private alertService = inject(AlertService);
   private draftService = inject(ProductDraftService);
   private http = inject(HttpClient);
   private invalidateCatalog = injectInvalidateCatalog();
 
-  // Estados
   isEditMode = signal(false);
   categoryId = signal<number | null>(null);
   // Hay un guardado en curso: evita el doble envío
   saving = signal(false);
-  initialFormValue = signal<string>(''); // Para hasRealChanges
-  initialState = signal<string>('Activo'); // Para AuditInfoComponent
+  // Valor inicial del formulario, para detectar cambios al editar
+  initialFormValue = signal<string>('');
 
-  // Auditoría (signals de auditoria solo lectura)
+  // Datos de auditoría (solo lectura)
+  initialState = signal<CategoryState>(CategoryState.Activo);
   auditCreatedAt = signal<string | null>(null);
   auditUpdatedAt = signal<string | null>(null);
   auditStatusDate = signal<string | null>(null);
@@ -106,53 +106,54 @@ export class CategoriesFormComponent implements OnInit {
     this.checkEditMode();
   }
 
-  checkEditMode() {
+  private checkEditMode() {
     const id = this.routeActive.snapshot.paramMap.get('id');
     if (id) {
       this.categoryId.set(+id);
       this.isEditMode.set(true);
       this.loadCategory(+id);
     } else {
-      // Validación async para creación
+      // El nombre no se puede repetir
       this.formCategory.controls.name.addAsyncValidators(
         FormUtils.uniqueFieldValidator('Category', 'name', this.http),
       );
     }
   }
 
-  loadCategory(id: number) {
-    this.categoryService.getCategoryById(id).subscribe({
-      next: (category) => {
-        this.formCategory.patchValue({
-          name: category.name,
-          description: category.description || '',
-          state: category.state,
-          parentId: category.parentId ?? category.parent?.id ?? null,
-        });
+  private loadCategory(id: number) {
+    this.categoryService
+      .getCategoryById(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (category) => {
+          this.formCategory.patchValue({
+            name: category.name,
+            description: category.description || '',
+            state: category.state,
+            parentId: category.parentId ?? category.parent?.id ?? null,
+          });
 
-        // Auditoría
-        this.auditCreatedAt.set(category.createdAt);
-        this.auditUpdatedAt.set(category.updatedAt);
-        this.auditStatusDate.set(category.deletedAt || category.createdAt);
+          this.auditCreatedAt.set(category.createdAt);
+          this.auditUpdatedAt.set(category.updatedAt);
+          this.auditStatusDate.set(category.deletedAt || category.createdAt);
 
-        this.initialState.set(category.state);
+          this.initialState.set(category.state);
 
-        // Snapshot para comparación
-        const formSnapshot = this.formCategory.getRawValue();
-        this.initialFormValue.set(JSON.stringify(formSnapshot));
+          const formSnapshot = this.formCategory.getRawValue();
+          this.initialFormValue.set(JSON.stringify(formSnapshot));
 
-        // Validación async para edición
-        this.formCategory.controls.name.setAsyncValidators(
-          FormUtils.uniqueFieldValidator('Category', 'name', this.http, id),
-        );
-      },
-      error: () => {
-        this.location.back();
-      },
-    });
+          // El nombre no se puede repetir (salvo con la propia categoría)
+          this.formCategory.controls.name.setAsyncValidators(
+            FormUtils.uniqueFieldValidator('Category', 'name', this.http, id),
+          );
+        },
+        error: () => {
+          this.router.navigate(['/admin/categories']);
+        },
+      });
   }
 
-  // Lógica de "Cambios Reales": al crear siempre; al editar, si cambió el formulario
+  // Indica si hay algo para guardar: al crear siempre, al editar si cambió el formulario
   hasRealChanges = computed(() => {
     if (!this.isEditMode()) return true;
     return JSON.stringify(this.formValue()) !== this.initialFormValue();
@@ -160,12 +161,14 @@ export class CategoriesFormComponent implements OnInit {
 
   // Destino de "Cancelar" y "Volver": el producto si se vino desde él (con borrador), si no el listado
   cancelUrl(): string {
+    return this.productDraftToReturn()?.returnUrl ?? '/admin/categories';
+  }
+
+  // Borrador del producto desde el que se abrió el formulario (null si no se vino desde uno)
+  private productDraftToReturn() {
     const fromProduct =
       this.routeActive.snapshot.queryParamMap.get('fromProduct');
-    const draft = this.draftService.getDraft();
-    return fromProduct === 'true' && draft
-      ? draft.returnUrl
-      : '/admin/categories';
+    return fromProduct === 'true' ? this.draftService.getDraft() : null;
   }
 
   onSubmit() {
@@ -192,7 +195,7 @@ export class CategoriesFormComponent implements OnInit {
 
     request$.pipe(finalize(() => this.saving.set(false))).subscribe({
       next: (response: IApiCategory) => {
-        // La categoría cambió: invalidamos el caché para que los listados se recarguen
+        // La categoría cambió: los listados se vuelven a pedir
         this.invalidateCatalog();
 
         this.alertService.toast(
@@ -200,12 +203,9 @@ export class CategoriesFormComponent implements OnInit {
           'success',
         );
 
-        // Si venimos de la creación de producto, volvemos allí usando la returnUrl
-        const fromProduct =
-          this.routeActive.snapshot.queryParamMap.get('fromProduct');
-        const draft = this.draftService.getDraft();
-
-        if (fromProduct === 'true' && draft && !this.isEditMode()) {
+        // Si se vino desde un producto, se vuelve a él con la categoría nueva ya elegida
+        const draft = this.productDraftToReturn();
+        if (draft && !this.isEditMode()) {
           this.router.navigateByUrl(
             `${draft.returnUrl}?newCategoryId=${response.id}`,
           );

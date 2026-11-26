@@ -15,6 +15,17 @@ export enum CategoryState {
  */
 export const MAX_CATEGORY_DEPTH = 4;
 
+// Filtro de estado del listado de categorías
+export type CategoryStateFilter = CategoryState | 'Todos';
+
+// Filtro y orden por cantidad de productos del listado de categorías
+export type CategoryStockFilter =
+  | 'Todos'
+  | 'ConProductos'
+  | 'SinProductos'
+  | 'MasProductos'
+  | 'MenosProductos';
+
 export interface IApiCategory {
   id: number;
   name: string;

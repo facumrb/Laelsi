@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
@@ -6,10 +7,13 @@ import {
   signal,
 } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { IApiClient, UserStateFilter } from '@models/user.model';
+import {
+  FiscalConditionFilter,
+  IApiClient,
+  UserStateFilter,
+} from '@models/user.model';
 import { AlertService } from '@services/alert.service';
 import { ClientsToolbarComponent } from './clients-toolbar/clients-toolbar.component';
-import { FiscalConditionFilter } from './clients-toolbar/components/clients-filter-button/clients-filter-button.component';
 import { ClientsListComponent } from './clients-list/clients-list.component';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { ConfirmDeleteModalComponent } from '@admin/components/confirm-delete-modal/confirm-delete-modal.component';
@@ -29,6 +33,7 @@ import {
     NombrePersonaPipe,
   ],
   templateUrl: './clients-page.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClientsPageComponent {
   private alertService = inject(AlertService);
@@ -41,8 +46,10 @@ export class ClientsPageComponent {
   fiscalFilter = signal<FiscalConditionFilter>('Todos');
   stateFilter = signal<UserStateFilter>('Todos');
 
-  // Al cambiar un filtro se vuelve a la página 1; la primera vez se toma la página de la URL.
-  // La página forma parte de la queryKey, así que TanStack Query pide los datos solo.
+  /*
+  Al cambiar un filtro se vuelve a la página 1. La primera vez se toma la página de la URL.
+  La página forma parte de la queryKey, así que TanStack Query pide los datos solo.
+  */
   currentPage = linkedSignal<unknown, number>({
     source: () => [this.searchQuery(), this.fiscalFilter(), this.stateFilter()],
     computation: (_filters, previous) =>
@@ -97,10 +104,10 @@ export class ClientsPageComponent {
     this.clientToDelete.set(client);
   }
 
-  // Conserva sus datos y su historial de pedidos; no puede ingresar ni hacer pedidos hasta reactivarlo.
+  // Conserva sus datos y su historial de pedidos, pero no puede ingresar ni hacer pedidos hasta reactivarlo.
   confirmDeactivateClient() {
     const client = this.clientToDelete();
-    if (!client) return;
+    if (!client || this.setStateMutation.isPending()) return;
 
     this.setStateMutation.mutate(
       { id: client.id, state: 'Inactivo' },
@@ -114,6 +121,7 @@ export class ClientsPageComponent {
   }
 
   reactivateClient(client: IApiClient) {
+    if (this.setStateMutation.isPending()) return;
     this.setStateMutation.mutate(
       { id: client.id, state: 'Activo' },
       {

@@ -1,5 +1,5 @@
 import { Component, input, computed, signal } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl } from '@angular/forms';
 import { IApiCategory, MAX_CATEGORY_DEPTH } from '@models/category.model';
 import { aplanarCategorias } from '@shared/utils/category-tree';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -14,7 +14,6 @@ import { FieldErrorComponent } from '@shared/validators/field-error/field-error.
 @Component({
   selector: 'app-category-parent-select',
   imports: [
-    ReactiveFormsModule,
     ClickOutsideDirective,
     ListboxDirective,
     NgIconComponent,
@@ -36,34 +35,39 @@ export class CategoryParentSelectComponent {
 
   showParentMenu = signal(false);
 
-  // Computada para categorías que pueden ser padres (en formato árbol plano)
+  // Categorías que se pueden elegir como madre (en orden de árbol)
   eligibleParents = computed(() => {
     const currentId = this.currentCategoryId();
     const allCats = this.categories();
+    const childrenOf = (catId: number) =>
+      allCats.filter((c) => (c.parentId ?? c.parent?.id ?? null) === catId);
 
     let validCats = allCats;
+    // Niveles que tiene debajo la categoría que se edita (0 si no tiene hijas)
+    let subtreeHeight = 0;
     if (currentId) {
-      // Función recursiva para obtener todos los descendientes
-      const getDescendantIds = (catId: number): number[] => {
-        const children = allCats.filter(
-          (c) => (c.parentId ?? c.parent?.id ?? null) === catId,
-        );
-        let ids = children.map((c) => c.id);
-        children.forEach((c) => {
-          ids = [...ids, ...getDescendantIds(c.id)];
-        });
-        return ids;
+      const descendants = new Set<number>();
+      const walk = (catId: number, level: number) => {
+        for (const child of childrenOf(catId)) {
+          descendants.add(child.id);
+          subtreeHeight = Math.max(subtreeHeight, level);
+          walk(child.id, level + 1);
+        }
       };
+      walk(currentId, 1);
 
-      const descendants = getDescendantIds(currentId);
+      // Ni ella misma ni sus descendientes pueden ser su madre
       validCats = allCats.filter(
-        (c) => c.id !== currentId && !descendants.includes(c.id),
+        (c) => c.id !== currentId && !descendants.has(c.id),
       );
     }
 
-    // Listado "jerarquizado" ordenado por Categorías y Subcategorías. Una categoría que ya está en el último
-    // nivel no puede tener hijas, así que no se ofrece como madre: por eso se llega hasta un nivel antes.
-    return aplanarCategorias(validCats, MAX_CATEGORY_DEPTH - 1);
+    /*
+    La madre tiene que dejar lugar para la categoría y todos sus niveles de abajo: con la madre en
+    profundidad p, la última hija queda en p + 1 + subtreeHeight, que no puede pasar de
+    MAX_CATEGORY_DEPTH. Sin hijas, se llega hasta el penúltimo nivel.
+    */
+    return aplanarCategorias(validCats, MAX_CATEGORY_DEPTH - 1 - subtreeHeight);
   });
 
   // Nombre del padre seleccionado

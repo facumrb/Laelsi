@@ -20,6 +20,9 @@ export type UserState = 'Activo' | 'Inactivo';
 // Filtro de las pestañas de Administradores y Clientes
 export type UserStateFilter = UserState | 'Todos';
 
+// Filtro de condición fiscal del listado de clientes
+export type FiscalConditionFilter = FiscalCondition | 'Todos';
+
 // ==========================================================
 // MODELOS DE LECTURA (READ / GET)
 // ==========================================================

@@ -3,12 +3,20 @@
     <table class="table-base">
       <thead class="table-header">
         <tr>
-          <th class="admin-table-header-cell w-[33%] rounded-tl-lg">Categoría</th>
+          <th class="admin-table-header-cell w-[33%] rounded-tl-lg">
+            Categoría
+          </th>
           <th class="admin-table-header-cell w-[20%]">Descripción</th>
-          <th class="admin-table-header-cell text-center whitespace-nowrap w-[18%]">
+          <th
+            class="admin-table-header-cell text-center whitespace-nowrap w-[18%]"
+          >
             Productos
           </th>
-          <th class="admin-table-header-cell text-center whitespace-nowrap w-[13%]">Estado</th>
+          <th
+            class="admin-table-header-cell text-center whitespace-nowrap w-[13%]"
+          >
+            Estado
+          </th>
           <th
             class="admin-table-header-cell text-center whitespace-nowrap w-[16%] rounded-tr-lg"
           >
@@ -20,7 +28,7 @@
       <tbody class="admin-table-body" [attr.aria-busy]="loading()">
         @if (loading()) {
           @for (row of skeletonRows; track row) {
-            <tr app-table-skeleton [columns]="6"></tr>
+            <tr app-table-skeleton [columns]="5"></tr>
           }
         } @else {
           @for (
@@ -210,7 +218,7 @@
           } @empty {
             <tr
               app-table-empty-state
-              [colspan]="6"
+              [colspan]="5"
               [isFilterActive]="isFilterActive()"
               emptyMessage="Sin categorías cargadas"
             ></tr>

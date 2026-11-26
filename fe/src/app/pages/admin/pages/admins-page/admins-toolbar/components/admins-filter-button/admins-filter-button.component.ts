@@ -1,4 +1,10 @@
-import { Component, model, signal, computed } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  model,
+  signal,
+} from '@angular/core';
 import { ClickOutsideDirective } from '@shared/directives/click-outside.directive';
 import { FilterButtonComponent } from '@shared/components/buttons/filter-button/filter-button.component';
 import {
@@ -15,6 +21,7 @@ import { UserStateFilter } from '@models/user.model';
     FilterAccordionComponent,
   ],
   templateUrl: './admins-filter-button.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminsFilterButtonComponent {
   stateFilter = model.required<UserStateFilter>();

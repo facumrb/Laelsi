@@ -323,7 +323,7 @@
         <app-audit-info
           [createdAt]="auditCreatedAt()"
           [updatedAt]="auditUpdatedAt()"
-          [isActive]="true"
+          [isActive]="initialState() === 'Activo'"
           [statusDate]="auditStatusDate()"
         />
       }

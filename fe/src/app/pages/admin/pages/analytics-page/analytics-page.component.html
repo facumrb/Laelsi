@@ -21,6 +21,11 @@
             data-skeleton="stat"
             class="h-8 w-28 animate-pulse rounded bg-gray-200"
           ></div>
+        } @else if (failed()) {
+          <p class="text-2xl font-bold text-gray-400">
+            <span aria-hidden="true">—</span>
+            <span class="sr-only">Sin datos</span>
+          </p>
         } @else {
           <p class="text-2xl font-bold text-gray-900">
             {{ totalRevenue() | currency: "ARS" : "symbol-narrow" : "1.0-0" }}
@@ -46,6 +51,11 @@
             data-skeleton="stat"
             class="h-8 w-16 animate-pulse rounded bg-gray-200"
           ></div>
+        } @else if (failed()) {
+          <p class="text-2xl font-bold text-gray-400">
+            <span aria-hidden="true">—</span>
+            <span class="sr-only">Sin datos</span>
+          </p>
         } @else {
           <p class="text-2xl font-bold text-gray-900">{{ totalOrders() }}</p>
         }
@@ -69,6 +79,11 @@
             data-skeleton="stat"
             class="h-8 w-16 animate-pulse rounded bg-gray-200"
           ></div>
+        } @else if (failed()) {
+          <p class="text-2xl font-bold text-gray-400">
+            <span aria-hidden="true">—</span>
+            <span class="sr-only">Sin datos</span>
+          </p>
         } @else {
           <p class="text-2xl font-bold text-gray-900">{{ totalClients() }}</p>
         }
@@ -92,6 +107,11 @@
             data-skeleton="stat"
             class="h-8 w-16 animate-pulse rounded bg-gray-200"
           ></div>
+        } @else if (failed()) {
+          <p class="text-2xl font-bold text-gray-400">
+            <span aria-hidden="true">—</span>
+            <span class="sr-only">Sin datos</span>
+          </p>
         } @else {
           <p class="text-2xl font-bold text-gray-900">{{ totalProducts() }}</p>
         }
@@ -273,9 +293,9 @@
               let i = $index
             ) {
               @if (product.totalSold > 0) {
-                <div
+                <a
                   [routerLink]="['/admin/products/edit', product.id]"
-                  class="flex items-center gap-4 px-6 py-3 min-h-21 hover:bg-gray-50 transition-colors cursor-pointer group"
+                  class="flex items-center gap-4 px-6 py-3 min-h-21 hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   <div
                     class="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold text-xs shrink-0"
@@ -292,7 +312,7 @@
                           ? product.photos[0].fileName
                           : null
                       "
-                      [altText]="product.name"
+                      altText=""
                       containerClass="w-full h-full bg-transparent"
                     />
                   </div>
@@ -318,7 +338,7 @@
                       >{{ product.totalSold }}</span
                     >
                   </div>
-                </div>
+                </a>
               }
             }
           </div>

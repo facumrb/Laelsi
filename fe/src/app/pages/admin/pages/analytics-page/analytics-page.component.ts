@@ -1,8 +1,13 @@
-import { Component, computed, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  signal,
+} from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { FormatDatePipe } from '@shared/pipes/format-date.pipe';
 import { NombrePersonaPipe } from '@shared/pipes/nombre-persona.pipe';
-import { RouterModule } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   bootstrapBoxSeam,
@@ -24,7 +29,7 @@ import { ActivableDirective } from '@shared/directives/activable.directive';
   selector: 'app-analytics-page',
   imports: [
     ActivableDirective,
-    RouterModule,
+    RouterLink,
     NgIconComponent,
     CurrencyPipe,
     FormatDatePipe,
@@ -45,35 +50,41 @@ import { ActivableDirective } from '@shared/directives/activable.directive';
     }),
   ],
   templateUrl: './analytics-page.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AnalyticsPageComponent {
-  // Capa de queries (TanStack Query): el servidor entrega el resumen ya calculado
-  // (totales, últimas órdenes y más vendidos), sin traer listados completos para contarlos acá
+  /*
+  Capa de queries (TanStack Query): el servidor entrega el resumen ya calculado (totales, últimas
+  órdenes y más vendidos), sin traer listados completos para contarlos acá.
+  */
   private summaryQuery = injectAnalyticsSummaryQuery();
 
-  // Estados de la pantalla. Si la carga falla, el errorInterceptor ya avisó con un toast;
-  // el error solo se muestra cuando no hay ningún dato anterior que seguir mostrando.
+  /*
+  Estados de la pantalla. Si la carga falla, el errorInterceptor ya avisó con un toast: el error
+  solo se muestra cuando no hay ningún dato anterior que seguir mostrando.
+  */
   loading = computed(() => this.summaryQuery.isPending());
   failed = computed(
     () => this.summaryQuery.isError() && !this.summaryQuery.data(),
   );
   protected readonly skeletonRows = [0, 1, 2, 3, 4];
 
-  private summary = computed(() => this.summaryQuery.data());
+  totalRevenue = computed(() => this.summaryQuery.data()?.totalRevenue ?? 0);
+  totalOrders = computed(() => this.summaryQuery.data()?.totalOrders ?? 0);
+  totalProducts = computed(() => this.summaryQuery.data()?.totalProducts ?? 0);
+  totalClients = computed(() => this.summaryQuery.data()?.totalClients ?? 0);
 
-  totalRevenue = computed(() => this.summary()?.totalRevenue ?? 0);
-  totalOrders = computed(() => this.summary()?.totalOrders ?? 0);
-  totalProducts = computed(() => this.summary()?.totalProducts ?? 0);
-  totalClients = computed(() => this.summary()?.totalClients ?? 0);
-
-  recentOrders = computed(() => this.summary()?.recentOrders ?? []);
+  recentOrders = computed(() => this.summaryQuery.data()?.recentOrders ?? []);
   bestSellingProducts = computed(
-    () => this.summary()?.bestSellingProducts ?? [],
+    () => this.summaryQuery.data()?.bestSellingProducts ?? [],
   );
 
+  // Orden que se muestra en el modal de detalle
   selectedOrder = signal<IApiOrder | null>(null);
+  // Id de la orden que se está por cancelar (abre el modal de cancelar)
   orderIdToCancel = signal<number | null>(null);
 
+  // Vuelve a pedir el resumen después de un error
   retry() {
     this.summaryQuery.refetch();
   }
@@ -86,12 +97,17 @@ export class AnalyticsPageComponent {
     this.selectedOrder.set(null);
   }
 
+  /*
+  Cierra los modales y vuelve a pedir el resumen: injectInvalidateCatalog (que llama el modal de
+  cancelar) solo invalida productos y categorías, no las analíticas.
+  */
   handleOrderCancelled() {
     this.orderIdToCancel.set(null);
     this.selectedOrder.set(null);
     this.summaryQuery.refetch();
   }
 
+  // Clases del badge de cada estado
   getOrderStatusColor(status: OrderState): string {
     switch (status) {
       case OrderState.Pending:

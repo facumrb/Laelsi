@@ -1,12 +1,12 @@
-import { Component, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, model } from '@angular/core';
 import { SearchInputComponent } from '@admin/components/toolbar-components/search-input/search-input.component';
 import { ToolbarTitleComponent } from '@admin/components/toolbar-components/toolbar-title/toolbar-title.component';
 import {
-  OrdersFilterButtonComponent,
-  OrderStatusFilter,
   DeliveryMethodFilter,
+  OrderStatusFilter,
   PaymentMethodFilter,
-} from './components/orders-filter-button/orders-filter-button.component';
+} from '@models/order.model';
+import { OrdersFilterButtonComponent } from './components/orders-filter-button/orders-filter-button.component';
 
 @Component({
   selector: 'app-orders-toolbar',
@@ -16,6 +16,7 @@ import {
     OrdersFilterButtonComponent,
   ],
   templateUrl: './orders-toolbar.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrdersToolbarComponent {
   searchQuery = model.required<string>();

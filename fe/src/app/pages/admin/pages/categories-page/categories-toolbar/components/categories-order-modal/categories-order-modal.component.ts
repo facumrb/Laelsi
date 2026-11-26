@@ -1,13 +1,16 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  ChangeDetectionStrategy,
   Component,
+  computed,
+  DestroyRef,
   effect,
   inject,
   model,
   output,
   signal,
-  computed,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   CdkDragDrop,
   DragDropModule,
@@ -30,6 +33,7 @@ import { ModalShellComponent } from '@shared/components/modals/modal-shell/modal
   ],
   providers: [provideIcons({ bootstrapChevronDown })],
   templateUrl: './categories-order-modal.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CategoriesOrderModalComponent {
   isOpen = model.required<boolean>();
@@ -37,6 +41,7 @@ export class CategoriesOrderModalComponent {
 
   private apiService = inject(ApiCategoryService);
   private alertService = inject(AlertService);
+  private destroyRef = inject(DestroyRef);
 
   categories = signal<IApiCategory[]>([]);
   initialCategories = signal<string>('');
@@ -62,32 +67,34 @@ export class CategoriesOrderModalComponent {
 
   loadCategories() {
     this.isLoading.set(true);
-    // Obtenemos jerárquicamente el árbol de categorías (la profundidad máxima permitida viene manejada por el backend)
-    this.apiService.getCategoryTree().subscribe({
-      next: (data) => {
-        // Por defecto el servicio devuelve todas las categorías (Activas o Inactivas) previniendo que ninguna se pierda durante el reordenamiento.
-        this.categories.set(data);
-        this.initialCategories.set(JSON.stringify(data));
-        this.isLoading.set(false);
-      },
-      error: () => {
-        this.isLoading.set(false);
-      },
-    });
+    /*
+    Se pide el árbol completo, activas e inactivas, para que ninguna quede afuera del orden. La
+    profundidad máxima la limita el servidor.
+    */
+    this.apiService
+      .getCategoryTree()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          this.categories.set(data);
+          this.initialCategories.set(JSON.stringify(data));
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.isLoading.set(false);
+        },
+      });
   }
 
-  toggleExpand(id: number, event?: Event) {
-    if (event) {
-      event.stopPropagation();
-    }
+  toggleExpand(id: number) {
     const current = this.expandedMap();
     this.expandedMap.set({ ...current, [id]: !current[id] });
   }
 
   drop(event: CdkDragDrop<IApiCategory[]>, list: IApiCategory[]) {
-    // Intercambia posicionalmente la categoría arrastrada asegurando que se quede dentro de su nivel de origen
+    // Mueve la categoría dentro de su mismo nivel (cada nivel es su propia lista)
     moveItemInArray(list, event.previousIndex, event.currentIndex);
-    // Forzamos actualización del signal colocando una nueva referencia para que se disparen los computeds
+    // La lista se modificó en el lugar: una referencia nueva hace que los computed se recalculen
     this.categories.set([...this.categories()]);
   }
 
@@ -112,16 +119,19 @@ export class CategoriesOrderModalComponent {
 
     traverse(this.categories(), null);
 
-    this.apiService.updateCategoryOrders(updates).subscribe({
-      next: () => {
-        this.isSaving.set(false);
-        this.alertService.toast('Órdenes guardados correctamente', 'success');
-        this.onSaved.emit();
-        this.close();
-      },
-      error: () => {
-        this.isSaving.set(false);
-      },
-    });
+    this.apiService
+      .updateCategoryOrders(updates)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.isSaving.set(false);
+          this.alertService.toast('Órdenes guardados correctamente', 'success');
+          this.onSaved.emit();
+          this.close();
+        },
+        error: () => {
+          this.isSaving.set(false);
+        },
+      });
   }
 }

@@ -9,6 +9,9 @@ import { bootstrapExclamationTriangle } from '@ng-icons/bootstrap-icons';
 import { ModalShellComponent } from '@shared/components/modals/modal-shell/modal-shell.component';
 import { IApiCategory } from '@models/category.model';
 
+// Por qué no se puede borrar la categoría
+export type DeleteBlockReason = 'productos' | 'subcategorias';
+
 @Component({
   selector: 'app-category-delete-blocked-modal',
   imports: [ModalShellComponent],
@@ -22,6 +25,7 @@ import { IApiCategory } from '@models/category.model';
 })
 export class CategoryDeleteBlockedModalComponent {
   category = input.required<IApiCategory>();
+  reason = input<DeleteBlockReason>('productos');
   close = output<void>();
 
   onClose(): void {

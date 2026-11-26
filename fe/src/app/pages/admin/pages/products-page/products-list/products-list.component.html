@@ -44,26 +44,30 @@
       </thead>
 
       <tbody class="admin-table-body" [attr.aria-busy]="loading()">
-        <!-- Este checkbox en el global para la CARD -->
+        <!-- "Seleccionar todos" de la vista de tarjetas (por debajo de lg) -->
         <tr
           class="flex items-center bg-white border border-gray-200 shadow-sm rounded-lg mb-4 px-4 py-3 lg:hidden"
         >
-          <div class="relative flex items-center justify-center shrink-0 mr-3">
-            <input
-              type="checkbox"
-              aria-label="Seleccionar todos los productos"
-              class="peer appearance-none w-5 h-5 shrink-0 border-2 border-gray-300 rounded cursor-pointer transition-all checked:border-black checked:bg-transparent"
-              [checked]="isAllSelected()"
-              (change)="toggleSelectAll()"
-            />
-            <ng-icon
-              name="bootstrapCheck"
-              class="absolute text-black text-sm pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity duration-200"
-            ></ng-icon>
-          </div>
-          <span class="text-gray-600 font-medium text-sm">
-            Seleccionar todos los productos
-          </span>
+          <td colspan="7" class="contents">
+            <div
+              class="relative flex items-center justify-center shrink-0 mr-3"
+            >
+              <input
+                type="checkbox"
+                aria-label="Seleccionar todos los productos"
+                class="peer appearance-none w-5 h-5 shrink-0 border-2 border-gray-300 rounded cursor-pointer transition-all checked:border-black checked:bg-transparent"
+                [checked]="isAllSelected()"
+                (change)="toggleSelectAll()"
+              />
+              <ng-icon
+                name="bootstrapCheck"
+                class="absolute text-black text-sm pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity duration-200"
+              ></ng-icon>
+            </div>
+            <span class="text-gray-600 font-medium text-sm">
+              Seleccionar todos los productos
+            </span>
+          </td>
         </tr>
 
         @if (loading()) {

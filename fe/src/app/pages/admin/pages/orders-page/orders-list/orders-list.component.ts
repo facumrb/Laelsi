@@ -1,4 +1,9 @@
-import { Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+} from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { IApiOrder, OrderState, DeliveryMethod } from '@models/order.model';
@@ -11,6 +16,7 @@ import {
   bootstrapClock,
   bootstrapCheck2All,
   bootstrapArrowRight,
+  bootstrapInbox,
 } from '@ng-icons/bootstrap-icons';
 
 import { TableEmptyStateComponent } from '@admin/components/table-components/table-empty-state/table-empty-state.component';
@@ -40,11 +46,14 @@ import { ActivableDirective } from '@shared/directives/activable.directive';
     bootstrapClock,
     bootstrapCheck2All,
     bootstrapArrowRight,
+    bootstrapInbox,
   }),
   templateUrl: './orders-list.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrdersListComponent {
   orders = input.required<IApiOrder[]>();
+  // true cuando hay algún filtro activo (cambia el mensaje de la lista vacía)
   isFilterActive = input<boolean>(false);
 
   // true mientras la página todavía no tiene datos que mostrar
@@ -56,9 +65,10 @@ export class OrdersListComponent {
   onCancel = output<number>();
   onViewDetails = output<IApiOrder>();
 
-  OrderState = OrderState;
-  DeliveryMethod = DeliveryMethod;
+  protected readonly OrderState = OrderState;
+  protected readonly DeliveryMethod = DeliveryMethod;
 
+  // Clases del badge de cada estado
   getStatusColor(status: OrderState): string {
     switch (status) {
       case OrderState.Pending:
@@ -76,6 +86,7 @@ export class OrdersListComponent {
     }
   }
 
+  // Clases del botón que lleva la orden a ese estado
   getActionColor(status: OrderState): string {
     switch (status) {
       case OrderState.Paid:
@@ -89,6 +100,7 @@ export class OrdersListComponent {
     }
   }
 
+  // Ícono de cada estado
   getStatusIcon(status: OrderState): string {
     switch (status) {
       case OrderState.Pending:
@@ -106,6 +118,11 @@ export class OrdersListComponent {
     }
   }
 
+  /*
+  Estados a los que puede pasar la orden según su método de entrega, sin contar "Cancelado" (que
+  tiene su propio botón). Tiene que coincidir con TRANSITIONS_ENVIO y TRANSITIONS_RETIRO de
+  supabase/functions/orders/index.ts.
+  */
   getNextStates(order: IApiOrder): OrderState[] {
     if (
       order.status === OrderState.Cancelled ||
@@ -137,7 +154,8 @@ export class OrdersListComponent {
     }
   }
 
-  canTranslateDelivery(order: IApiOrder): boolean {
+  // El método de entrega solo se puede cambiar mientras la orden está pendiente o pagada
+  canChangeDelivery(order: IApiOrder): boolean {
     return [OrderState.Pending, OrderState.Paid].includes(order.status);
   }
 }

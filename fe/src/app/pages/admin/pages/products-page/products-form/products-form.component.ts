@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   effect,
   inject,
   Injector,
@@ -11,7 +12,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, finalize, of, switchMap, tap } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -28,7 +29,7 @@ import {
   IProductDraft,
   ProductState,
 } from '@models/product.model';
-import { PhotoManagerComponent } from './components/photo-manager/photo-manager.component';
+import { ProductPhotoManagerComponent } from './components/product-photo-manager/product-photo-manager.component';
 import { ProductCategorySelectComponent } from './components/product-category-select/product-category-select.component';
 import { IApiProductPhoto } from '@models/photo.model';
 import { NumericInputDirective } from '@shared/directives/numeric-input.directive';
@@ -44,7 +45,7 @@ import { StateSelectComponent } from '@admin/components/state-select/state-selec
   imports: [
     ReactiveFormsModule,
     NumericInputDirective,
-    PhotoManagerComponent,
+    ProductPhotoManagerComponent,
     AuditInfoComponent,
     FormPageHeaderComponent,
     FormActionsComponent,
@@ -61,6 +62,7 @@ export class ProductsFormComponent implements OnInit {
   private router = inject(Router);
   private routeActive = inject(ActivatedRoute);
   private injector = inject(Injector);
+  private destroyRef = inject(DestroyRef);
   private productService = inject(ApiProductService);
   private alertService = inject(AlertService);
   private draftService = inject(ProductDraftService);
@@ -77,15 +79,13 @@ export class ProductsFormComponent implements OnInit {
   // true cuando el formulario ya tiene sus valores iniciales (producto del servidor y borrador)
   private formReady = signal(false);
 
-  formUtils = FormUtils;
-
   // Acceso al hijo para llamar a su método de guardar
-  photoManager = viewChild.required(PhotoManagerComponent);
+  photoManager = viewChild.required(ProductPhotoManagerComponent);
 
   // Fotos iniciales para pasar al hijo
   initialPhotos = signal<IApiProductPhoto[]>([]);
 
-  // Estados
+  // Categorías que se ofrecen en el selector
   categories = computed(() => this.categoriesQuery.data() ?? []);
   isEditMode = signal(false);
   productId = signal<number | null>(null);
@@ -93,9 +93,10 @@ export class ProductsFormComponent implements OnInit {
   // Hay un guardado en curso: evita el doble envío
   saving = signal(false);
 
-  // Señal para guardar el estado inicial del formulario
+  // Valor inicial del formulario, para detectar cambios al editar
   initialFormValue = signal<string>('');
-  initialState = signal<string>('Activo');
+  // Estado con el que se cargó el producto (para la auditoría)
+  initialState = signal<ProductState>(ProductState.Activo);
 
   // Estados que se ofrecen, en el orden en que se muestran
   readonly stateOptions = [
@@ -104,7 +105,7 @@ export class ProductsFormComponent implements OnInit {
     ProductState.Inactivo,
   ];
 
-  // Auditoría (signals de auditoria solo lectura)
+  // Datos de auditoría (solo lectura)
   auditCreatedAt = signal<string | null>(null);
   auditUpdatedAt = signal<string | null>(null);
   auditStatusDate = signal<string | null>(null);
@@ -164,7 +165,6 @@ export class ProductsFormComponent implements OnInit {
     ],
     state: [ProductState.Activo, [Validators.required]],
     category: [null as IApiCategory | null, [Validators.required]],
-    photos: [[] as unknown[]], // array vacío por defecto por si no se cargan fotos
   });
 
   // Valor actual del formulario como señal
@@ -172,7 +172,10 @@ export class ProductsFormComponent implements OnInit {
     initialValue: this.formProduct.getRawValue(),
   });
 
-  // Indica si hay algo para guardar: al crear siempre; al editar, si cambió el formulario o las fotos
+  /*
+  Indica si hay algo para guardar: al crear siempre, al editar si cambió el formulario o las
+  fotos.
+  */
   hasRealChanges = computed(() => {
     if (!this.isEditMode()) return true;
     const formHasChanges =
@@ -209,19 +212,21 @@ export class ProductsFormComponent implements OnInit {
   }
 
   // Aplica el borrador (si lo hay) y marca el formulario como listo
-  restoreDraftIfAny() {
+  private restoreDraftIfAny() {
     const draft = this.draft;
     this.draft = null;
 
     if (draft) {
-      const { photos, ...formValueWithoutPhotos } = draft.formValue;
       this.formProduct.patchValue(
-        formValueWithoutPhotos as Partial<
+        draft.formValue as Partial<
           ReturnType<typeof this.formProduct.getRawValue>
         >,
       );
 
-      // Después del render, para que photo-manager ya haya procesado initialPhotos y no pise la galería
+      /*
+      Después del render, para que el gestor de fotos ya haya procesado initialPhotos y no pise
+      la galería.
+      */
       afterNextRender(
         () => {
           this.photoManager().restoreState({
@@ -259,57 +264,60 @@ export class ProductsFormComponent implements OnInit {
     });
   }
 
-  // Verificar si venimos a Editar (por URL)
-  checkEditMode() {
+  // Si la URL trae un id, carga el producto para editarlo
+  private checkEditMode() {
     const id = this.routeActive.snapshot.paramMap.get('id');
     if (id) {
       this.productId.set(+id);
       this.isEditMode.set(true);
 
-      this.productService.getProductById(+id).subscribe({
-        next: (product) => {
-          const currentPrice = product.prices?.find((p) => p.isCurrent);
+      this.productService
+        .getProductById(+id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (product) => {
+            const currentPrice = product.prices?.find((p) => p.isCurrent);
 
-          this.formProduct.patchValue({
-            name: product.name,
-            description: product.description,
-            price: currentPrice ? currentPrice.amount : null,
-            brand: product.brand,
-            stock: product.stock,
-            state: product.state,
-            totalSold: product.totalSold,
-            category: product.category,
-          });
+            this.formProduct.patchValue({
+              name: product.name,
+              description: product.description,
+              price: currentPrice ? currentPrice.amount : null,
+              brand: product.brand,
+              stock: product.stock,
+              state: product.state,
+              totalSold: product.totalSold,
+              category: product.category,
+            });
 
-          // Auditoría
-          this.auditCreatedAt.set(product.createdAt);
-          this.auditUpdatedAt.set(product.updatedAt);
-          this.auditStatusDate.set(product.deletedAt || product.createdAt);
+            // Datos de auditoría
+            this.auditCreatedAt.set(product.createdAt);
+            this.auditUpdatedAt.set(product.updatedAt);
+            this.auditStatusDate.set(product.deletedAt || product.createdAt);
 
-          const formSnapshot = this.formProduct.getRawValue();
+            // Valor inicial, para detectar cambios
+            const formSnapshot = this.formProduct.getRawValue();
+            this.initialFormValue.set(JSON.stringify(formSnapshot));
+            this.initialState.set(product.state);
 
-          this.initialFormValue.set(JSON.stringify(formSnapshot));
-          this.initialState.set(product.state);
+            // El nombre no se puede repetir (salvo con el propio producto)
+            this.formProduct.controls.name.setAsyncValidators(
+              FormUtils.uniqueFieldValidator('Product', 'name', this.http, +id),
+            );
 
-          // Validación async para edición
-          this.formProduct.controls.name.setAsyncValidators(
-            FormUtils.uniqueFieldValidator('Product', 'name', this.http, +id),
-          );
+            // Las fotos se pasan al gestor de fotos
+            if (product.photos) {
+              this.initialPhotos.set(product.photos);
+            }
 
-          // PASAMOS LAS FOTOS AL HIJO
-          if (product.photos) {
-            this.initialPhotos.set(product.photos);
-          }
-
-          // El borrador va después de los datos del servidor, para que no lo pisen
-          this.restoreDraftIfAny();
-        },
-        error: () => {
-          this.router.navigate(['/admin/products']);
-        },
-      });
+            // El borrador va después de los datos del servidor, para que no lo pisen
+            this.restoreDraftIfAny();
+          },
+          error: () => {
+            this.router.navigate(['/admin/products']);
+          },
+        });
     } else {
-      // Validación async para creación
+      // El nombre no se puede repetir
       this.formProduct.controls.name.addAsyncValidators(
         FormUtils.uniqueFieldValidator('Product', 'name', this.http),
       );
@@ -317,7 +325,7 @@ export class ProductsFormComponent implements OnInit {
   }
 
   goToCreateCategory() {
-    // Guardar borrador
+    // Se guarda un borrador del formulario y de las fotos
     const photoState = this.photoManager().getCurrentState();
     this.draftService.setDraft({
       formValue: this.formProduct.getRawValue(),
@@ -328,7 +336,7 @@ export class ProductsFormComponent implements OnInit {
       returnUrl: this.router.url,
     });
 
-    // Navegar con query param para saber que venimos de producto
+    // El parámetro avisa al formulario de categorías que se vino desde un producto
     this.router.navigate(['/admin/categories/create'], {
       queryParams: { fromProduct: 'true' },
     });
@@ -360,7 +368,7 @@ export class ProductsFormComponent implements OnInit {
       category: formValue.category.id,
     };
 
-    // GUARDAR/ACTUALIZAR PRODUCTO (PADRE)
+    // Guarda o actualiza el producto
     const productId = this.productId();
     const productObs =
       this.isEditMode() && productId
@@ -372,13 +380,15 @@ export class ProductsFormComponent implements OnInit {
 
     productObs
       .pipe(
-        // El producto ya se guardó: invalidamos el caché para que los listados
-        // se recarguen (aunque después falle la subida de las fotos)
+        /*
+        El producto ya se guardó: se invalida la caché para que los listados se recarguen (aunque
+        después falle la subida de las fotos).
+        */
         tap(() => this.invalidateCatalog()),
-        // DELEGAR FOTOS AL HIJO
+        // Después se guardan las fotos, con el gestor de fotos
         switchMap((responseProduct) =>
           this.savePhotosOrWarn(
-            this.isEditMode() ? productId! : responseProduct.id,
+            productId ?? responseProduct.id,
             () => (photosFailed = true),
           ),
         ),
@@ -398,7 +408,10 @@ export class ProductsFormComponent implements OnInit {
       });
   }
 
-  // Guarda las fotos. Si falla, el producto ya quedó guardado: se avisa, se llama a onFail y se sigue igual.
+  /*
+  Guarda las fotos. Si falla, el producto ya quedó guardado: se avisa, se llama a onFail y se
+  sigue igual.
+  */
   private savePhotosOrWarn(productId: number, onFail: () => void) {
     return this.photoManager()
       .saveChanges(productId)

@@ -2,20 +2,25 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   inject,
   OnInit,
   signal,
   viewChild,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Location } from '@angular/common';
 import { switchMap, of, EMPTY, finalize, catchError, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { ApiAdminService } from '@services/api-services/api-admin.service';
 import { AuthService } from '@services/auth.service';
-import { IApiAdmin, ICreateAdmin, UserRole } from '@models/user.model';
+import {
+  IApiAdmin,
+  ICreateAdmin,
+  UserRole,
+  UserState,
+} from '@models/user.model';
 import { UserSession } from '@models/auth.model';
 import { IApiUserPhoto } from '@models/photo.model';
 import { AlertService } from '@services/alert.service';
@@ -59,7 +64,7 @@ export class AdminsFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private routeActive = inject(ActivatedRoute);
-  private location = inject(Location);
+  private destroyRef = inject(DestroyRef);
   private adminService = inject(ApiAdminService);
   private authService = inject(AuthService);
   private alertService = inject(AlertService);
@@ -75,10 +80,13 @@ export class AdminsFormComponent implements OnInit {
   // Hay un guardado en curso: evita el doble envío
   saving = signal(false);
 
-  // Signal para guardar el estado inicial del formulario
+  // Valor inicial del formulario, para detectar cambios al editar
   initialFormValue = signal<string>('');
+  // Email con el que se cargó el formulario (para saber si se lo cambió)
+  private initialEmail = signal('');
 
-  // Auditoría (signals de auditoria solo lectura)
+  // Datos de auditoría (solo lectura)
+  initialState = signal<UserState>('Activo');
   auditCreatedAt = signal<string | null>(null);
   auditUpdatedAt = signal<string | null>(null);
   auditStatusDate = signal<string | null>(null);
@@ -121,8 +129,6 @@ export class AdminsFormComponent implements OnInit {
           Validators.pattern(FormUtils.phonePattern),
         ],
       ],
-
-      // --- CUENTA DE USUARIO ---
       username: [
         '',
         [
@@ -141,7 +147,6 @@ export class AdminsFormComponent implements OnInit {
           Validators.pattern(FormUtils.emailPattern),
         ],
       ],
-      // Password: Obligatorio al crear, opcional al editar
       password: [
         '',
         [
@@ -160,13 +165,16 @@ export class AdminsFormComponent implements OnInit {
 
   ngOnInit() {
     this.checkEditMode();
+    // La contraseña es obligatoria al crear y opcional al editar
     if (!this.isEditMode()) {
-      this.formAdmin.get('password')?.addValidators(Validators.required);
-      this.formAdmin.get('confirmPassword')?.addValidators(Validators.required);
+      this.formAdmin.controls.password.addValidators(Validators.required);
+      this.formAdmin.controls.confirmPassword.addValidators(
+        Validators.required,
+      );
     }
   }
 
-  checkEditMode() {
+  private checkEditMode() {
     const id = this.routeActive.snapshot.paramMap.get('id');
     if (id) {
       this.loadAdminData(+id);
@@ -187,36 +195,40 @@ export class AdminsFormComponent implements OnInit {
     );
   }
 
-  loadAdminData(id: number) {
+  private loadAdminData(id: number) {
     this.adminId.set(id);
     this.isEditMode.set(true);
 
-    this.adminService.getAdminById(id).subscribe({
-      next: (admin) => {
-        this.currentPhoto.set(admin.photo);
-        this.formAdmin.patchValue({
-          name: admin.name ?? '',
-          lastName: admin.lastName ?? '',
-          dni: admin.dni ?? '',
-          phone: admin.phone ?? '',
-          username: admin.username,
-          email: admin.email,
-        });
+    this.adminService
+      .getAdminById(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (admin) => {
+          this.currentPhoto.set(admin.photo);
+          this.formAdmin.patchValue({
+            name: admin.name ?? '',
+            lastName: admin.lastName ?? '',
+            dni: admin.dni ?? '',
+            phone: admin.phone ?? '',
+            username: admin.username,
+            email: admin.email,
+          });
 
-        // Auditoría
-        this.auditCreatedAt.set(admin.createdAt);
-        this.auditUpdatedAt.set(admin.updatedAt);
-        this.auditStatusDate.set(admin.deletedAt || admin.createdAt);
+          this.initialEmail.set(admin.email);
+          this.initialState.set(admin.state);
+          this.auditCreatedAt.set(admin.createdAt);
+          this.auditUpdatedAt.set(admin.updatedAt);
+          this.auditStatusDate.set(admin.deletedAt || admin.createdAt);
 
-        this.setupAsyncValidators(id);
+          this.setupAsyncValidators(id);
 
-        const formSnapshot = this.formAdmin.getRawValue();
-        this.initialFormValue.set(JSON.stringify(formSnapshot));
-      },
-      error: () => {
-        this.location.back();
-      },
-    });
+          const formSnapshot = this.formAdmin.getRawValue();
+          this.initialFormValue.set(JSON.stringify(formSnapshot));
+        },
+        error: () => {
+          this.router.navigate(['/admin/admins']);
+        },
+      });
   }
 
   // Valor actual del formulario como señal
@@ -237,17 +249,6 @@ export class AdminsFormComponent implements OnInit {
     return formHasChanges || this.photoManager().hasChanges();
   });
 
-  // Email con el que se cargó el formulario (para saber si se lo cambió)
-  private get originalEmail(): string {
-    try {
-      return (
-        (JSON.parse(this.initialFormValue()) as { email?: string }).email ?? ''
-      );
-    } catch {
-      return '';
-    }
-  }
-
   async onSubmit() {
     if (this.saving()) return;
     if (!this.formAdmin.valid) {
@@ -258,8 +259,10 @@ export class AdminsFormComponent implements OnInit {
 
     const formValue = this.formAdmin.getRawValue();
 
-    // Si el administrador se edita A SÍ MISMO, cambiar el email o la contraseña exige confirmar con la
-    // contraseña actual (el servidor lo pide). Editar a otro administrador no la necesita.
+    /*
+    Si el administrador se edita A SÍ MISMO, cambiar el email o la contraseña exige confirmar con
+    la contraseña actual (el servidor lo pide). Editar a otro administrador no la necesita.
+    */
     const editingOwnAccount =
       this.isEditMode() &&
       this.adminId() === this.authService.currentUser()?.id;
@@ -269,7 +272,7 @@ export class AdminsFormComponent implements OnInit {
         editingOwnAccount,
         changesEmail:
           formValue.email.trim().toLowerCase() !==
-          this.originalEmail.trim().toLowerCase(),
+          this.initialEmail().trim().toLowerCase(),
         changesPassword: !!formValue.password,
       });
     } catch {
@@ -302,7 +305,6 @@ export class AdminsFormComponent implements OnInit {
       ...(currentPassword ? { currentPassword } : {}),
     };
 
-    // Guardar datos del Usuario
     const adminId = this.adminId();
     const userRequest$: Observable<IApiAdmin> =
       this.isEditMode() && adminId
@@ -312,12 +314,13 @@ export class AdminsFormComponent implements OnInit {
     // Si falla la foto se muestra solo el aviso: sweetalert2 muestra un toast por vez
     let photoFailed = false;
 
-    // Una vez guardado el usuario, procesamos la foto
     userRequest$
       .pipe(
-        // Cambiar la contraseña cierra todas las sesiones de ESA cuenta (Supabase Auth, por seguridad). Si es la
-        // propia, se vuelve a iniciar sesión ANTES de cualquier otro pedido (la foto, la lista), que si no recibirían
-        // un 401 y mostrarían "Tu sesión ya no es válida" tras un cambio que salió bien.
+        /*
+        Cambiar la contraseña cierra todas las sesiones de ESA cuenta (Supabase Auth, por seguridad).
+        Si es la propia, se vuelve a iniciar sesión ANTES de cualquier otro pedido (la foto, la lista),
+        que si no recibirían un 401 y mostrarían "Tu sesión ya no es válida" tras un cambio que salió bien.
+        */
         switchMap((res) => {
           if (!(editingOwnAccount && formValue.password)) return of(res);
           return this.authService
@@ -339,20 +342,9 @@ export class AdminsFormComponent implements OnInit {
             );
         }),
         switchMap((res) => {
-          const userId = this.isEditMode() ? this.adminId() : res.id;
-
-          if (!userId) {
-            console.error(
-              'No se pudo obtener el ID del usuario para subir la foto',
-            );
-            return of(null);
-          }
-
-          if (this.photoManager().hasChanges()) {
-            return this.savePhotoOrWarn(userId, () => (photoFailed = true));
-          }
-
-          return of(null);
+          if (!this.photoManager().hasChanges()) return of(null);
+          const userId = this.adminId() ?? res.id;
+          return this.savePhotoOrWarn(userId, () => (photoFailed = true));
         }),
         finalize(() => this.saving.set(false)),
       )
@@ -362,7 +354,10 @@ export class AdminsFormComponent implements OnInit {
           if (!photoFailed) {
             this.alertService.toast('Guardado exitosamente', 'success');
           }
-          // Si el administrador editó su propio perfil, se actualizan nombre, apellido y foto en la sesión para que el encabezado los muestre sin recargar.
+          /*
+          Si el administrador editó su propio perfil, se actualizan nombre, apellido y foto en la
+          sesión para que el encabezado los muestre sin recargar.
+          */
           const currentUserId = this.authService.currentUser()?.id;
           const editedId = this.adminId();
 
@@ -372,16 +367,12 @@ export class AdminsFormComponent implements OnInit {
               lastName: formValue.lastName,
             };
 
-            // Caso A: Se subió una foto nueva
             if (photoResponse?.id) {
               sessionUpdates.photo = photoResponse;
-            }
-            // Caso B: No hay foto nueva devuelta, PERO se marcó para borrar
-            else if (this.photoManager().deletePending()) {
+            } else if (this.photoManager().deletePending()) {
               sessionUpdates.photo = null;
             }
 
-            // Actualizamos el AuthService (y por ende el Navbar)
             this.authService.updateCurrentUser(sessionUpdates);
           }
           this.router.navigate(['/admin/admins']);
@@ -391,7 +382,10 @@ export class AdminsFormComponent implements OnInit {
       });
   }
 
-  // Sube o borra la foto. Si falla, el usuario ya quedó guardado: se avisa, se llama a onFail y se sigue como si no hubiera foto nueva
+  /*
+  Sube o borra la foto. Si falla, el usuario ya quedó guardado: se avisa, se llama a onFail y se
+  sigue como si no hubiera foto nueva.
+  */
   private savePhotoOrWarn(userId: number, onFail: () => void) {
     return this.photoManager()
       .saveChanges(userId)
