@@ -9,7 +9,7 @@ Trabajo práctico de Desarrollo de Software (UTN FRRo), según las consignas de 
 | Sitio              | [laelsi.com.ar](https://laelsi.com.ar)               |
 | Propuesta          | [docs/catedra/proposal.md](docs/catedra/proposal.md) |
 | Documentación      | [docs/README.md](docs/README.md)                     |
-| Video demostración | Enlace pendiente (VIDEO_URL_PENDIENTE)               |
+| Video demostración | [youtu.be/9UGRXFrRTUs](https://youtu.be/9UGRXFrRTUs) |
 
 ## Integrantes
 

@@ -4,7 +4,7 @@
 
 ### Video
 
-Video demostración: enlace pendiente (VIDEO_URL_PENDIENTE)
+Video demostración: [youtu.be/9UGRXFrRTUs](https://youtu.be/9UGRXFrRTUs)
 
 ## Grupo
 
@@ -19,7 +19,7 @@ Monorepo: [fullstack app](https://github.com/facumrb/Laelsi)
 
 - [frontend](https://github.com/facumrb/Laelsi/tree/main/fe) (Angular)
 - [backend actual](https://github.com/facumrb/Laelsi/tree/main/supabase) (Supabase Edge Functions + PostgreSQL)
-- [backend anterior](https://github.com/facumrb/Laelsi/tree/main/be) (Express + MikroORM + MySQL, en desuso)
+- [backend anterior](https://github.com/facumrb/Laelsi/tree/main/be) (Express + MikroORM + MySQL)
 
 ### Tecnologías
 
@@ -32,7 +32,7 @@ Monorepo: [fullstack app](https://github.com/facumrb/Laelsi)
 | Servicios externos | Cloudflare R2 (imágenes), Resend (correos), Cloudflare Turnstile (anti-bots)    |
 | Despliegue         | Vercel (frontend) y Supabase (backend y base de datos)                          |
 
-#### Backend de la regularidad y migración a Supabase
+#### Backend anterior y migración a Supabase
 
 **Hasta la migración, el backend cumplía todos los requisitos técnicos de la cátedra.** El backend `be/` está hecho en TypeScript con Express y tiene:
 
@@ -42,11 +42,10 @@ Monorepo: [fullstack app](https://github.com/facumrb/Laelsi)
 - validación de entradas, middlewares de saneamiento y un manejador central de errores que informa por la API;
 - login con JWT y dos niveles de acceso (Admin y Client), con las rutas protegidas según el rol;
 - configuración por variables de entorno (`.env`);
-- dependencias registradas en `package.json`.
 
 El código sigue en el repositorio ([`be/`](https://github.com/facumrb/Laelsi/tree/main/be)) como evidencia y referencia.
 
-**La migración a Supabase se hizo para poder publicar el sistema en internet.** Mantener en línea un servidor Node y una base MySQL tenía un costo que el negocio no podía cubrir. Supabase, Vercel y Cloudflare dan, en sus planes gratuitos, todo lo que el sitio necesita:
+**La migración a Supabase se hizo para poder publicar el sistema en internet.** Mantener en línea un servidor Node y una base MySQL tenía un costo que no se queria cubrir. Supabase, Vercel y Cloudflare dan, en sus planes gratuitos, todo lo que el sitio necesita:
 
 - **Despliegue sin servidor propio**: las Edge Functions (TypeScript sobre Deno) y la base PostgreSQL corren en Supabase.
 - **Autenticación gestionada**: Supabase Auth resuelve el login con contraseña y con Google, la confirmación y el manejo de sesiones.
@@ -79,7 +78,7 @@ classDiagram
 
     class User {
         rol: Admin | Client
-        estado
+        estado: Activo | Inactivo
         nombre, apellido, DNI, teléfono
         username, email
         CUIT, condición fiscal
@@ -92,6 +91,7 @@ classDiagram
         descripción
         estado: Activo | Inactivo
         profundidad: 0 a 4
+        orden entre hermanas
     }
 
     class Product {
@@ -100,7 +100,7 @@ classDiagram
         marca
         stock
         total vendido
-        estado
+        estado: Activo | Inactivo | Pausado
     }
 
     class Price {
@@ -120,7 +120,10 @@ classDiagram
     class Photo {
         tipo: producto | usuario
         archivo
+        orden en el carrusel
     }
+
+    note for Photo "Pertenece a un producto o a un usuario, nunca a los dos"
 
     class Order {
         estado: Pendiente | Pagado | Enviado | Entregado | Cancelado
@@ -176,5 +179,5 @@ Adicionales para Aprobación:
 | Req | Detalle |
 | :-- | :-- |
 | Listados | 1. Panel de analíticas: totales, últimas órdenes y ranking de productos más vendidos<br>2. Carrusel de más vendidos por categoría en la portada |
-| CUU/Epic | 1. Recuperar la contraseña con un enlace enviado por email<br>2. Botón de arrepentimiento (Disp. 954/2025): solicitud sin cuenta, con código de identificación y aviso por email al comercio |
-| Otros | 1. Envío de correos automáticos con Resend<br>2. Protección anti-bots con Cloudflare Turnstile y límites de intentos por IP<br>3. Cambiar los precios de muchos productos a la vez |
+| CUU/Epic | 1. Recuperar la contraseña con un enlace enviado por email<br>2. Cambiar los precios de muchos productos a la vez: vista previa, aplicación, historial de lotes y opción de deshacer<br>3. Reordenar categorías y subcategorías arrastrándolas |
+| Otros | 1. Envío de correos automáticos con Resend<br>2. Protección anti-bots con Cloudflare Turnstile y límites de intentos por IP<br>3. Sitio publicado en laelsi.com.ar |
