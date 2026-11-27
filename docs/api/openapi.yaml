@@ -1,0 +1,1252 @@
+openapi: 3.1.0
+info:
+  title: API de LAELSI
+  version: 1.0.0
+  description: |
+    API REST del ecommerce LAELSI. Cada recurso es una Edge Function de Supabase (TypeScript sobre Deno)
+    en `supabase/functions/<recurso>/index.ts`. Las rutas y los roles salen de la tabla `routes` al final de cada archivo.
+
+    Respuestas: todas usan el mismo sobre. Si sale bien, `{ statusCode, message, data, status: "success" }`.
+    Si hay un error, `{ status: "error", message }`. Ver `_shared/http.ts` (`serveRoutes` y `errorToResponse`).
+
+    Roles (ver `_shared/auth.ts`):
+      - Público: sin token.
+      - Usuario: cualquier sesión válida (`requireUser`).
+      - Dueño o Admin: el dueño del recurso o un administrador (`requireOwnerOrAdmin`).
+      - Admin: solo administradores (`requireAdmin`).
+    Cada operación indica su rol en `x-rol`.
+
+    Las rutas que piden Turnstile (anti-bots) esperan el token de Cloudflare en la cabecera `X-Turnstile-Token`.
+servers:
+  - url: https://vwtqkglkenogylkranzz.supabase.co/functions/v1
+    description: Producción
+  - url: http://127.0.0.1:54321/functions/v1
+    description: Pila local (npx supabase start + functions serve)
+
+tags:
+  - name: auth
+    description: Inicio de sesión, registro, sesión actual y recuperación de contraseña
+  - name: categories
+    description: CRUD de categorías y subcategorías (árbol jerárquico)
+  - name: products
+    description: CRUD de productos, listados de la tienda, búsqueda y portada
+  - name: bulk-prices
+    description: Cambio de precios de muchos productos a la vez, con historial y reversión
+  - name: photos
+    description: Metadatos de las fotos de productos y de perfil
+  - name: uploads
+    description: URLs prefirmadas de Cloudflare R2 y limpieza de archivos huérfanos
+  - name: clients
+    description: CRUD de clientes
+  - name: admins
+    description: CRUD de administradores
+  - name: orders
+    description: Pedidos, historial del cliente y gestión de estados
+  - name: analytics
+    description: Resumen del panel de administración
+  - name: revocations
+    description: Botón de arrepentimiento (Disp. 954/2025)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token de Supabase Auth, que devuelve `POST /auth/login` o el login con Google.
+    turnstile:
+      type: apiKey
+      in: header
+      name: X-Turnstile-Token
+
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+    categoryId:
+      name: categoryId
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+    page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 16 }
+    query:
+      name: query
+      in: query
+      description: Texto a buscar
+      schema: { type: string }
+    userState:
+      name: state
+      in: query
+      schema: { $ref: '#/components/schemas/EstadoActivo' }
+
+  responses:
+    BadRequest:
+      description: Datos inválidos (validación de entrada, o un error de la base como `22P02` o `23514`)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Unauthorized:
+      description: Falta el token o no es válido
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Forbidden:
+      description: El rol no alcanza o la cuenta está inactiva
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    NotFound:
+      description: No existe el recurso o la ruta
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Conflict:
+      description: Viola una restricción única (`23505`) o el registro tiene datos asociados (`23503`)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    TooManyRequests:
+      description: Demasiados intentos desde la misma IP
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Ok:
+      description: Operación correcta
+      content: { application/json: { schema: { $ref: '#/components/schemas/Exito' } } }
+    Created:
+      description: Recurso creado
+      content: { application/json: { schema: { $ref: '#/components/schemas/Exito' } } }
+    Paginated:
+      description: Página de resultados
+      content: { application/json: { schema: { $ref: '#/components/schemas/ExitoPaginado' } } }
+
+  schemas:
+    Exito:
+      type: object
+      required: [statusCode, message, status]
+      properties:
+        statusCode: { type: integer, example: 200 }
+        message: { type: string, example: Categoría encontrada }
+        data: {}
+        status: { type: string, const: success }
+    Paginado:
+      type: object
+      properties:
+        data: { type: array, items: {} }
+        total: { type: integer }
+        page: { type: integer }
+        limit: { type: integer }
+        totalPages: { type: integer }
+    ExitoPaginado:
+      allOf:
+        - $ref: '#/components/schemas/Exito'
+        - type: object
+          properties:
+            data: { $ref: '#/components/schemas/Paginado' }
+    Error:
+      type: object
+      required: [status, message]
+      properties:
+        status: { type: string, const: error }
+        message: { type: string, example: El Nombre de la categoría es requerido }
+
+    EstadoActivo:
+      type: string
+      enum: [Activo, Inactivo]
+    EstadoProducto:
+      type: string
+      enum: [Activo, Inactivo, Pausado]
+    EstadoOrden:
+      type: string
+      enum: [Pendiente, Pagado, Enviado, Entregado, Cancelado]
+    FormaDeEntrega:
+      type: string
+      enum: [Envío, Retiro en sucursal]
+    FormaDePago:
+      type: string
+      enum: [Transferencia, Local]
+    CondicionFiscal:
+      type: string
+      enum: [Consumidor Final, Responsable Inscripto, Monotributista, Exento]
+
+    CategoriaEntrada:
+      type: object
+      properties:
+        name: { type: string, description: Obligatorio al crear }
+        description: { type: string }
+        order: { type: integer, minimum: 0, description: 'Posición entre sus hermanas. Si falta, va al final' }
+        state: { $ref: '#/components/schemas/EstadoActivo' }
+        parentId:
+          type: [integer, 'null']
+          description: 'Categoría padre. La profundidad máxima es 4, o sea 5 niveles (PROFUNDIDAD_MAXIMA en _shared/profundidad-categorias.ts)'
+    ProductoEntrada:
+      type: object
+      description: Al crear son obligatorios name, description, brand, stock, price y category
+      properties:
+        name: { type: string }
+        description: { type: string }
+        brand: { type: string }
+        stock: { type: integer, minimum: 0 }
+        totalSold: { type: integer, minimum: 0 }
+        state: { $ref: '#/components/schemas/EstadoProducto' }
+        price: { type: number, exclusiveMinimum: 0, description: Cambiarlo agrega una entrada al historial de precios }
+        currency: { type: string, enum: [ARS, USD, EUR], default: ARS }
+        category: { type: integer, description: ID de la categoría }
+    PerfilBase:
+      type: object
+      properties:
+        name: { type: string }
+        lastName: { type: string }
+        phone: { type: string }
+        username: { type: string }
+        dni: { type: string }
+        email: { type: string, format: email }
+        password: { type: string }
+        confirmPassword: { type: string }
+    PerfilCliente:
+      allOf:
+        - $ref: '#/components/schemas/PerfilBase'
+        - type: object
+          properties:
+            cuit: { type: string }
+            fiscalCondition: { $ref: '#/components/schemas/CondicionFiscal' }
+            street: { type: string }
+            streetNumber: { type: [integer, 'null'] }
+            city: { type: string }
+            province: { type: string }
+            postalCode: { type: string }
+            floor: { type: string }
+            apartment: { type: string }
+    CambioDeEstado:
+      type: object
+      required: [state]
+      properties:
+        state: { $ref: '#/components/schemas/EstadoActivo' }
+    OrdenEntrada:
+      type: object
+      required: [items, paymentMethod]
+      properties:
+        clientId: { type: integer, description: Solo lo usa un Admin que carga la orden para un cliente }
+        items:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: object
+            required: [productId, quantity]
+            properties:
+              productId: { type: integer }
+              quantity: { type: integer, minimum: 1 }
+        deliveryMethod: { $ref: '#/components/schemas/FormaDeEntrega' }
+        paymentMethod: { $ref: '#/components/schemas/FormaDePago' }
+    AjusteDePrecios:
+      type: object
+      required: [productIds, adjustmentType, adjustmentValue]
+      properties:
+        productIds: { type: array, items: { type: integer } }
+        adjustmentType: { type: string, enum: [fixed, percentage] }
+        adjustmentValue: { type: number }
+        roundingRule: { type: string, enum: [nearest-integer, ceil, floor] }
+
+security: []
+
+paths:
+  # ─── auth ──────────────────────────────────────────────────────────────────
+  /auth/login:
+    post:
+      operationId: postAuthLogin
+      tags: [auth]
+      summary: Inicia sesión con usuario o email y contraseña
+      x-rol: Público
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [identifier, password]
+              properties:
+                identifier: { type: string, description: Usuario o email }
+                password: { type: string }
+      responses:
+        '200':
+          description: Devuelve `data.token`, `data.refreshToken` y `data.user`
+          content: { application/json: { schema: { $ref: '#/components/schemas/Exito' } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+  /auth/register:
+    post:
+      operationId: postAuthRegister
+      tags: [auth]
+      summary: Registra un cliente (siempre con rol Client)
+      x-rol: Público
+      security: [{ turnstile: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/PerfilCliente'
+                - type: object
+                  required: [username, email, password, confirmPassword, acceptTerms, termsVersion]
+                  properties:
+                    acceptTerms: { type: boolean, const: true }
+                    termsVersion: { type: string }
+      responses:
+        '201': { $ref: '#/components/responses/Created' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /auth/me:
+    get:
+      operationId: getAuthMe
+      tags: [auth]
+      summary: Datos de la sesión actual (id, rol, estado)
+      x-rol: Usuario
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /auth/accept-terms:
+    post:
+      operationId: postAuthAcceptTerms
+      tags: [auth]
+      summary: Registra que el usuario aceptó la versión vigente de los términos
+      x-rol: Usuario
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /auth/verify-password:
+    post:
+      operationId: postAuthVerifyPassword
+      tags: [auth]
+      summary: Confirma la contraseña actual antes de cambiarla
+      x-rol: Usuario
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { password: { type: string } } }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400':
+          description: Contraseña incorrecta (400 y no 401, porque el frontend toma un 401 como sesión vencida)
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+  /auth/forgot-password:
+    post:
+      operationId: postAuthForgotPassword
+      tags: [auth]
+      summary: Pide el enlace de recuperación (responde igual exista o no la cuenta)
+      x-rol: Público
+      security: [{ turnstile: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { identifier: { type: string } } }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+  /auth/reset-password/validate:
+    post:
+      operationId: postAuthResetPasswordValidate
+      tags: [auth]
+      summary: Indica si un enlace de recuperación sigue vigente
+      x-rol: Público
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { token: { type: string } } }
+      responses:
+        '200':
+          description: '`data.valid` (y `data.username` si es válido)'
+          content: { application/json: { schema: { $ref: '#/components/schemas/Exito' } } }
+  /auth/reset-password:
+    post:
+      operationId: postAuthResetPassword
+      tags: [auth]
+      summary: Canjea el enlace y define la contraseña nueva
+      x-rol: Público
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password, confirmPassword]
+              properties:
+                token: { type: string }
+                password: { type: string }
+                confirmPassword: { type: string }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  # ─── categories ────────────────────────────────────────────────────────────
+  /categories/search:
+    get:
+      operationId: getCategoriesSearch
+      tags: [categories]
+      summary: Categorías activas por nombre o descripción
+      x-rol: Público
+      parameters: [{ $ref: '#/components/parameters/query' }]
+      responses: { '200': { $ref: '#/components/responses/Ok' } }
+  /categories/active:
+    get:
+      operationId: getCategoriesActive
+      tags: [categories]
+      summary: Categorías raíz activas (portada)
+      x-rol: Público
+      responses: { '200': { $ref: '#/components/responses/Ok' } }
+  /categories/tree:
+    get:
+      operationId: getCategoriesTree
+      tags: [categories]
+      summary: Árbol jerárquico. Sin sesión de Admin, solo las activas
+      x-rol: Público
+      parameters:
+        - { name: state, in: query, schema: { $ref: '#/components/schemas/EstadoActivo' } }
+        - { name: depth, in: query, schema: { type: integer, minimum: 0, maximum: 4 } }
+      responses: { '200': { $ref: '#/components/responses/Ok' } }
+  /categories/{id}/children:
+    get:
+      operationId: getCategoriesIdChildren
+      tags: [categories]
+      summary: Subcategorías directas
+      x-rol: Público
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /categories:
+    get:
+      operationId: getCategories
+      tags: [categories]
+      summary: Listado plano completo, con el resumen de sus productos
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      operationId: postCategories
+      tags: [categories]
+      summary: Crea una categoría
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/CategoriaEntrada'
+                - { type: object, required: [name] }
+      responses:
+        '201': { $ref: '#/components/responses/Created' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /categories/reorder:
+    patch:
+      operationId: patchCategoriesReorder
+      tags: [categories]
+      summary: Cambia el orden y el padre de varias categorías a la vez
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [updates]
+              properties:
+                updates:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id: { type: integer }
+                      order: { type: integer }
+                      parentId: { type: [integer, 'null'] }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /categories/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      operationId: getCategoriesId
+      tags: [categories]
+      summary: Detalle con la cadena de padres (breadcrumbs)
+      x-rol: Público
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      operationId: patchCategoriesId
+      tags: [categories]
+      summary: Edita una categoría
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content: { application/json: { schema: { $ref: '#/components/schemas/CategoriaEntrada' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      operationId: deleteCategoriesId
+      tags: [categories]
+      summary: Borra una categoría
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  # ─── products ──────────────────────────────────────────────────────────────
+  /products:
+    get:
+      operationId: getProducts
+      tags: [products]
+      summary: Todos los productos, con filtros (panel)
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/query'
+        - { name: state, in: query, schema: { $ref: '#/components/schemas/EstadoProducto' } }
+        - { name: categoryId, in: query, schema: { type: integer } }
+        - { name: stockFilter, in: query, schema: { type: string, enum: [AltoStock, BajoStock, SinStock] } }
+      responses:
+        '200': { $ref: '#/components/responses/Paginated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      operationId: postProducts
+      tags: [products]
+      summary: Crea un producto con su precio inicial
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ProductoEntrada' } } }
+      responses:
+        '201': { $ref: '#/components/responses/Created' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /products/active:
+    get:
+      operationId: getProductsActive
+      tags: [products]
+      summary: Productos visibles (Activo o Pausado) de categorías activas
+      x-rol: Público
+      parameters: &filtrosTienda
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - { name: brand, in: query, description: Filtro por marca, schema: { type: string } }
+        - { name: priceOrder, in: query, schema: { type: string, enum: [Menor, Mayor] } }
+        - { name: popularityOrder, in: query, schema: { type: string, enum: [MasVentas, MenosVentas] } }
+      responses: { '200': { $ref: '#/components/responses/Paginated' } }
+  /products/page:
+    get:
+      operationId: getProductsPage
+      tags: [products]
+      summary: Igual que /products/active (lo usa la tienda)
+      x-rol: Público
+      parameters: *filtrosTienda
+      responses: { '200': { $ref: '#/components/responses/Paginated' } }
+  /products/search:
+    get:
+      operationId: getProductsSearch
+      tags: [products]
+      summary: Búsqueda de productos por texto
+      x-rol: Público
+      parameters:
+        - $ref: '#/components/parameters/query'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses: { '200': { $ref: '#/components/responses/Paginated' } }
+  /products/best-sellers:
+    get:
+      operationId: getProductsBestSellers
+      tags: [products]
+      summary: Más vendidos
+      x-rol: Público
+      parameters: [{ $ref: '#/components/parameters/limit' }]
+      responses: { '200': { $ref: '#/components/responses/Ok' } }
+  /products/best-sellers/category/{categoryId}:
+    get:
+      operationId: getProductsBestSellersCategoryCategoryId
+      tags: [products]
+      summary: Más vendidos de una categoría (y sus subcategorías)
+      x-rol: Público
+      parameters: [{ $ref: '#/components/parameters/categoryId' }]
+      responses: { '200': { $ref: '#/components/responses/Ok' } }
+  /products/category/{categoryId}:
+    get:
+      operationId: getProductsCategoryCategoryId
+      tags: [products]
+      summary: Todos los productos de una categoría, activos o no
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/categoryId' }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /products/active/category/{categoryId}:
+    get:
+      operationId: getProductsActiveCategoryCategoryId
+      tags: [products]
+      summary: Listado de la tienda para una categoría, con filtro por marca y orden
+      x-rol: Público
+      parameters:
+        - $ref: '#/components/parameters/categoryId'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - { name: brand, in: query, schema: { type: string } }
+        - { name: priceOrder, in: query, schema: { type: string, enum: [Menor, Mayor] } }
+        - { name: popularityOrder, in: query, schema: { type: string, enum: [MasVentas, MenosVentas] } }
+      responses:
+        '200': { $ref: '#/components/responses/Paginated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /products/active/{id}:
+    get:
+      operationId: getProductsActiveId
+      tags: [products]
+      summary: Detalle de un producto visible
+      x-rol: Público
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /products/availability:
+    get:
+      operationId: getProductsAvailability
+      tags: [products]
+      summary: Estado, stock y precio actuales de varios productos (lo usa el carrito)
+      x-rol: Público
+      parameters:
+        - { name: ids, in: query, required: true, description: 'IDs separados por coma, ej: 1,2,3', schema: { type: string } }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /products/home:
+    get:
+      operationId: getProductsHome
+      tags: [products]
+      summary: La portada en una sola llamada (más vendidos y carruseles por categoría)
+      x-rol: Público
+      responses: { '200': { $ref: '#/components/responses/Ok' } }
+  /products/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      operationId: getProductsId
+      tags: [products]
+      summary: Detalle con categoría, fotos y precio (también de un producto inactivo)
+      x-rol: Público
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      operationId: patchProductsId
+      tags: [products]
+      summary: Edita un producto
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content: { application/json: { schema: { $ref: '#/components/schemas/ProductoEntrada' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      operationId: deleteProductsId
+      tags: [products]
+      summary: Borra un producto
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  # ─── bulk-prices ───────────────────────────────────────────────────────────
+  /bulk-prices/preview:
+    post:
+      operationId: postBulkPricesPreview
+      tags: [bulk-prices]
+      summary: Calcula los precios nuevos sin guardar nada
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/AjusteDePrecios' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /bulk-prices/apply:
+    post:
+      operationId: postBulkPricesApply
+      tags: [bulk-prices]
+      summary: Aplica el cambio de precios en una transacción y registra el lote
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/AjusteDePrecios' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /bulk-prices/rollback/{batchId}:
+    post:
+      operationId: postBulkPricesRollbackBatchId
+      tags: [bulk-prices]
+      summary: Revierte un lote de cambios de precio
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: batchId, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /bulk-prices/history:
+    get:
+      operationId: getBulkPricesHistory
+      tags: [bulk-prices]
+      summary: Historial de lotes de cambios de precio
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  # ─── photos y subida de archivos ───────────────────────────────────────────
+  /photos/productPhotos/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: 'POST: ID del producto. DELETE: ID de la foto'
+        schema: { type: integer }
+    post:
+      operationId: postPhotosProductPhotosId
+      tags: [photos]
+      summary: Registra fotos de producto ya subidas a R2 (id = producto)
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fileNames]
+              properties:
+                fileNames: { type: array, items: { type: string } }
+                orders: { type: array, items: { type: integer } }
+      responses:
+        '201': { $ref: '#/components/responses/Created' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      operationId: deletePhotosProductPhotosId
+      tags: [photos]
+      summary: Borra una foto de producto, el registro y el archivo (id = foto)
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /photos/reorder:
+    post:
+      operationId: postPhotosReorder
+      tags: [photos]
+      summary: Cambia el orden de las fotos de un producto
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                photosOrder:
+                  type: array
+                  items: { type: object, properties: { id: { type: integer }, order: { type: integer } } }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /photos/userPhoto/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: 'POST: ID del usuario. DELETE: ID de la foto'
+        schema: { type: integer }
+    post:
+      operationId: postPhotosUserPhotoId
+      tags: [photos]
+      summary: Registra la foto de perfil (id = usuario)
+      x-rol: Dueño o Admin
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [fileName], properties: { fileName: { type: string } } }
+      responses:
+        '201': { $ref: '#/components/responses/Created' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      operationId: deletePhotosUserPhotoId
+      tags: [photos]
+      summary: Borra la foto de perfil (id = foto)
+      x-rol: Dueño o Admin
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /get-upload-url:
+    post:
+      operationId: postGetUploadUrl
+      tags: [uploads]
+      summary: URL prefirmada de R2 para subir una imagen webp (vence a los 5 minutos)
+      x-rol: Admin (scope product) o Dueño o Admin (scope user)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scope, targetId]
+              properties:
+                scope: { type: string, enum: [product, user] }
+                targetId: { type: integer }
+      responses:
+        '200':
+          description: '`data` trae uploadUrl, key, headers y expiresIn'
+          content: { application/json: { schema: { $ref: '#/components/schemas/Exito' } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /delete-r2-object:
+    post:
+      operationId: postDeleteR2Object
+      tags: [uploads]
+      summary: Borra un archivo huérfano de R2 (rechaza las keys registradas en la base)
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scope, key]
+              properties:
+                scope: { type: string, enum: [product, user] }
+                key: { type: string }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  # ─── clients ───────────────────────────────────────────────────────────────
+  /clients:
+    get:
+      operationId: getClients
+      tags: [clients]
+      summary: Listado paginado de clientes
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/userState'
+        - { name: fiscalCondition, in: query, schema: { $ref: '#/components/schemas/CondicionFiscal' } }
+      responses:
+        '200': { $ref: '#/components/responses/Paginated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      operationId: postClients
+      tags: [clients]
+      summary: Crea un cliente (cuenta de Auth y perfil)
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/PerfilCliente' } } }
+      responses:
+        '201': { $ref: '#/components/responses/Created' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /clients/search:
+    get:
+      operationId: getClientsSearch
+      tags: [clients]
+      summary: Búsqueda por nombre, apellido, usuario o DNI
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/query'
+        - $ref: '#/components/parameters/userState'
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /clients/account/{id}:
+    get:
+      operationId: getClientsAccountId
+      tags: [clients]
+      summary: Datos de la cuenta del cliente
+      x-rol: Dueño o Admin
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /clients/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      operationId: getClientsId
+      tags: [clients]
+      summary: Detalle del cliente
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      operationId: patchClientsId
+      tags: [clients]
+      summary: Edita el perfil (cambiar la contraseña pide currentPassword)
+      x-rol: Dueño o Admin
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/PerfilCliente'
+                - { type: object, properties: { currentPassword: { type: string } } }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      operationId: deleteClientsId
+      tags: [clients]
+      summary: Desactiva al cliente (no se borra, para conservar sus pedidos)
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /clients/{id}/state:
+    patch:
+      operationId: patchClientsIdState
+      tags: [clients]
+      summary: Activa o desactiva al cliente
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CambioDeEstado' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  # ─── admins ────────────────────────────────────────────────────────────────
+  /admins:
+    get:
+      operationId: getAdmins
+      tags: [admins]
+      summary: Listado paginado de administradores
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/userState'
+      responses:
+        '200': { $ref: '#/components/responses/Paginated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      operationId: postAdmins
+      tags: [admins]
+      summary: Crea un administrador
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/PerfilBase' } } }
+      responses:
+        '201': { $ref: '#/components/responses/Created' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /admins/search:
+    get:
+      operationId: getAdminsSearch
+      tags: [admins]
+      summary: Búsqueda por nombre, apellido, email o DNI
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/query'
+        - $ref: '#/components/parameters/userState'
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admins/account/{id}:
+    get:
+      operationId: getAdminsAccountId
+      tags: [admins]
+      summary: Datos de la cuenta del administrador
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /admins/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      operationId: getAdminsId
+      tags: [admins]
+      summary: Detalle del administrador
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      operationId: patchAdminsId
+      tags: [admins]
+      summary: Edita un administrador
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/PerfilBase'
+                - { type: object, properties: { currentPassword: { type: string } } }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      operationId: deleteAdminsId
+      tags: [admins]
+      summary: Desactiva al administrador (ni el propio ni el último activo)
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /admins/{id}/state:
+    patch:
+      operationId: patchAdminsIdState
+      tags: [admins]
+      summary: Activa o desactiva al administrador
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CambioDeEstado' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  # ─── orders ────────────────────────────────────────────────────────────────
+  /orders:
+    get:
+      operationId: getOrders
+      tags: [orders]
+      summary: Listado de órdenes del panel, con filtros
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/query'
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/EstadoOrden' } }
+        - { name: deliveryMethod, in: query, schema: { $ref: '#/components/schemas/FormaDeEntrega' } }
+        - { name: paymentMethod, in: query, schema: { $ref: '#/components/schemas/FormaDePago' } }
+      responses:
+        '200': { $ref: '#/components/responses/Paginated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      operationId: postOrders
+      tags: [orders]
+      summary: Crea la orden, descuenta el stock y suma las ventas (función SQL create_order, atómica)
+      x-rol: Usuario
+      security: [{ bearerAuth: [], turnstile: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/OrdenEntrada' } } }
+      responses:
+        '201': { $ref: '#/components/responses/Created' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /orders/client/{clientId}:
+    get:
+      operationId: getOrdersClientClientId
+      tags: [orders]
+      summary: Historial de pedidos de un cliente
+      x-rol: Dueño o Admin
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200': { $ref: '#/components/responses/Paginated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /orders/{id}:
+    get:
+      operationId: getOrdersId
+      tags: [orders]
+      summary: Detalle de la orden con sus líneas y el cliente
+      x-rol: Dueño o Admin
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /orders/{id}/status:
+    patch:
+      operationId: patchOrdersIdStatus
+      tags: [orders]
+      summary: Cambia el estado según la máquina de estados de la forma de entrega
+      description: |
+        Envío: Pendiente → Pagado → Enviado → Entregado.
+        Retiro en sucursal: Pendiente → Pagado → Entregado.
+        Cualquier estado no final puede pasar a Cancelado (devuelve el stock).
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [status], properties: { status: { $ref: '#/components/schemas/EstadoOrden' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /orders/{id}/delivery-method:
+    patch:
+      operationId: patchOrdersIdDeliveryMethod
+      tags: [orders]
+      summary: Cambia la forma de entrega
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [deliveryMethod]
+              properties: { deliveryMethod: { $ref: '#/components/schemas/FormaDeEntrega' } }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /orders/{id}/cancel:
+    patch:
+      operationId: patchOrdersIdCancel
+      tags: [orders]
+      summary: Cancela la orden y devuelve el stock (función SQL cancel_order)
+      x-rol: Dueño o Admin
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ─── analytics ─────────────────────────────────────────────────────────────
+  /analytics/summary:
+    get:
+      operationId: getAnalyticsSummary
+      tags: [analytics]
+      summary: Totales, últimas órdenes y ranking de más vendidos
+      x-rol: Admin
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  # ─── revocations ───────────────────────────────────────────────────────────
+  /revocations:
+    post:
+      operationId: postRevocations
+      tags: [revocations]
+      summary: Botón de arrepentimiento (Disp. 954/2025), sin cuenta
+      description: Devuelve el código de identificación y lo envía por email. Limitado por IP.
+      x-rol: Público
+      security: [{ turnstile: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [firstName, lastName, email, details]
+              properties:
+                firstName: { type: string }
+                lastName: { type: string }
+                email: { type: string, format: email }
+                phone: { type: string }
+                orderNumber: { type: integer, minimum: 1 }
+                details: { type: string }
+      responses:
+        '201': { $ref: '#/components/responses/Created' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }

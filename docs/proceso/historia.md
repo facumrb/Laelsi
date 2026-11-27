@@ -8,7 +8,8 @@ Recorrido del proyecto desde el análisis inicial hasta el sistema publicado.
 
 Antes de escribir código se hizo un análisis del negocio y del sitio que se quería construir:
 
-- **[Análisis del sistema (Google Docs)](https://docs.google.com/document/d/1HJCefDRzAz0mr4CpLiGTYG3TdgRNXVhfDio3AsXsBkw)**: introducción al negocio, objetivos (ver productos, pedir sin ir al local, estadísticas para la administración, promociones, disponibilidad y control de stock), tipos de usuario y sus permisos (administrador, cliente y visitante sin registro), contenido de cada página del sitio (inicio, Librería, Juguetería, Computación, Impresiones, Diseño Gráfico, Sellos) y orden de prioridad de los CRUD.
+- **[Minuta de relevamiento del sitio web (02/04/2024)](minutas/2024-04-02-minuta-sitio-web.md)**: reunión con el dueño y la empleada sobre cómo funciona el negocio, sus procesos de venta y lo que se pide del sitio y de los paneles.
+- **[Análisis del sistema](analisis-del-sistema.md)** ([original en Google Docs](https://docs.google.com/document/d/1HJCefDRzAz0mr4CpLiGTYG3TdgRNXVhfDio3AsXsBkw)): introducción al negocio, objetivos (ver productos, pedir sin ir al local, estadísticas para la administración, promociones, disponibilidad y control de stock), tipos de usuario y sus permisos (administrador, cliente y visitante sin registro), contenido de cada página del sitio (inicio, Librería, Juguetería, Computación, Impresiones, Diseño Gráfico, Sellos) y orden de prioridad de los CRUD.
 
 De ese análisis salió la [propuesta](../catedra/proposal.md) presentada a la cátedra.
 
@@ -16,7 +17,7 @@ De ese análisis salió la [propuesta](../catedra/proposal.md) presentada a la c
 
 Cada tarea e implementación se registró en un documento compartido:
 
-- **[Seguimiento de tareas e implementaciones (Google Docs)](https://docs.google.com/document/d/1jEKCvSY9ZdxJsL7xmmaUbu1CgqGjxH3w9dCpH4vFtaM)**: tareas identificadas por número, separadas en pendientes, urgentes, realizadas e implementaciones de mejora, con la especificación de cada una y su responsable.
+- **[Seguimiento de tareas e implementaciones](seguimiento-de-tareas.md)** ([original en Google Docs](https://docs.google.com/document/d/1jEKCvSY9ZdxJsL7xmmaUbu1CgqGjxH3w9dCpH4vFtaM)): tareas identificadas por número, separadas en pendientes, urgentes, realizadas e implementaciones de mejora, con la especificación de cada una y su responsable.
 
 La metodología de trabajo, descrita en ese documento:
 

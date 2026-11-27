@@ -4,12 +4,12 @@ La librería “Laelsi” es un negocio dedicado a la venta de productos de libr
 
 Trabajo práctico de Desarrollo de Software (UTN FRRo), según las consignas de [utnfrrodsw/tp](https://github.com/utnfrrodsw/tp).
 
-|                                  |                                                                                   |
-| :------------------------------- | :-------------------------------------------------------------------------------- |
-| Sitio                            | [laelsi.com.ar](https://laelsi.com.ar)                                            |
-| Propuesta                        | [docs/catedra/proposal.md](docs/catedra/proposal.md)                              |
-| Documentación                    | [docs/README.md](docs/README.md)                                                  |
-| Video demostración (regularidad) | [Google Drive](https://drive.google.com/file/d/1qXaOcWWohlrfDlq3GMMrZ0Pog4uzKca6) |
+|                    |                                                      |
+| :----------------- | :--------------------------------------------------- |
+| Sitio              | [laelsi.com.ar](https://laelsi.com.ar)               |
+| Propuesta          | [docs/catedra/proposal.md](docs/catedra/proposal.md) |
+| Documentación      | [docs/README.md](docs/README.md)                     |
+| Video demostración | Enlace pendiente (VIDEO_URL_PENDIENTE)               |
 
 ## Integrantes
 
@@ -65,17 +65,58 @@ El sitio queda en `http://localhost:4200` y usa el backend ya publicado en Supab
 ## Pruebas
 
 ```bash
-# Frontend (componentes y servicios)
-cd fe
-npm test
+# Frontend: pruebas unitarias de componentes (Vitest)
+npm run test:fe
 
-# Edge Functions y concordancia entre capas (requiere Deno)
-deno test --allow-read --allow-run=git supabase/functions/_tests/
+# Frontend: prueba end-to-end (Playwright; la primera vez: cd fe && npx playwright install chromium)
+npm run test:e2e
+
+# Backend: pruebas unitarias y de concordancia entre capas (requiere Deno)
+npm run test:funciones
+
+# Backend: integración y base de datos (requieren Docker y la pila local)
+npx supabase start
+npx supabase functions serve   # en otra terminal
+npm run test:integracion
+npm run test:db
 ```
 
-## Más información
+<details>
+<summary>¿No tenés Deno? (pruebas del backend)</summary>
 
-- [Puesta en marcha de la infraestructura](docs/guias/infraestructura.md): crear un entorno nuevo (Supabase, Cloudflare, Resend, Vercel y variables secretas).
-- [Seguridad](docs/guias/seguridad.md)
-- [Textos legales y verificación de Google](docs/guias/textos-legales-y-google.md)
-- [Cómo se armó el proyecto](docs/proceso/historia.md)
+1. Instalar Deno:
+
+   ```powershell
+   # Windows
+   winget install DenoLand.Deno
+   ```
+
+   ```bash
+   # macOS o Linux
+   curl -fsSL https://deno.land/install.sh | sh
+   ```
+
+2. Verificar la instalación con `deno --version` (Deno 2 o superior). Si la terminal no lo encuentra, cerrarla y volver a abrirla.
+
+</details>
+
+<details>
+<summary>¿No tenés Docker? (pila local de Supabase para las pruebas de integración y de base de datos)</summary>
+
+1. Instalar Docker Desktop:
+
+   ```powershell
+   # Windows
+   winget install Docker.DockerDesktop
+   ```
+
+   En macOS o Linux, descargarlo de [docker.com](https://www.docker.com/products/docker-desktop/) (en Linux también sirve Docker Engine).
+
+2. Reiniciar si el instalador lo pide y abrir Docker Desktop. En Windows usa WSL 2: si falta, el instalador avisa (se instala con `wsl --install`).
+3. Verificar con `docker --version` y `docker info`. Docker Desktop tiene que estar abierto antes de `npx supabase start`.
+
+La CLI de Supabase no hace falta instalarla: `npx supabase` la descarga la primera vez. También la primera vez, `npx supabase start` baja las imágenes de Docker (varios GB, tarda unos minutos). Para apagar la pila local: `npx supabase stop`.
+
+</details>
+
+Qué cubre cada prueba y la evidencia de la última ejecución: [docs/pruebas](docs/pruebas/README.md). Documentación de la API: [docs/api](docs/api/README.md).

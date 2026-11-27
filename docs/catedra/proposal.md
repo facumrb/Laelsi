@@ -4,7 +4,7 @@
 
 ### Video
 
-[Video demostración](https://drive.google.com/file/d/1qXaOcWWohlrfDlq3GMMrZ0Pog4uzKca6/view?usp=drive_link)
+Video demostración: enlace pendiente (VIDEO_URL_PENDIENTE)
 
 ## Grupo
 
@@ -15,11 +15,11 @@
 
 ### Repositorios
 
-Monorepo: [fullstack app](https://github.com/facumrb/LaElsi)
+Monorepo: [fullstack app](https://github.com/facumrb/Laelsi)
 
-- [frontend](https://github.com/facumrb/LaElsi/tree/main/fe) (Angular)
-- [backend actual](https://github.com/facumrb/LaElsi/tree/main/supabase) (Supabase Edge Functions + PostgreSQL)
-- [backend anterior](https://github.com/facumrb/LaElsi/tree/main/be) (Express + MikroORM + MySQL, en desuso)
+- [frontend](https://github.com/facumrb/Laelsi/tree/main/fe) (Angular)
+- [backend actual](https://github.com/facumrb/Laelsi/tree/main/supabase) (Supabase Edge Functions + PostgreSQL)
+- [backend anterior](https://github.com/facumrb/Laelsi/tree/main/be) (Express + MikroORM + MySQL, en desuso)
 
 ### Tecnologías
 
@@ -44,7 +44,7 @@ Monorepo: [fullstack app](https://github.com/facumrb/LaElsi)
 - configuración por variables de entorno (`.env`);
 - dependencias registradas en `package.json`.
 
-El código sigue en el repositorio ([`be/`](https://github.com/facumrb/LaElsi/tree/main/be)) como evidencia y referencia.
+El código sigue en el repositorio ([`be/`](https://github.com/facumrb/Laelsi/tree/main/be)) como evidencia y referencia.
 
 **La migración a Supabase se hizo para poder publicar el sistema en internet.** Mantener en línea un servidor Node y una base MySQL tenía un costo que el negocio no podía cubrir. Supabase, Vercel y Cloudflare dan, en sus planes gratuitos, todo lo que el sitio necesita:
 
@@ -91,7 +91,7 @@ classDiagram
         nombre
         descripción
         estado: Activo | Inactivo
-        profundidad: 0 a 2
+        profundidad: 0 a 4
     }
 
     class Product {
@@ -155,18 +155,18 @@ Desde que el cliente entra al sitio web para hacer un pedido hasta que se regist
 
 Regularidad (cumplida con el backend `be/`):
 
-| Req                     | Detalle                                                                     |
-| :---------------------- | :-------------------------------------------------------------------------- |
-| CRUD simple             | 1. CRUD Administrador<br>2. CRUD Categoría                                  |
-| CRUD dependiente        | 1. CRUD Producto {depende de} CRUD Categoría                                |
-| Listado<br>+<br>detalle | 1. Listados de productos y de categorías; los detalles se ven en el listado |
-| CUU/Epic                | 1. Dar de alta un producto                                                  |
+| Req | Detalle |
+| :-- | :-- |
+| CRUD simple | 1. CRUD Administrador<br>2. CRUD Categoría |
+| CRUD dependiente | 1. CRUD Producto {depende de} CRUD Categoría |
+| Listado<br>+<br>detalle | 1. Listado de productos del panel de administrador => al presionar un producto se abre su formulario de edición<br>2. Listado de categorías del panel de administrador => al presionar una categoría se abre su formulario de edición |
+| CUU/Epic | 1. Dar de alta un producto |
 
 Adicionales para Aprobación:
 
 | Req | Detalle |
 | :-- | :-- |
-| CRUD | 1. CRUD Cliente (datos personales, dirección y datos fiscales)<br>2. CRUD Administrador<br>3. CRUD Categoría, con subcategorías de hasta 3 niveles |
+| CRUD | 1. CRUD Cliente (datos personales, dirección y datos fiscales)<br>2. CRUD Administrador<br>3. CRUD Categoría, con subcategorías de hasta 5 niveles |
 | CRUD dependiente | 1. CRUD Producto {depende de} CRUD Categoría (con historial de precios)<br>2. CRUD Foto {depende de} CRUD Producto y CRUD Usuario<br>3. CRUD Orden {depende de} CRUD Cliente y CRUD Producto |
 | Listado<br>+<br>detalle | 1. Listado de productos de una categoría, filtrado por marca y ordenado por precio (menor a mayor o mayor a menor) o por ventas, con hasta 16 productos por página => detalle del producto<br>2. Búsqueda de productos por texto, con hasta 16 resultados por página => detalle del producto<br>3. Listado de los productos más vendidos en la portada, en general y por categoría => detalle del producto<br>4. Listado de órdenes del panel, filtrado por estado => detalle de la orden con sus líneas y el cliente<br>5. Listado de órdenes del cliente (historial de pedidos) => detalle de la orden |
 | CUU/Epic | 1. Registrarse o iniciar sesión (con contraseña o con Google) y aceptar los términos y condiciones<br>2. Realizar un pedido: agregar productos al carrito y confirmar la compra, que crea la orden, descuenta el stock y suma las ventas del producto (usa el CUU 1)<br>3. Gestionar el estado de una orden según la forma de entrega (Pendiente → Pagado → Enviado → Entregado, o Cancelado, que devuelve el stock) (usa el CUU 2) |
