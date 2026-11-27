@@ -14,10 +14,15 @@
     "functions:deploy": "npx supabase functions deploy",
     "seed": "node --env-file=supabase/.env supabase/seed/seed.mjs",
     "seed:demo": "node --env-file=supabase/.env supabase/seed/seed.mjs --demo",
-    "r2:subir-imagenes": "node supabase/seed/subir-imagenes-r2.mjs"
+    "r2:subir-imagenes": "node supabase/seed/subir-imagenes-r2.mjs",
+    "test:fe": "npm test --prefix ./fe -- --watch=false",
+    "test:e2e": "npm run e2e --prefix ./fe",
+    "test:funciones": "deno test --allow-read --allow-run=git supabase/functions/_tests/",
+    "test:db": "npx supabase test db",
+    "test:integracion": "npx supabase status -o env > supabase/.env.integracion && deno test --env-file=supabase/.env.integracion --allow-net --allow-env --allow-read supabase/tests/integracion/"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.5"
   },
   "allowScripts": {
     "@parcel/watcher": false,

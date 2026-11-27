@@ -18,6 +18,10 @@ dist/
 build/
 out/
 tmp/
+
+# --- Salidas de Playwright (pruebas e2e) ---
+fe/test-results/
+fe/playwright-report/
 *.tsbuildinfo
 tsconfig.tsbuildinfo
 
