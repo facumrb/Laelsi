@@ -10,8 +10,9 @@
     </div>
 
     <!-- Filtros -->
-    <div class="flex w-full lg:w-auto">
+    <div class="grid grid-cols-2 gap-3 w-full lg:flex lg:w-auto">
       <app-orders-filter-button
+        class="col-span-1 block"
         [(statusFilter)]="statusFilter"
         [(deliveryMethodFilter)]="deliveryMethodFilter"
         [(paymentMethodFilter)]="paymentMethodFilter"

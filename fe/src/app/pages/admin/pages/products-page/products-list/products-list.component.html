@@ -46,7 +46,7 @@
       <tbody class="admin-table-body" [attr.aria-busy]="loading()">
         <!-- "Seleccionar todos" de la vista de tarjetas (por debajo de lg) -->
         <tr
-          class="flex items-center bg-white border border-gray-200 shadow-sm rounded-lg mb-4 px-4 py-3 lg:hidden"
+          class="flex items-center bg-white border border-gray-200 shadow-sm rounded-lg mb-4 px-5 py-3 lg:hidden"
         >
           <td colspan="7" class="contents">
             <div
@@ -163,13 +163,13 @@
               </td>
 
               <td
-                class="admin-table-cell py-1.5 lg:py-4 max-sm:col-span-2"
+                class="admin-table-cell py-1.5 lg:py-4"
                 [class.lg:border-b-0]="isLast"
               >
                 <span class="admin-table-mobile-label block mb-1"
                   >Categoría:</span
                 >
-                <div class="text-gray-600 line-clamp-2 text-sm">
+                <div class="text-gray-600 wrap-break-word text-sm">
                   {{ product.category.name }}
                 </div>
               </td>
@@ -195,7 +195,7 @@
               </td>
 
               <td
-                class="admin-table-cell py-1.5 lg:py-4 lg:text-center"
+                class="admin-table-cell pt-2 pb-1.5 lg:py-4 lg:text-center"
                 [class.lg:border-b-0]="isLast"
               >
                 <div
@@ -203,7 +203,7 @@
                 >
                   <span class="admin-table-mobile-label">Stock:</span>
                   <span
-                    class="px-2.5 lg:px-0 lg:w-26 shrink-0 h-7 inline-flex items-center justify-center rounded-md text-xs font-medium border whitespace-nowrap"
+                    class="px-2.5 lg:px-0 lg:w-26 shrink-0 h-7 max-lg:my-1 inline-flex items-center justify-center rounded-md text-xs font-medium border whitespace-nowrap"
                     [class.bg-red-50]="product.stock === 0"
                     [class.text-red-700]="product.stock === 0"
                     [class.border-red-200]="product.stock === 0"
@@ -234,12 +234,12 @@
               </td>
 
               <td
-                class="admin-table-cell-last pt-2 pb-3 lg:py-4 sm:col-span-1"
+                class="admin-table-cell-last pt-2 pb-3 lg:py-4 col-span-1"
                 [class.lg:rounded-br-lg]="isLast"
                 [class.lg:border-b-0]="isLast"
               >
                 <div
-                  class="flex items-center justify-start lg:justify-center gap-2 sm:max-lg:flex-col sm:max-lg:items-start sm:max-lg:gap-1"
+                  class="flex items-center justify-start lg:justify-center gap-2 max-lg:flex-col max-lg:items-start max-lg:gap-1"
                 >
                   <span class="admin-table-mobile-label">Acciones:</span>
                   <app-table-actions
